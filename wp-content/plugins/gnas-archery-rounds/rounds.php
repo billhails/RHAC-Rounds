@@ -977,6 +977,8 @@ class GNAS_OutdoorTable {
     private $submit_key = 'gnas-submit';
     private $table_number_key = 'gnas-table-number';
     private $value_prefix = 'gnas-value';
+    private $collected_posts;
+
     private static $STANDARDS =
         array('gmbm', 'mbm', 'bm', 'first', 'second', 'third');
 
@@ -986,7 +988,7 @@ class GNAS_OutdoorTable {
 
     public function handlePOST() {
         if ($_POST[$this->submit_key] == 'true') {
-            $this->do_handlePost();
+            $this->do_handlePOST();
         }
     }
 
@@ -995,6 +997,7 @@ class GNAS_OutdoorTable {
     }
 
     private function do_handlePOST() {
+        $this->collected_posts = array();
         foreach ($_POST as $name => $score) {
             $exploded_post_name = explode('_', $name);
             if ($exploded_post_name[0] != $this->value_prefix) {
@@ -1014,33 +1017,60 @@ class GNAS_OutdoorTable {
                 continue;
             }
             $round = implode(' ', $exploded_post_name);
-            $this->updateFromPost($standard,
-                                  $bow,
-                                  $gender,
-                                  $age_group,
-                                  $round,
-                                  $score);
+            $this->collectFromPOST($standard,
+                                   $bow,
+                                   $gender,
+                                   $age_group,
+                                   $round,
+                                   $score);
+        }
+        $this->updateFromPOSTs();
+    }
+
+    private function collectFromPOST($standard,
+                                     $bow,
+                                     $gender,
+                                     $age_group,
+                                     $round,
+                                     $score) {
+        $key = "$gender $age_group $bow $round";
+        if (!isset($this->collected_posts[$key])) {
+            $this->collected_posts[$key] = array(
+                'gender' => $gender,
+                'age_group' => $age_group,
+                'bow' => $bow,
+                'round' => $round,
+            );
+            foreach (self::$STANDARDS as $std) {
+                $this->collected_posts[$key][$std] = NULL;
+            }
+        }
+        if (ctype_digit($score)) {
+            $this->collected_posts[$key][$standard] = $score;
         }
     }
 
-    private function updateFromPost($standard,
-                                    $bow,
-                                    $gender,
-                                    $age_group,
-                                    $round,
-                                    $score) {
-        if (!is_numeric($score)) {
-            $score = 'NULL';
-        }
-        $query = 'UPDATE outdoor_classifications'
-               . ' SET $standard = $score'
-               . ' WHERE round = ?'
-               . ' AND bow = ?'
-               . ' AND gender = ?'
-               . ' AND age_group = ?';
-        $arguments = array($round, $bow, $gender, $age_group);
+    private function updateFromPOSTs() {
+        $query = 'INSERT OR REPLACE INTO outdoor_classifications'
+               . ' (gmbm, mbm, bm, first, second, third,'
+               . ' round, bow, gender, age_group) VALUES'
+               . ' (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         $stmt = GNAS_PDO::get()->prepare($query);
-        $stmt->execute($arguments);
+        foreach ($this->collected_posts as $collected_post) {
+            $arguments = array(
+                $collected_post['gmbm'],
+                $collected_post['mbm'],
+                $collected_post['bm'],
+                $collected_post['first'],
+                $collected_post['second'],
+                $collected_post['third'],
+                $collected_post['round'],
+                $collected_post['bow'],
+                $collected_post['gender'],
+                $collected_post['age_group']
+            );
+            $stmt->execute($arguments);
+        }
     }
 
     private function getTHead() {
