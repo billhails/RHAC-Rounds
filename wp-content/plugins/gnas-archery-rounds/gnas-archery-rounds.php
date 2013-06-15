@@ -31,7 +31,7 @@ function register_gnas_plugin_menu() {
                   'gnas-archery-rounds',
                   'gnas_edit_tables',
                   plugin_dir_url( __FILE__ )
-                  . 'gnas-archery-rounds-icon.gif' );
+                  . 'gnas-archery-rounds-icon.png' );
     add_submenu_page('gnas-archery-rounds',
                      'Edit Table 4',
                      'Table 4',
