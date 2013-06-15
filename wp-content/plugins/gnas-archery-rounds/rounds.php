@@ -977,7 +977,7 @@ class GNAS_OutdoorTable {
     private $submit_key = 'gnas-submit';
     private $table_number_key = 'gnas-table-number';
     private $value_prefix = 'gnas-value';
-    private static $RANKINGS =
+    private static $STANDARDS =
         array('gmbm', 'mbm', 'bm', 'first', 'second', 'third');
 
     public function __construct($table_number) {
@@ -1004,7 +1004,7 @@ class GNAS_OutdoorTable {
             list($bow, $gender, $age_group, $standard) =
                 array_splice($exploded_post_name, 0, 4);
             $valid = false;
-            foreach (self::$RANKINGS as $valid_standard) {
+            foreach (self::$STANDARDS as $valid_standard) {
                 if ($standard == $valid_standard) {
                     $valid = true;
                     break;

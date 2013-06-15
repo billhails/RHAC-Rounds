@@ -16,6 +16,6 @@ function plugin_dir_path() { return "./";  }
 // // $_GET['gender'] = 'F';
 
 // print GNAS_Page::asText();
-print GNAS_Page::asText();
+print GNAS_Page::outdoorTable(4);
 
 print '</body></html>';
