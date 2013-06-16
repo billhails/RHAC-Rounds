@@ -10,3 +10,7 @@ source. Any errors in the data presented here are totally my fault, though I hav
 In any case the plugin gives you the ability to amend the data.
 
 By the way, RHAC is Royston Heath Archery Club: http://roystonarchery.org/
+
+The Hover plugin is a temporary fork in the official hover plugin by Stefan V&ouml;lkel - I've tried to contact the author but had no reply so far.
+It supports longest match first and fixes a few bugs where matches overlap, for example round names like <q>Metric</q>, <q>Short Metric</q> and
+<q>Short Metric II</q> tended to confuse the older version.

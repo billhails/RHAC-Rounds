@@ -190,10 +190,10 @@ function gnas_edit_tables() {
     echo '<div class="wrap">';
     echo '<p>Edit the GNAS Tables directly using the sub-menus.</p>';
     echo '<p>You will need to grab the most recent version of'
-         . ' the document <q>G-07-01 Shooting Administration Procedures</q>'
+         . ' the document "G-07-01 Shooting Administration Procedures"'
          . ' from the <a href="www.archerygb.org/documents/index.php"'
          . ' target="blank">Archery GB Documents Archive</a>.</p>';
-    echo '<p>Look under <q>Governance</q> &gt; <q>General Documents</q>.</p>';
+    echo '<p>Look under <q>Governance</q> <tt>&gt;</tt> <q>General Documents</q>.</p>';
     echo '</div>';
 }
 
