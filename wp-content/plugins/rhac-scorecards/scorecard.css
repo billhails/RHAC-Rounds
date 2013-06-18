@@ -1,0 +1,8 @@
+input.gold {
+    background-color: #ffff00;
+    color: black;
+}
+
+input.score {
+    width: 2em;
+}
