@@ -15,6 +15,6 @@ The Hover plugin is a temporary fork in the official hover plugin by Stefan V&ou
 It supports longest match first and fixes a few bugs where matches overlap, for example round names like <q>Metric</q>, <q>Short Metric</q> and
 <q>Short Metric II</q> tended to confuse the older version.
 
-The rhac-scorecards plugin is currently a Work In Progress. The intention os to provide an admin interface where scorecards can be entered and
-final scores reviewed for entry into other software like Golden Arrow, at the same time storing the scorecards and allowing members to view
+The rhac-scorecards plugin is currently a Work In Progress. The intention os to provide an admin interface where scorecards can be entered and edited, and
+final scores reviewed for entry into other software like Golden Records, at the same time storing the scorecards and allowing members to view
 their own scorecards as well as providing summaries in chart form (bar and/or pie charts) based on round and/or distance.
