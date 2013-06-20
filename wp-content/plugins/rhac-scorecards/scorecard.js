@@ -6,6 +6,20 @@ function addUp() {
     var total_xs = 0;
     var total_golds = 0;
     var total_total = 0;
+    var counts = {
+        bar_X: 0,
+        bar_10: 0,
+        bar_9: 0,
+        bar_8: 0,
+        bar_7: 0,
+        bar_6: 0,
+        bar_5: 0,
+        bar_4: 0,
+        bar_3: 0,
+        bar_2: 0,
+        bar_1: 0,
+        bar_M: 0
+    };
     for (var dozen = 1; dozen < 9; dozen++) {
         var doz_hits = 0;
         var doz_xs = 0;
@@ -43,6 +57,8 @@ function addUp() {
                 if (element.value != "") {
                     end_empty = false;
                     doz_empty = false;
+                    var bar_class = "bar_" + element.value;
+                    counts[bar_class]++;
                 }
             }
             if (!end_empty) {
@@ -71,6 +87,17 @@ function addUp() {
                                                     String(total_golds);
     document.getElementsByName("total-total")[0].innerText =
                                                     String(total_total);
+    var max = 0;
+    for (bar_class in counts) {
+        if (max < counts[bar_class]) {
+            max = counts[bar_class];
+        }
+    }
+    if (max) {
+        for (bar_class in counts) {
+            document.getElementById(bar_class).setAttribute("height", (counts[bar_class] / max) * 100);
+        }
+    }
 }
 
 function setWatcher(end, dozen, even, arrow) {

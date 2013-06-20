@@ -61,6 +61,9 @@ td.bar {
 td.hits, td.Xs, td.golds, td.doz, td.tot {
     text-align: right;
 }
+td.tot {
+    width: 3em;
+}
 td.hits, td.Xs, td.golds, td.total-hits, td.total-Xs, td.total-golds {
     background-color: #CCCCCC;
 }
