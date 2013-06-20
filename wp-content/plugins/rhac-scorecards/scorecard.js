@@ -11,42 +11,66 @@ function addUp() {
         var doz_xs = 0;
         var doz_golds = 0;
         var doz_doz = 0;
+        var doz_empty = true;
         for (var even in [false, true]) {
             ++end;
             var end_total = 0;
+            var end_empty = true;
             for (var arrow = 1; arrow < 7; ++arrow) {
-                var element = document.getElementsByName("arrow-" + end + "-" + arrow)[0];
+                var element = document.getElementsByName("arrow-"
+                                                    + end + "-" + arrow)[0];
                 var score = Number(element.getAttribute("score"));
                 end_total += score;
                 doz_doz += score;
                 doz_tot += score;
                 total_total += score;
+
                 if (score > 0) {
                     ++doz_hits;
                     ++total_hits;
                 }
+
                 if (score > 8) {
                     ++doz_golds;
                     ++total_golds;
                 }
+
                 if (element.value == "X") {
                     ++doz_xs;
                     ++total_xs;
                 }
-
+                
+                if (element.value != "") {
+                    end_empty = false;
+                    doz_empty = false;
+                }
             }
-            document.getElementsByName("end-total-" + end)[0].innerText = String(end_total);
+            if (!end_empty) {
+                document.getElementsByName("end-total-" + end)[0].innerText =
+                                                        String(end_total);
+            }
         }
-        document.getElementsByName("doz-hits-" + dozen)[0].innerText = String(doz_hits);
-        document.getElementsByName("doz-xs-" + dozen)[0].innerText = String(doz_xs);
-        document.getElementsByName("doz-golds-" + dozen)[0].innerText = String(doz_golds);
-        document.getElementsByName("doz-doz-" + dozen)[0].innerText = String(doz_doz);
-        document.getElementsByName("doz-tot-" + dozen)[0].innerText = String(doz_tot);
+        if (!doz_empty) {
+            document.getElementsByName("doz-hits-" + dozen)[0].innerText =
+                                                        String(doz_hits);
+            document.getElementsByName("doz-xs-" + dozen)[0].innerText =
+                                                        String(doz_xs);
+            document.getElementsByName("doz-golds-" + dozen)[0].innerText =
+                                                        String(doz_golds);
+            document.getElementsByName("doz-doz-" + dozen)[0].innerText =
+                                                        String(doz_doz);
+            document.getElementsByName("doz-tot-" + dozen)[0].innerText =
+                                                        String(doz_tot);
+        }
     }
-    document.getElementsByName("total-hits")[0].innerText = String(total_hits);
-    document.getElementsByName("total-xs")[0].innerText = String(total_xs);
-    document.getElementsByName("total-golds")[0].innerText = String(total_golds);
-    document.getElementsByName("total-total")[0].innerText = String(total_total);
+    document.getElementsByName("total-hits")[0].innerText =
+                                                    String(total_hits);
+    document.getElementsByName("total-xs")[0].innerText =
+                                                    String(total_xs);
+    document.getElementsByName("total-golds")[0].innerText =
+                                                    String(total_golds);
+    document.getElementsByName("total-total")[0].innerText =
+                                                    String(total_total);
 }
 
 function setWatcher(end, dozen, even, arrow) {

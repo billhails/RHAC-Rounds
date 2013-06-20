@@ -1,33 +1,90 @@
 input.gold {
-    background-color: #ffff00;
+    background-color: yellow;
     color: black;
 }
 
 input.red {
-    background-color: #ff0000;
+    background-color: red;
     color: white;
 }
 
 input.blue {
-    background-color: #0000ff;
+    background-color: blue;
     color: white;
 }
 
 input.black {
-    background-color: #000000;
+    background-color: black;
     color: white;
 }
 
 input.white {
-    background-color: #ffffff;
+    background-color: white;
     color: black;
 }
 
 input.miss {
-    background-color: #00ff00;
-    color: black;
+    background-color: green;
+    color: white;
 }
 
 input.score {
     width: 2em;
+    text-align: center;
 }
+
+td, tr {
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+}
+
+td.totals {
+    text-align: right;
+}
+
+td.end, td.doz, td.tot {
+    border: 1px solid black;
+    text-align: right;
+}
+
+td.end, td.doz, td.tot {
+    border: 1px solid black;
+}
+td.end {
+    text-align: right;
+}
+td.bar {
+    vertical-align: bottom;
+    text-align: center;
+}
+
+td.hits, td.Xs, td.golds, td.doz, td.tot {
+    text-align: right;
+}
+td.hits, td.Xs, td.golds, td.total-hits, td.total-Xs, td.total-golds {
+    background-color: #CCCCCC;
+}
+td.total-hits, td.total-Xs, td.total-golds, td.total-total {
+    border: 1px solid black;
+    text-align: right;
+}
+td.dist {
+    border: 1px solid black;
+    text-align: center;
+}
+td.value, th.label {
+    text-align: center;
+}
+td.value {
+    border: 1px solid black;
+}
+td.total-total {
+    font-weight: bold;
+}
+th.pad, td.pad {
+    width: 0.5em;
+}
+th.totals {
+    text-align: right;
+}
+

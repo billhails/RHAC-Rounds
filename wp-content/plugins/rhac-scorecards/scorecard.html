@@ -6,6 +6,7 @@
     <body>
         <h1>Prototype for the Score Cards</h1>
         <form method="post" action="">
+            <input type="hidden" name="scorecard-id" value="0"/>
             <table>
                 <thead>
                     <tr>
@@ -51,19 +52,19 @@
                                     . '"/>'
                                     . '</td>' . "\n";
                             }
-                            print '<td name="end-total-'
+                            print '<td class="end" name="end-total-'
                                 . $end
                                 . '">&nbsp;</td>' . "\n";
                         }
-                        print '<td name="doz-hits-'
+                        print '<td class="hits" name="doz-hits-'
                             . $dozen . '">&nbsp;</td>';
-                        print '<td name="doz-xs-'
+                        print '<td class="Xs" name="doz-xs-'
                             . $dozen . '">&nbsp;</td>';
-                        print '<td name="doz-golds-'
+                        print '<td class="golds" name="doz-golds-'
                             . $dozen . '">&nbsp;</td>';
-                        print '<td name="doz-doz-'
+                        print '<td class="doz" name="doz-doz-'
                             . $dozen . '">&nbsp;</td>';
-                        print '<td name="doz-tot-'
+                        print '<td class="tot" name="doz-tot-'
                             . $dozen . '">&nbsp;</td>';
                         print "\n";
                         print "</tr>\n";
@@ -71,15 +72,29 @@
                 ?>
                     <tr>
                         <td colspan="14">&nbsp;</td>
-                        <td name="total-hits">&nbsp;</td>
-                        <td name="total-xs">&nbsp;</td>
-                        <td name="total-golds">&nbsp;</td>
+                        <td class="total-hits" name="total-hits">&nbsp;</td>
+                        <td class="total-Xs" name="total-xs">&nbsp;</td>
+                        <td class="total-golds" name="total-golds">&nbsp;</td>
                         <td>&nbsp;</td>
-                        <td name="total-total">&nbsp;</td>
+                        <td class="total-total" name="total-total">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>
             <input type="submit" />
         </form>
+        <table>
+          <td name="bar-X" class="bar"><img src="gold.png" height="100" width="30"/></td>
+          <td name="bar-10" class="bar"><img src="gold.png" height="100" width="30"/></td>
+          <td name="bar-9" class="bar"><img src="gold.png" height="100" width="30"/></td>
+          <td name="bar-8" class="bar"><img src="red.png" height="100" width="30"/></td>
+          <td name="bar-7" class="bar"><img src="red.png" height="100" width="30"/></td>
+          <td name="bar-6" class="bar"><img src="blue.png" height="100" width="30"/></td>
+          <td name="bar-5" class="bar"><img src="blue.png" height="100" width="30"/></td>
+          <td name="bar-4" class="bar"><img src="black.png" height="100" width="30"/></td>
+          <td name="bar-3" class="bar"><img src="black.png" height="100" width="30"/></td>
+          <td name="bar-2" class="bar"><img src="white.png" height="100" width="30"/></td>
+          <td name="bar-1" class="bar"><img src="white.png" height="100" width="30"/></td>
+          <td name="bar-M" class="bar"><img src="green.png" height="100" width="30"/></td>
+        </table>
     </body>
 </html>
