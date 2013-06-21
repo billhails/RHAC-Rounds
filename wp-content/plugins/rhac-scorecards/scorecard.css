@@ -64,8 +64,12 @@ td.hits, td.Xs, td.golds, td.doz, td.tot {
 td.tot {
     width: 3em;
 }
+td.doz {
+    width: 2em;
+}
 td.hits, td.Xs, td.golds, td.total-hits, td.total-Xs, td.total-golds {
     background-color: #CCCCCC;
+    width: 2em;
 }
 td.total-hits, td.total-Xs, td.total-golds, td.total-total {
     border: 1px solid black;
@@ -75,8 +79,8 @@ td.dist {
     border: 1px solid black;
     text-align: center;
 }
-td.value, th.label {
-    text-align: center;
+th {
+    text-align: right;
 }
 td.value {
     border: 1px solid black;

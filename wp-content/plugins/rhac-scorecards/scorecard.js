@@ -6,19 +6,12 @@ function addUp() {
     var total_xs = 0;
     var total_golds = 0;
     var total_total = 0;
-    var counts = {
-        bar_X: 0,
-        bar_10: 0,
-        bar_9: 0,
-        bar_8: 0,
-        bar_7: 0,
-        bar_6: 0,
-        bar_5: 0,
-        bar_4: 0,
-        bar_3: 0,
-        bar_2: 0,
-        bar_1: 0,
-        bar_M: 0
+    var tenZoneCounts = {
+        tbar_X: 0, tbar_10: 0, tbar_9: 0, tbar_8: 0, tbar_7: 0, tbar_6: 0,
+        tbar_5: 0, tbar_4: 0, tbar_3: 0, tbar_2: 0, tbar_1: 0, tbar_M: 0
+    };
+    var fiveZoneCounts = {
+        fbar_9: 0, fbar_7: 0, fbar_5: 0, fbar_3: 0, fbar_1: 0, fbar_M: 0
     };
     for (var dozen = 1; dozen < 9; dozen++) {
         var doz_hits = 0;
@@ -39,26 +32,17 @@ function addUp() {
                 doz_tot += score;
                 total_total += score;
 
-                if (score > 0) {
-                    ++doz_hits;
-                    ++total_hits;
-                }
+                if (score > 0) { ++doz_hits; ++total_hits; }
 
-                if (score > 8) {
-                    ++doz_golds;
-                    ++total_golds;
-                }
+                if (score > 8) { ++doz_golds; ++total_golds; }
 
-                if (element.value == "X") {
-                    ++doz_xs;
-                    ++total_xs;
-                }
+                if (element.value == "X") { ++doz_xs; ++total_xs; }
                 
                 if (element.value != "") {
                     end_empty = false;
                     doz_empty = false;
-                    var bar_class = "bar_" + element.value;
-                    counts[bar_class]++;
+                    var bar_class = "tbar_" + element.value;
+                    tenZoneCounts[bar_class]++;
                 }
             }
             if (!end_empty) {
@@ -88,14 +72,15 @@ function addUp() {
     document.getElementsByName("total-total")[0].innerText =
                                                     String(total_total);
     var max = 0;
-    for (bar_class in counts) {
-        if (max < counts[bar_class]) {
-            max = counts[bar_class];
+    for (bar_class in tenZoneCounts) {
+        if (max < tenZoneCounts[bar_class]) {
+            max = tenZoneCounts[bar_class];
         }
     }
     if (max) {
-        for (bar_class in counts) {
-            document.getElementById(bar_class).setAttribute("height", (counts[bar_class] / max) * 100);
+        for (bar_class in tenZoneCounts) {
+            document.getElementById(bar_class).setAttribute("height",
+                                            (tenZoneCounts[bar_class] / max) * 100);
         }
     }
 }
@@ -104,7 +89,7 @@ function setWatcher(end, dozen, even, arrow) {
     var name = "arrow-" + end + '-' + arrow;
     var input = document.getElementsByName(name)[0];
     input.setAttribute("score", "0");
-    var scoreMap = {
+    var tenZoneScoreMap = {
         X: {score: "10", className: "gold", value: "X"},
         10: {score: "10", className: "gold", value: "10"},
         9: {score: "9", className: "gold", value: "9"},
@@ -119,14 +104,31 @@ function setWatcher(end, dozen, even, arrow) {
         0: {score: "0", className: "miss", value: "M"},
         M: {score: "0", className: "miss", value: "M"},
     };
+    var fiveZoneScoreMap = {
+        X: {score: "9", className: "gold", value: "9"},
+        10: {score: "9", className: "gold", value: "9"},
+        9: {score: "9", className: "gold", value: "9"},
+        8: {score: "7", className: "red", value: "7"},
+        7: {score: "7", className: "red", value: "7"},
+        6: {score: "5", className: "blue", value: "5"},
+        5: {score: "5", className: "blue", value: "5"},
+        4: {score: "3", className: "black", value: "3"},
+        3: {score: "3", className: "black", value: "3"},
+        2: {score: "1", className: "white", value: "2"},
+        1: {score: "1", className: "white", value: "1"},
+        0: {score: "0", className: "miss", value: "M"},
+        M: {score: "0", className: "miss", value: "M"},
+    };
+
     input.addEventListener( 'blur',
         function () {
             var value = input.value.toUpperCase();
             var score = 0;
-            if (scoreMap[value]) {
-                input.className = "score " + scoreMap[value]["className"];
-                input.value = scoreMap[value]["value"];
-                input.setAttribute("score", scoreMap[value]["score"]);
+            if (tenZoneScoreMap[value]) {
+                input.className = "score " +
+                        tenZoneScoreMap[value]["className"];
+                input.value = tenZoneScoreMap[value]["value"];
+                input.setAttribute("score", tenZoneScoreMap[value]["score"]);
             } else {
                 input.className = "score";
                 input.value = "";
@@ -134,7 +136,7 @@ function setWatcher(end, dozen, even, arrow) {
             }
             addUp();
         }
-    )
+    );
 }
 
 window.onload = function() {
