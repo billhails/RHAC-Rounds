@@ -85,9 +85,8 @@ function addUp() {
     }
 }
 
-function setWatcher(end, dozen, even, arrow) {
-    var name = "arrow-" + end + '-' + arrow;
-    var input = document.getElementsByName(name)[0];
+function setWatcher(end, arrow) {
+    var input = $('[name="arrow-' + end + '-' + arrow + '"]');
     input.setAttribute("score", "0");
     var tenZoneScoreMap = {
         X: {score: "10", className: "gold", value: "X"},
@@ -139,14 +138,14 @@ function setWatcher(end, dozen, even, arrow) {
     );
 }
 
-window.onload = function() {
+$(function() {
     var end = 0;
     for (var dozen = 1; dozen < 9; dozen++) {
         for (var even in [false, true]) {
             ++end;
             for (var arrow = 1; arrow < 7; ++arrow) {
-                setWatcher(end, dozen, even, arrow);
+                setWatcher(end, arrow);
             }
         }
     }
-}
+});
