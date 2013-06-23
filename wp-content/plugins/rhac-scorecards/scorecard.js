@@ -162,7 +162,7 @@ function Scorer() {
         }
         if (max) {
             for (bar_class in zoneCounts) {
-                $('#' + bar_class).attr("height", (zoneCounts[bar_class] / max) * 100);
+                $('#' + bar_class).attr("height", (zoneCounts[bar_class] / max) * 300);
             }
         }
     }

@@ -119,24 +119,24 @@
     <input type="submit" />
 </form>
 <table id="TenZoneChart">
-  <td class="bar"><img id="tbar_X" src="gold.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_10" src="gold.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_9" src="gold.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_8" src="red.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_7" src="red.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_6" src="blue.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_5" src="blue.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_4" src="black.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_3" src="black.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_2" src="white.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_1" src="white.png" height="100" width="30"/></td>
-  <td class="bar"><img id="tbar_M" src="green.png" height="100" width="30"/></td>
+  <td class="bar"><img id="tbar_X" src="gold.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_10" src="gold.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_9" src="gold.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_8" src="red.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_7" src="red.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_6" src="blue.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_5" src="blue.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_4" src="black.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_3" src="black.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_2" src="white.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_1" src="white.png" height="300" width="30"/></td>
+  <td class="bar"><img id="tbar_M" src="green.png" height="300" width="30"/></td>
 </table>
 <table id="FiveZoneChart">
-  <td class="bar"><img id="fbar_9" src="gold.png" height="100" width="50"/></td>
-  <td class="bar"><img id="fbar_7" src="red.png" height="100" width="50"/></td>
-  <td class="bar"><img id="fbar_5" src="blue.png" height="100" width="50"/></td>
-  <td class="bar"><img id="fbar_3" src="black.png" height="100" width="50"/></td>
-  <td class="bar"><img id="fbar_1" src="white.png" height="100" width="50"/></td>
-  <td class="bar"><img id="fbar_M" src="green.png" height="100" width="50"/></td>
+  <td class="bar"><img id="fbar_9" src="gold.png" height="300" width="50"/></td>
+  <td class="bar"><img id="fbar_7" src="red.png" height="300" width="50"/></td>
+  <td class="bar"><img id="fbar_5" src="blue.png" height="300" width="50"/></td>
+  <td class="bar"><img id="fbar_3" src="black.png" height="300" width="50"/></td>
+  <td class="bar"><img id="fbar_1" src="white.png" height="300" width="50"/></td>
+  <td class="bar"><img id="fbar_M" src="green.png" height="300" width="50"/></td>
 </table>
