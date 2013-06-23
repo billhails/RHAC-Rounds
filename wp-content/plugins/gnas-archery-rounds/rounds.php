@@ -14,7 +14,7 @@ class GNAS_PDO {
             try {
                 self::$pdo = new PDO('sqlite:'
                                      . plugin_dir_path(__FILE__)
-                                     . 'archery.db');
+                                     . '../gnas-archery-rounds/archery.db');
             } catch (PDOException $e) {
                 wp_die('Error!: ' . $e->getMessage());
                 exit();
@@ -376,6 +376,7 @@ class GNAS_Distances {
     private $roundName;
     private $distances;
     private $arrowCounts;
+    private $rawDistances;
     
     public function tableData($face, $distance) {
         $content = '&nbsp;';
@@ -392,6 +393,7 @@ class GNAS_Distances {
                                  array $distances,
                                  GNAS_ArrowCounts $arrowCounts) {
         $this->roundName = $roundName;
+        $this->rawDistances = $distances;
         $this->arrowCounts = $arrowCounts;
         $this->distances = array();
         foreach ($distances as $distance) {
@@ -401,6 +403,10 @@ class GNAS_Distances {
             $this->distances[$distance->getFace()][$distance->getDistance()] =
                 $distance;
         }
+    }
+
+    public function rawData() {
+        return $this->rawDistances;
     }
 
     public function getDescription(GNAS_Scoring $scoring,
@@ -659,8 +665,12 @@ class GNAS_Round implements GNAS_RoundInterface {
              . $this->getClassifications()->getTable();
     }
 
-    private function getTitle() {
+    public function getTitle() {
         return '<h1>' . $this->printName . '</h1>';
+    }
+
+    public function getName() {
+        return $this->printName;
     }
 
     private function getDescription() {
@@ -700,7 +710,7 @@ class GNAS_Round implements GNAS_RoundInterface {
              . '</a>';
     }
 
-    private function getDistances() {
+    public function getDistances() {
         if (!isset($this->distances)) {
             $this->distances =
                 GNAS_Distances::create($this->name,
@@ -712,6 +722,10 @@ class GNAS_Round implements GNAS_RoundInterface {
 
     private function getFamily() {
         return GNAS_RoundFamily::getInstance($this->familyName);
+    }
+
+    public function getMeasure() {
+        return $this->getFamily()->getMeasure();
     }
 
     private function __construct($name, $familyName, $display_order) {
@@ -899,6 +913,14 @@ abstract class GNAS_AllRounds {
         $rounds = new GNAS_MetricRounds();
         $text .= $rounds->roundsAsText();
         return $text;
+    }
+
+    public static function asData() {
+        $rounds = new GNAS_ImperialRounds();
+        $data = $rounds->getAllRounds();
+        $rounds = new GNAS_MetricRounds();
+        $data = array_merge($data, $rounds->getAllRounds());
+        return $data;
     }
 
     public abstract function getTitle();
@@ -1310,5 +1332,12 @@ class GNAS_Page {
         $table = new GNAS_OutdoorTable($table_number);
         $table->handlePOST();
         return $table->tableCSS() . $table->asText();
+    }
+
+    /**
+     * used by other plugins
+     */
+    public static function roundData() {
+        return GNAS_AllRounds::asData();
     }
 }
