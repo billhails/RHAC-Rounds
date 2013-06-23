@@ -3,8 +3,11 @@ CREATE TABLE archer (
     wp_id INTEGER
 );
 
+INSERT INTO archer(name, wp_id) VALUES("Bill Hails", 1);
+INSERT INTO archer(name, wp_id) VALUES("Dave Barrett", NULL);
+
 CREATE TABLE scorecards (
-    id INTEGER NOT NULL PRIMARY KEY AUTO INCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     archer_name TEXT NOT NULL,
     year integer NOT NULL,
     month integer NOT NULL,

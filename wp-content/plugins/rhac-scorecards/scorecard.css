@@ -19,7 +19,7 @@ input.black {
 }
 
 input.white {
-    background-color: white;
+    background-color: #EEEEEE;
     color: black;
 }
 
@@ -95,3 +95,6 @@ th.totals {
     text-align: right;
 }
 
+span#round-data {
+    display: none;
+}
