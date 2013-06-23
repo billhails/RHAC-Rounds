@@ -10,13 +10,15 @@ Surprisingly I know of at least one other :-).
 
 The classifications plugin is in
 <tt>wp-content/plugins/gnas-archery-rounds</tt>.  The classifications
-data in dump.sql and in the archery.db has been proofread and fixed
-via the admin screens of the running plugin.  The source of the
-data is the Archery GB Shooting Administrative Procedures document
-issued March 2013, available from http://www.archerygb.org/ which
-remains the authoratative source. Any errors in the data presented
-here are totally my fault, though I have tried to be careful.  In
-any case the plugin gives you the ability to amend the data.
+data in <tt>dump.sql</tt> and in the <tt>archery.db</tt> has been
+proofread and fixed via the admin screens of the running plugin.
+The source of the data is the Archery GB Shooting Administrative
+Procedures document issued March 2013, available from
+http://www.archerygb.org/ which remains the authoratative source.
+Any errors in the data presented here are totally my fault, though
+I have tried to be careful.  In any case the plugin gives you the
+ability to amend the data.
+
 **I cannot make any promises to maintain this data** but I will try.
 
 By the way, RHAC is Royston Heath Archery Club: http://roystonarchery.org/
