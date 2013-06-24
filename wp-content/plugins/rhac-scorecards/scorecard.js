@@ -173,19 +173,21 @@ function Scorer() {
 }
 
 $(function() {
-    var end = 0;
-    var scorer = new Scorer();
-    $( "#datepicker" ).datepicker({
-        dateFormat: "D, d M yy"
-    });
-    $('#TenZoneChart').css('display', 'inline');
-    $('#FiveZoneChart').css('display', 'none');
-    $("#round").change(scorer.changeRound);
-    for (var dozen = 1; dozen < 13; dozen++) {
-        for (var even in [false, true]) {
-            ++end;
-            for (var arrow = 1; arrow < 7; ++arrow) {
-                $( '#arrow-' + end + '-' + arrow).blur(scorer.watchScore);
+    if ($('#round-data').text()) {
+        var end = 0;
+        var scorer = new Scorer();
+        $( "#datepicker" ).datepicker({
+            dateFormat: "D, d M yy"
+        });
+        $('#TenZoneChart').css('display', 'inline');
+        $('#FiveZoneChart').css('display', 'none');
+        $("#round").change(scorer.changeRound);
+        for (var dozen = 1; dozen < 13; dozen++) {
+            for (var even in [false, true]) {
+                ++end;
+                for (var arrow = 1; arrow < 7; ++arrow) {
+                    $( '#arrow-' + end + '-' + arrow).blur(scorer.watchScore);
+                }
             }
         }
     }

@@ -1,5 +1,27 @@
 <?php
 
+include plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
+
+try {
+    $pdo = new PDO('sqlite:'
+                 . plugin_dir_path(__FILE__)
+                 . '../rhac-scorecards/scorecard.db');
+} catch (PDOException $e) {
+    wp_die('Error!: ' . $e->getMessage());
+    exit();
+}
+
+$pdo->exec('PRAGMA foreign_keys = ON');
+
+function fetch($query, $params = array()) {
+    global $pdo;
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll();
+    $stmt->closeCursor();
+    return $rows;
+}
+
 if (isset($_POST['update-scorecard'])) { // update or insert requested
     if ($_POST['scorecard-id']) { // update requested
         do_update();
@@ -23,6 +45,7 @@ if (isset($_POST['update-scorecard'])) { // update or insert requested
 }
 
 function do_update() {
+    // data in $_POST
     "DELETE FROM scorecard_end WHERE scorecard_id = ?";
     "INSERT INTO scorecard_end VALUES ...";
     "UPDATE scorecards SET ... WHERE id = ?";
@@ -36,15 +59,50 @@ function do_insert() {
 }
 
 function do_edit($id) {
+    global $scorecard_data;
+    global $scorecard_end_data;
     if ($id) {
-        "SELECT * FROM scorecard WHERE id = ?";
-        "SELECT * FROM scorecard_end WHERE scorecard_id = ? ORDER BY end_number";
+        $rows = fetch("SELECT * FROM scorecard WHERE id = ?", array($id));
+        $scorecard_data = $rows[0];
+        $rows = fetch("SELECT *"
+                      . " FROM scorecard_end"
+                      . " WHERE scorecard_id = ?"
+                      . " ORDER BY end_number",
+                      array($id);
+        $scorecard_end_data = $rows;
     }
-    include "scorecard.php"; // gets all its data from globals, including $id
+    else {
+        $scorecard_data = array();
+        $scorecard_end_data = array();
+    }
+    include "scorecard.php";
 }
 
 function do_find() {
-    include "search_scorecards.php";
+    $criteria = array("1 = 1");
+    $params = array();
+    if ($_GET["archer"]) {
+        $criteria []= 'archer = ?';
+        $params []= $_GET["archer"];
+    }
+    if ($_GET["round"]) {
+        $criteria []= 'round = ?';
+        $params []= $_GET["round"];
+    }
+    if ($_GET["lower-date"]) {
+        if ($_GET["upper-date"]) {
+            $criteria []= 'date BETWEEN ? and ?';
+            $params []= $_GET["lower-date"];
+            $params []= $_GET["upper-date"];
+        }
+        else {
+            $criteria []= 'date = ?';
+            $params []= $_GET["lower-date"];
+        }
+    }
+    $query = "SELECT * FROM scorecard WHERE " . implode(' AND ', $criteria);
+    global $search_results = fetch($query, $params);
+    include "scorecard_search_results.php"; // data in globals
 }
 
 function do_homepage() {

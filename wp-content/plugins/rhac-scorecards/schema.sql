@@ -7,21 +7,19 @@ INSERT INTO archer(name, wp_id) VALUES("Bill Hails", 1);
 INSERT INTO archer(name, wp_id) VALUES("Dave Barrett", NULL);
 
 CREATE TABLE scorecards (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    archer_name TEXT NOT NULL,
-    year integer NOT NULL,
-    month integer NOT NULL,
-    day integer NOT NULL,
+    scorecard_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    archer TEXT NOT NULL,
+    date TEXT NOT NULL,
     round TEXT NOT NULL,
     bow TEXT NOT NULL,
     hits INTEGER NOT NULL,
     xs INTEGER NOT NULL,
     golds INTEGER NOT NULL,
     score INTEGER NOT NULL,
-    FOREIGN KEY (archer_name) REFERENCES archer(name)
+    FOREIGN KEY (archer) REFERENCES archer(name)
 );
 
-CREATE INDEX scorecards_date ON scorecards(year, month, day);
+CREATE INDEX scorecards_date ON scorecards(date);
 
 CREATE TABLE scorecard_end (
     scorecard_id INTEGER NOT NULL,
@@ -33,5 +31,5 @@ CREATE TABLE scorecard_end (
     arrow_5 TEXT NOT NULL DEFAULT "",
     arrow_6 TEXT NOT NULL DEFAULT "",
     PRIMARY KEY (scorecard_id, end_number),
-    FOREIGN KEY (scorecard_id) REFERENCES scorecards(id)
+    FOREIGN KEY (scorecard_id) REFERENCES scorecards(scorecard_id)
 );

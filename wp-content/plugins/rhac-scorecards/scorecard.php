@@ -1,24 +1,4 @@
-<?php
-    include plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
-    try {
-        $pdo = new PDO('sqlite:'
-                     . plugin_dir_path(__FILE__)
-                     . '../rhac-scorecards/scorecard.db');
-        } catch (PDOException $e) {
-            wp_die('Error!: ' . $e->getMessage());
-            exit();
-        }
-    $pdo->exec('PRAGMA foreign_keys = ON');
-    function fetch($query, $params = array()) {
-        global $pdo;
-        $stmt = $pdo->prepare($query);
-        $stmt->execute($params);
-        $rows = $stmt->fetchAll();
-        $stmt->closeCursor();
-        return $rows;
-    }
-?>
-<h1>Prototype for the Score Cards</h1>
+<h1>Edit Score Card</h1>
 <span id="round-data">
 <?php
     foreach (GNAS_Page::roundData() as $round) {
@@ -46,17 +26,28 @@
                     print "<option value=''>- - -</option>\n";
                     $archers = fetch('SELECT name FROM archer ORDER BY name');
                     foreach ($archers as $archer) {
-                        print "<option value='$archer[name]'>"
+                        print "<option value='$archer[name]'"
+                            . ($archer["name"] == $scorecard_data["archer"]
+                                ? ' selected="1"'
+                                : '')
+                            .">"
                             . $archer["name"]
                             . "</option>\n";
                     }
                 ?></select></td>
                 <th colspan="3">Bow</th>
                 <td colspan="6">
-                    <input type="radio" name="bow" value="recurve">R</input>
-                    <input type="radio" name="bow" value="compound">C</input>
-                    <input type="radio" name="bow" value="barebow">B</input>
-                    <input type="radio" name="bow" value="longbow">L</input>
+                <?php
+                    foreach(array('R' => 'recurve',
+                                  'C' => 'compound',
+                                  'L' => 'longbow',
+                                  'B' => 'barebow') as $initial => $bow) {
+                        print('<input type="radio" name="bow"');
+                        if ($scorecard_data['bow'] == $bow) {
+                            print(" selected='1'");
+                        }
+                        print(" value='$bow'>$initial</input>\n");
+                   } ?>
                 </td>
             </tr>
             <tr>
@@ -64,12 +55,21 @@
                 <td colspan="7"><select name="round" id="round"><?php
                 print "<option value=''>- - -</option>\n";
                 foreach (GNAS_Page::roundData() as $round) {
-                    print "<option value='" . $round->getName() . "'>"
-                    . $round->getName() . "</option>\n";
+                    print "<option value='" . $round->getName() . "'";
+                    if ($round->getName() == $scorecard_data['round']) {
+                        print " selected='1'";
+                    }
+                    print ">" . $round->getName() . "</option>\n";
                 }
                 ?></select></td>
                 <th colspan="3">Date</th>
-                <td colspan="6"><input type="text" name="date" id="datepicker"/></td>
+                <td colspan="6"><input type="text" name="date"
+                <?php
+                    if ($scorecard_data['date']) {
+                        print "value='$scorecard_data[date]'";
+                    }
+                ?>
+                id="datepicker"/></td>
             </tr>
             <tr>
                 <th colspan="6">&nbsp;</th>
@@ -92,7 +92,13 @@
                 foreach (array('odd', 'even') as $pos) {
                     $end++;
                     for ($arrow = 1; $arrow < 7; ++$arrow) {
-                        print " <td><input type='text' class='score' name='arrow-$end-$arrow' id='arrow-$end-$arrow'/></td>\n";
+                        print " <td><input type='text'"
+                            . " class='score'"
+                            . "value='"
+                            . $scorecard_end_data[$end -1]["arrow_$arrow"]
+                            . "'"
+                            . " name='arrow-$end-$arrow'"
+                            . " id='arrow-$end-$arrow'/></td>\n";
                     }
                     print " <td class='end' name='end-total-$end' id='end-total-$end'>&nbsp;</td>\n";
                 }
