@@ -44,8 +44,10 @@ function TenZoneMap() {
         M: {score: 0, className: "miss", value: "M"},
     };
     this.getZoneCounts = function() {
-        return { tbar_X: 0, tbar_10: 0, tbar_9: 0, tbar_8: 0, tbar_7: 0, tbar_6: 0,
-                 tbar_5: 0, tbar_4: 0, tbar_3: 0, tbar_2: 0, tbar_1: 0, tbar_M: 0 };
+        return { tbar_X: 0, tbar_10: 0, tbar_9: 0,
+                 tbar_8: 0, tbar_7: 0, tbar_6: 0,
+                 tbar_5: 0, tbar_4: 0, tbar_3: 0,
+                 tbar_2: 0, tbar_1: 0, tbar_M: 0 };
     };
     this.bar_prefix = 'tbar_';
 }
@@ -69,7 +71,8 @@ function FiveZoneMap() {
         M: {score: 0, className: "miss", value: "M"},
     };
     this.getZoneCounts = function() {
-        return { fbar_9: 0, fbar_7: 0, fbar_5: 0, fbar_3: 0, fbar_1: 0, fbar_M: 0 };
+        return { fbar_9: 0, fbar_7: 0, fbar_5: 0,
+                 fbar_3: 0, fbar_1: 0, fbar_M: 0 };
     };
     this.bar_prefix = 'fbar_';
 }
@@ -78,10 +81,10 @@ FiveZoneMap.prototype = new ZoneMap();
 FiveZoneMap.prototype.constructor = FiveZoneMap;
 
 function Scorer() {
-    var zoneMap = new TenZoneMap();
     var me = this;
+    var zoneMap = new TenZoneMap();
 
-    this.setMeasure = function(measure) {
+    me.setMeasure = function(measure) {
         if (measure == "imperial") {
             zoneMap = new FiveZoneMap();
             $('#TenZoneChart').css('display', 'none');
@@ -95,16 +98,23 @@ function Scorer() {
         }
     }
 
-    this.watchScore = function() {
-        var value = $(this).val().toUpperCase();
-        this.className = zoneMap.classes(value);
-        $(this).val(zoneMap.value(value));
-        $(this).data("score", zoneMap.score(value));
+    me.changeScore = function(score) {
+        var value = score.val().toUpperCase();
+        score.get(0).className = zoneMap.classes(value);
+        score.val(zoneMap.value(value));
+        score.data("score", zoneMap.score(value));
+    }
+
+    me.watchScore = function() {
+        me.changeScore($(this));
         me.addUp();
     }
 
-    this.addUp = function() {
-        var counts = { end: 0, doz_tot: 0, total_hits: 0, total_xs: 0, total_golds: 0};
+    me.addUp = function() {
+        var counts = {
+            end: 0, doz_tot: 0, total_hits: 0,
+            total_xs: 0, total_golds: 0
+        };
         var total_total = 0;
         var zoneCounts = zoneMap.getZoneCounts();
         for (var dozen = 1; dozen < 13; dozen++) {
@@ -126,11 +136,9 @@ function Scorer() {
                     total_total += score;
 
                     if (score > 0) { ++doz_hits; ++counts.total_hits; }
-
                     if (score > 8) { ++doz_golds; ++counts.total_golds; }
-
                     if (element.val() == "X") { ++doz_xs; ++counts.total_xs; }
-                    
+
                     if (element.val() != "") {
                         end_empty = false;
                         doz_empty = false;
@@ -151,9 +159,13 @@ function Scorer() {
             }
         }
         $("#total-hits").text(String(counts.total_hits));
+        $("#i-total-hits").text(String(counts.total_hits));
         $("#total-xs").text(String(counts.total_xs));
+        $("#i-total-xs").text(String(counts.total_xs));
         $("#total-golds").text(String(counts.total_golds));
+        $("#i-total-golds").text(String(counts.total_golds));
         $("#total-total").text(String(total_total));
+        $("#i-total-total").text(String(total_total));
         var max = 0;
         for (bar_class in zoneCounts) {
             if (max < zoneCounts[bar_class]) {
@@ -162,33 +174,52 @@ function Scorer() {
         }
         if (max) {
             for (bar_class in zoneCounts) {
-                $('#' + bar_class).attr("height", (zoneCounts[bar_class] / max) * 300);
+                $('#' + bar_class).attr("height",
+                                        (zoneCounts[bar_class] / max) * 300);
             }
         }
     }
 
-    this.changeRound = function() {
-        me.setMeasure($( '#round-data span[name="' + $(this).val() + '"] span.measure' ).text());
+    me.changeRound = function(round) {
+        me.setMeasure(
+            $( '#round-data span[name="' + round + '"] span.measure' ).text()
+        );
     }
-}
 
-$(function() {
-    if ($('#round-data').text()) {
+    me.watchRound = function() {
+        me.changeRound($(this).val());
+    }
+
+    me.setup = function() {
+        var round = $('#round');
+        if (round.val()) {
+            me.changeRound(round.val());
+        }
+        round.change(me.watchRound);
         var end = 0;
-        var scorer = new Scorer();
-        $( "#datepicker" ).datepicker({
-            dateFormat: "D, d M yy"
-        });
-        $('#TenZoneChart').css('display', 'inline');
-        $('#FiveZoneChart').css('display', 'none');
-        $("#round").change(scorer.changeRound);
         for (var dozen = 1; dozen < 13; dozen++) {
             for (var even in [false, true]) {
                 ++end;
                 for (var arrow = 1; arrow < 7; ++arrow) {
-                    $( '#arrow-' + end + '-' + arrow).blur(scorer.watchScore);
+                    var score = $( '#arrow-' + end + '-' + arrow);
+                    me.changescore(score);
+                    score.blur(me.watchScore);
                 }
             }
         }
+        me.addUp();
     }
-});
+
+    me.setup();
+}
+
+$(
+    function() {
+        if ($('#round-data').text()) {
+            var scorer = new Scorer();
+            $( "#datepicker" ).datepicker(
+                    { dateFormat: "D, d M yy" }
+                );
+        }
+    }
+);

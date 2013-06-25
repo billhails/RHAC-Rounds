@@ -33,7 +33,7 @@ if (isset($_POST['update-scorecard'])) { // update or insert requested
     }
 } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
     if ($_GET['scorecard-id']) { // edit requested
-        do_edit($_GET['scorecard-id']);
+        do_edit($_GET['scorecard-id'] || 0);
     }
     else { // create requested
         do_edit(0);
@@ -52,13 +52,28 @@ function do_update() {
 }
 
 function do_insert() {
-    "INSERT INTO scorecard VALUES ...";
+    $pdo->exec("INSERT INTO scorecard"
+             . "(archer, date, round, bow, hits, xs, golds, score)"
+             . " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+             array($_POST['archer'], $_POST['date'], $_POST['round'],
+                   $_POST['bow'], $_POST['i-total-hits'],
+                   $_POST['i-total-xs'], $_POST['i-total-golds'],
+                   $_POST['i-total-total']));
     $id = $pdo->lastInsertId();
+    for ($end = 1; $end < 25; ++$end) {
+        $_POST["arrow-$end-1"]
+        $_POST["arrow-$end-2"]
+        $_POST["arrow-$end-3"]
+        $_POST["arrow-$end-4"]
+        $_POST["arrow-$end-5"]
+        $_POST["arrow-$end-6"]
+    }
     "INSERT INTO scorecard_end .... VALUES ...";
     return $id;
 }
 
 function do_edit($id) {
+    global $scorecard_id = $id;
     global $scorecard_data;
     global $scorecard_end_data;
     if ($id) {

@@ -17,7 +17,9 @@
 ?>
 </span>
 <form method="post" action="">
-    <input type="hidden" name="scorecard-id" value="0"/>
+    <input type="hidden"
+           name="scorecard-id"
+           value="<?php echo($scorecard_id) ?>"/>
     <table>
         <thead>
             <tr>
@@ -114,14 +116,18 @@
         <tfoot>
             <tr>
                 <th colspan="14">Totals:</th>
-                <td class="total-hits" name="total-hits" id="total-hits">&nbsp;</td>
-                <td class="total-Xs" name="total-xs" id="total-xs">&nbsp;</td>
-                <td class="total-golds" name="total-golds" id="total-golds">&nbsp;</td>
+                <td class="total-hits" id="total-hits">&nbsp;</td>
+                <td class="total-Xs" id="total-xs">&nbsp;</td>
+                <td class="total-golds" id="total-golds">&nbsp;</td>
                 <td>&nbsp;</td>
-                <td class="total-total" id="total-total" name="total-total">&nbsp;</td>
+                <td class="total-total" id="total-total" >&nbsp;</td>
             </tr>
         </tfoot>
     </table>
+    <input type="hidden" name="total-hits" id="i-total-hits" />
+    <input type="hidden" name="total-xs" id="i-total-xs" />
+    <input type="hidden" name="total-golds" id="i-total-golds" />
+    <input type="hidden" name="total-total" id="i-total-total" />
     <input type="submit" />
 </form>
 <table id="TenZoneChart">
