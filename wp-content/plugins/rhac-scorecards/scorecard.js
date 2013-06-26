@@ -99,7 +99,8 @@ function Scorer() {
     }
 
     me.changeScore = function(score) {
-        var value = score.val().toUpperCase();
+        var val = score.val();
+        var value = val.toUpperCase();
         score.get(0).className = zoneMap.classes(value);
         score.val(zoneMap.value(value));
         score.data("score", zoneMap.score(value));
@@ -190,19 +191,43 @@ function Scorer() {
         me.changeRound($(this).val());
     }
 
+    me.validate = function() {
+        if (!$('#archer').val()) {
+            alert("Archer is a required field");
+        }
+        if (!$('#round').val()) {
+            alert("Round is a required field");
+        }
+        if (!$('#bow').val()) {
+            alert("Bow is a required field");
+        }
+        if (!$('#date').val()) {
+            alert("Date is a required field");
+        }
+        var seenArrows = me.countArrows();
+        var expectedArrows = me.totalArrowsForRound($('#round').val());
+        if (seenArrows != expectedArrows) {
+            alert("Expected "
+                + expectedArrows
+                + " arrows, found "
+                + seenArrows);
+        }
+    }
+
     me.setup = function() {
         var round = $('#round');
         if (round.val()) {
             me.changeRound(round.val());
         }
         round.change(me.watchRound);
+        $('#edit-scorecard').click(me.validate);
         var end = 0;
         for (var dozen = 1; dozen < 13; dozen++) {
             for (var even in [false, true]) {
                 ++end;
                 for (var arrow = 1; arrow < 7; ++arrow) {
                     var score = $( '#arrow-' + end + '-' + arrow);
-                    me.changescore(score);
+                    me.changeScore(score);
                     score.blur(me.watchScore);
                 }
             }
@@ -220,6 +245,14 @@ $(
             $( "#datepicker" ).datepicker(
                     { dateFormat: "D, d M yy" }
                 );
+        }
+        if ($('#datepicker-lower')) {
+            $( '#datepicker-lower' ).datepicker(
+                { dateFormat: "D, d M yy" }
+            );
+            $( '#datepicker-upper' ).datepicker(
+                { dateFormat: "D, d M yy" }
+            );
         }
     }
 );

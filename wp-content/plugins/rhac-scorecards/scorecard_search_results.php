@@ -1,15 +1,16 @@
 <h1>Search Results</h1>
-<ul>
+<table>
 <?php
     foreach ($search_results as $result) {
-        print '<li>';
-        print "$result[archer] $result[bow] $result[round] $result[date]";
+        print '<tr><td>';
+        print "$result[archer], $result[bow], $result[round], $result[date]";
+        print '</td><td>';
         print "<form method='get' action=''>";
         print "<input type='hidden' name='scorecard-id' value='$result[id]' />";
-        print "<input type='submit' name='edit-scorecard' value='Edit'>Edit</input>";
+        print "<input type='submit' name='edit-scorecard' value='Edit' />";
         print "</form>";
-        print "</li>";
+        print "</td></tr>\n";
     }
 ?>
-</ul>
+</table>
 <a href="">Home</a>

@@ -12,7 +12,8 @@
     <body>
     <?php
         function plugin_dir_path() { return "./";  }
-        include "scorecard.php";
+        $_GET['edit-scorecard'] = 'New';
+        include "toplevel.php";
     ?>
 </body>
 </html>

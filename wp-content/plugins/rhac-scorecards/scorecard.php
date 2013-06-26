@@ -128,7 +128,7 @@
     <input type="hidden" name="total-xs" id="i-total-xs" />
     <input type="hidden" name="total-golds" id="i-total-golds" />
     <input type="hidden" name="total-total" id="i-total-total" />
-    <input type="submit" />
+    <input type="submit" name="edit-scorecard" />
 </form>
 <table id="TenZoneChart">
   <td class="bar"><img id="tbar_X" src="gold.png" height="300" width="30"/></td>

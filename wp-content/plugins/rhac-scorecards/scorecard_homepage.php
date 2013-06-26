@@ -27,9 +27,9 @@
             </td>
         </tr>
     </table>
-    <input type="submit" name="find-scorecard" value="Search">Search</input>
+    <input type="submit" name="find-scorecard" value="Search" />
 </form>
 <hr/>
 <form method="get" action="">
-    <input type="submit" name="edit-scorecard" value="New">New</input>
+    <input type="submit" name="edit-scorecard" value="New" />
 </form>
