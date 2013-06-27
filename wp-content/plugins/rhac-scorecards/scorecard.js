@@ -104,7 +104,9 @@ function RHAC_Scorer() {
                 ++end;
                 for (var arrow = 1; arrow < 7; ++arrow) {
                     var score = $( '#arrow-' + end + '-' + arrow);
-                    fn(score);
+                    if (!fn(score)) {
+                        return;
+                    }
                 }
             }
         }
@@ -116,6 +118,7 @@ function RHAC_Scorer() {
         score.get(0).className = zoneMap.classes(value);
         score.val(zoneMap.value(value));
         score.data("score", zoneMap.score(value));
+        return true;
     }
 
     function addUp() {
@@ -215,6 +218,22 @@ function RHAC_Scorer() {
         addUp();
     }
 
+    function countArrows() {
+        var count = 0;
+        everyArrow(
+            function(score) {
+                if (score.val() == "") {
+                    return false;
+                }
+                else {
+                    ++count;
+                    return true;
+                }
+            }
+        );
+        return count;
+    }
+
     function validate() {
         if (!$('#archer').val()) {
             alert("Archer is a required field");
@@ -224,7 +243,7 @@ function RHAC_Scorer() {
             alert("Round is a required field");
             return false;
         }
-        if (!$('#bow').val()) {
+        if ($('input[name="bow"]:checked').length == 0) {
             alert("Bow is a required field");
             return false;
         }
@@ -256,6 +275,7 @@ function RHAC_Scorer() {
             function(score) {
                 changeScore(score);
                 score.blur(watchScore);
+                return true;
             }
         )
         addUp();
