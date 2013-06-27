@@ -81,10 +81,9 @@ RHAC_FiveZoneMap.prototype = new RHAC_ZoneMap();
 RHAC_FiveZoneMap.prototype.constructor = RHAC_FiveZoneMap;
 
 function RHAC_Scorer() {
-    var me = this;
     var zoneMap = new RHAC_TenZoneMap();
 
-    me.setMeasure = function(measure) {
+    function setMeasure(measure) {
         if (measure == "imperial") {
             zoneMap = new RHAC_FiveZoneMap();
             $('#TenZoneChart').css('display', 'none');
@@ -98,7 +97,20 @@ function RHAC_Scorer() {
         }
     }
 
-    me.changeScore = function(score) {
+    function everyArrow(fn) {
+        var end = 0;
+        for (var dozen = 1; dozen < 13; dozen++) {
+            for (var even in [false, true]) {
+                ++end;
+                for (var arrow = 1; arrow < 7; ++arrow) {
+                    var score = $( '#arrow-' + end + '-' + arrow);
+                    fn(score);
+                }
+            }
+        }
+    }
+
+    function changeScore(score) {
         var val = score.val();
         var value = val.toUpperCase();
         score.get(0).className = zoneMap.classes(value);
@@ -106,12 +118,7 @@ function RHAC_Scorer() {
         score.data("score", zoneMap.score(value));
     }
 
-    me.watchScore = function() {
-        me.changeScore($(this));
-        me.addUp();
-    }
-
-    me.addUp = function() {
+    function addUp() {
         var counts = {
             end: 0, doz_tot: 0, total_hits: 0,
             total_xs: 0, total_golds: 0
@@ -181,68 +188,88 @@ function RHAC_Scorer() {
         }
     }
 
-    me.changeRound = function(round) {
-        me.setMeasure(
+    function watchScore() {
+        changeScore($(this));
+        addUp();
+    }
+
+    function totalArrowsForRound(round) {
+        var total = 0;
+        $( '#round-data span[name="' + round + '"] span.count' ).each(
+            function() {
+                total += Number($(this).text());
+            }
+        );
+        return total;
+    }
+
+    function changeRound(round) {
+        setMeasure(
             $( '#round-data span[name="' + round + '"] span.measure' ).text()
         );
     }
 
-    me.watchRound = function() {
-        me.changeRound($(this).val());
+    function watchRound() {
+        changeRound($(this).val());
+        everyArrow(changeScore);
+        addUp();
     }
 
-    me.validate = function() {
+    function validate() {
         if (!$('#archer').val()) {
             alert("Archer is a required field");
+            return false;
         }
         if (!$('#round').val()) {
             alert("Round is a required field");
+            return false;
         }
         if (!$('#bow').val()) {
             alert("Bow is a required field");
+            return false;
         }
         if (!$('#date').val()) {
             alert("Date is a required field");
+            return false;
         }
-        var seenArrows = me.countArrows();
-        var expectedArrows = me.totalArrowsForRound($('#round').val());
+        var seenArrows = countArrows();
+        var expectedArrows = totalArrowsForRound($('#round').val());
         if (seenArrows != expectedArrows) {
             alert("Expected "
                 + expectedArrows
                 + " arrows, found "
                 + seenArrows);
+            return false;
         }
+        return true;
     }
 
-    me.setup = function() {
+    function setup() {
+        $('#TenZoneChart').css('display', 'none');
+        $('#FiveZoneChart').css('display', 'none');
         var round = $('#round');
         if (round.val()) {
-            me.changeRound(round.val());
+            changeRound(round.val());
         }
-        round.change(me.watchRound);
-        $('#edit-scorecard').click(me.validate);
-        var end = 0;
-        for (var dozen = 1; dozen < 13; dozen++) {
-            for (var even in [false, true]) {
-                ++end;
-                for (var arrow = 1; arrow < 7; ++arrow) {
-                    var score = $( '#arrow-' + end + '-' + arrow);
-                    me.changeScore(score);
-                    score.blur(me.watchScore);
-                }
+        round.change(watchRound);
+        everyArrow(
+            function(score) {
+                changeScore(score);
+                score.blur(watchScore);
             }
-        }
-        me.addUp();
+        )
+        addUp();
+        $('#edit-scorecard').submit(validate);
     }
 
-    me.setup();
+    setup();
 }
 
 $(
     function() {
         if ($('#round-data').text()) {
             var scorer = new RHAC_Scorer();
-            $( "#datepicker" ).datepicker(
+            $( "#date" ).datepicker(
                     { dateFormat: "D, d M yy" }
                 );
         }

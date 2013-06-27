@@ -63,25 +63,34 @@ class RHAC_Scorecards {
         }
     }
 
-    private function dateToInternalFormat($date) {
-        $data = date_parse($date);
-        if ($data) {
-            return $data['year']
-                   . '/'
-                   . sprintf('%02d', $data['month'])
-                   . '/'
-                   . sprintf('%02d', $data['day']);
+    private function dateToStoredFormat($date) {
+        $obj = date_create($date);
+        if ($obj) {
+            return $obj->format('Y/m/d');
         }
         else {
-            wp_die("can't recognise date: $date");
+            wp_die("can't recognise external date: $date");
+            exit();
         }
+    }
+
+    private function dateToDisplayedFormat($date) {
+        $obj = date_create($date);
+        if ($obj) {
+            return $obj->format('D, j M yy');
+        }
+        else {
+            wp_die("can't recognise internal date: $date");
+            exit();
+        }
+
     }
 
     private function update() {
         $id = $_POST['scorecard-id'];
         $params = array(
             $_POST['archer'],
-            $this->dateToInternalFormat($_POST['date']),
+            $this->dateToStoredFormat($_POST['date']),
             $_POST['round'],
             $_POST['bow'],
             $_POST['i-total-hits'],
@@ -112,7 +121,7 @@ class RHAC_Scorecards {
                  . "(archer, date, round, bow, hits, xs, golds, score)"
                  . " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
-                       $this->dateToInternalFormat($_POST['date']),
+                       $this->dateToStoredFormat($_POST['date']),
                        $_POST['round'],
                        $_POST['bow'], $_POST['i-total-hits'],
                        $_POST['i-total-xs'], $_POST['i-total-golds'],
@@ -157,7 +166,7 @@ class RHAC_Scorecards {
                                  array($id));
             $scorecard_data = $rows[0];
             $scorecard_data['date'] =
-                rhac_date_to_external_format($scorecard_data['date']);
+                $this->dateToDisplayedFormat($scorecard_data['date']);
             $rows = $this->fetch("SELECT *"
                           . " FROM scorecard_end"
                           . " WHERE scorecard_id = ?"
@@ -186,23 +195,27 @@ class RHAC_Scorecards {
         if ($_GET["lower-date"]) {
             if ($_GET["upper-date"]) {
                 $criteria []= 'date BETWEEN ? and ?';
-                $params []= $this->dateToInternalFormat($_GET["lower-date"]);
-                $params []= $this->dateToInternalFormat($_GET["upper-date"]);
+                $params []= $this->dateToStoredFormat($_GET["lower-date"]);
+                $params []= $this->dateToStoredFormat($_GET["upper-date"]);
             }
             else {
                 $criteria []= 'date = ?';
-                $params []= $this->dateToInternalFormat($_GET["lower-date"]);
+                $params []= $this->dateToStoredFormat($_GET["lower-date"]);
             }
         }
         $query = "SELECT * FROM scorecard WHERE "
                . implode(' AND ', $criteria);
         global $search_results;
         $search_results = $this->fetch($query, $params);
-        include "scorecard_search_results.php"; // data in globals
+        foreach ($search_results as $result) {
+            $result['date'] = $this->dateToDisplayedFormat($result['date']);
+        }
+        include "scorecard_search_results.php";
     }
 
     private function homePage() {
         include "scorecard_homepage.php";
     }
 }
+
 RHAC_Scorecards::getInstance()->topLevel();

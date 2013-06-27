@@ -16,7 +16,7 @@
     }
 ?>
 </span>
-<form method="post" action="">
+<form method="post" action="" id="edit-scorecard">
     <input type="hidden"
            name="scorecard-id"
            value="<?php echo($scorecard_id) ?>"/>
@@ -24,7 +24,7 @@
         <thead>
             <tr>
                 <th colspan="3">Archer</th>
-                <td colspan="7"><select name="archer"><?php
+                <td colspan="7"><select name="archer" id="archer"><?php
                     print "<option value=''>- - -</option>\n";
                     $archers = RHAC_Scorecards::getInstance()->fetch('SELECT name FROM archer ORDER BY name');
                     foreach ($archers as $archer) {
@@ -44,7 +44,7 @@
                                   'C' => 'compound',
                                   'L' => 'longbow',
                                   'B' => 'barebow') as $initial => $bow) {
-                        print('<input type="radio" name="bow"');
+                        print('<input type="radio" name="bow" id="bow"');
                         if ($scorecard_data['bow'] == $bow) {
                             print(" selected='1'");
                         }
@@ -71,7 +71,7 @@
                         print "value='$scorecard_data[date]'";
                     }
                 ?>
-                id="datepicker"/></td>
+                id="date"/></td>
             </tr>
             <tr>
                 <th colspan="6">&nbsp;</th>
