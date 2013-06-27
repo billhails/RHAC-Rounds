@@ -1,0 +1,22 @@
+php parse (in) and format (out) date
+
+wordpress queue headers to instantiate scorecard.js and jquery_ui.
+
+build admin page for data entry and editing.
+
+need delete().
+
+Need members pages for viewing scorecards.
+    could present:
+        1. Individual scorecard.
+        2. Bar charts.
+            a. By round.
+            b. By distance + face.
+
+Need scores distinct from scorecards.
+    Maybe foreign key allowing null referencing scorecard id.
+    Then we can scrape the golden records html once.
+    "Your history for this round"
+    "Club records for this round"
+
+Need backup/restore.

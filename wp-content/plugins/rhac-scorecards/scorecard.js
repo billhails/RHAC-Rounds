@@ -1,6 +1,6 @@
-function ZoneMap() {}
+function RHAC_ZoneMap() {}
 
-ZoneMap.prototype.score=function(input) {
+RHAC_ZoneMap.prototype.score=function(input) {
     if (this.map[input]) {
         return this.map[input].score;
     }
@@ -9,7 +9,7 @@ ZoneMap.prototype.score=function(input) {
     }
 }
 
-ZoneMap.prototype.classes=function(input) {
+RHAC_ZoneMap.prototype.classes=function(input) {
     if (this.map[input]) {
         return "score " + this.map[input].className;
     }
@@ -18,7 +18,7 @@ ZoneMap.prototype.classes=function(input) {
     }
 }
 
-ZoneMap.prototype.value=function(input) {
+RHAC_ZoneMap.prototype.value=function(input) {
     if (this.map[input]) {
         return this.map[input].value;
     }
@@ -27,7 +27,7 @@ ZoneMap.prototype.value=function(input) {
     }
 }
 
-function TenZoneMap() {
+function RHAC_TenZoneMap() {
     this.map = {
         X: {score: 10, className: "gold", value: "X"},
         10: {score: 10, className: "gold", value: "10"},
@@ -51,10 +51,10 @@ function TenZoneMap() {
     };
     this.bar_prefix = 'tbar_';
 }
-TenZoneMap.prototype = new ZoneMap();
-TenZoneMap.prototype.constructor = TenZoneMap;
+RHAC_TenZoneMap.prototype = new RHAC_ZoneMap();
+RHAC_TenZoneMap.prototype.constructor = RHAC_TenZoneMap;
 
-function FiveZoneMap() {
+function RHAC_FiveZoneMap() {
     this.map = {
         X: {score: 9, className: "gold", value: "9"},
         10: {score: 9, className: "gold", value: "9"},
@@ -77,20 +77,20 @@ function FiveZoneMap() {
     this.bar_prefix = 'fbar_';
 }
 
-FiveZoneMap.prototype = new ZoneMap();
-FiveZoneMap.prototype.constructor = FiveZoneMap;
+RHAC_FiveZoneMap.prototype = new RHAC_ZoneMap();
+RHAC_FiveZoneMap.prototype.constructor = RHAC_FiveZoneMap;
 
-function Scorer() {
+function RHAC_Scorer() {
     var me = this;
-    var zoneMap = new TenZoneMap();
+    var zoneMap = new RHAC_TenZoneMap();
 
     me.setMeasure = function(measure) {
         if (measure == "imperial") {
-            zoneMap = new FiveZoneMap();
+            zoneMap = new RHAC_FiveZoneMap();
             $('#TenZoneChart').css('display', 'none');
             $('#FiveZoneChart').css('display', 'inline');
         } else if (measure == "metric") {
-            zoneMap = new TenZoneMap();
+            zoneMap = new RHAC_TenZoneMap();
             $('#TenZoneChart').css('display', 'inline');
             $('#FiveZoneChart').css('display', 'none');
         } else {
@@ -241,7 +241,7 @@ function Scorer() {
 $(
     function() {
         if ($('#round-data').text()) {
-            var scorer = new Scorer();
+            var scorer = new RHAC_Scorer();
             $( "#datepicker" ).datepicker(
                     { dateFormat: "D, d M yy" }
                 );
