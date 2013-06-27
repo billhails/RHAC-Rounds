@@ -26,7 +26,7 @@
                 <th colspan="3">Archer</th>
                 <td colspan="7"><select name="archer"><?php
                     print "<option value=''>- - -</option>\n";
-                    $archers = fetch('SELECT name FROM archer ORDER BY name');
+                    $archers = RHAC_Scorecards::getInstance()->fetch('SELECT name FROM archer ORDER BY name');
                     foreach ($archers as $archer) {
                         print "<option value='$archer[name]'"
                             . ($archer["name"] == $scorecard_data["archer"]

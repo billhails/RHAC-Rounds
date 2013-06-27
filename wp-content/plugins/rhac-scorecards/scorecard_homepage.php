@@ -4,7 +4,8 @@
     <table>
         <tr><td>Archer</td><td colspan="2"><select name="archer"><?php
                     print "<option value=''>- - -</option>\n";
-                    $archers = fetch('SELECT name FROM archer ORDER BY name');
+                    $archers = RHAC_Scorecards::getInstance()->fetch(
+                                'SELECT name FROM archer ORDER BY name');
                     foreach ($archers as $archer) {
                         print "<option value='$archer[name]'>"
                             . $archer["name"]
