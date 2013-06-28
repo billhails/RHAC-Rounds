@@ -5,7 +5,17 @@ include plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
 class RHAC_Scorecards {
 
     private $pdo;
+    private $scorecard_data;
+    private $scorecard_id;
     private static $instance;
+    private static $zones = array(
+        'TenZoneChart' => array(
+            'class' => 'bar',
+            'width' => 30,
+            'height' => 300,
+            'zones' => array()
+        )
+    );
 
     private function __construct() {
         try {
@@ -157,16 +167,14 @@ class RHAC_Scorecards {
     }
 
     private function edit($id) {
-        global $scorecard_id;
-        global $scorecard_data;
         global $scorecard_end_data;
-        $ccorecard_id = $id;
+        $this->scorecard_id = $id;
         if ($id) {
             $rows = $this->fetch("SELECT * FROM scorecard WHERE id = ?",
                                  array($id));
-            $scorecard_data = $rows[0];
-            $scorecard_data['date'] =
-                $this->dateToDisplayedFormat($scorecard_data['date']);
+            $this->scorecard_data = $rows[0];
+            $this->scorecard_data['date'] =
+                $this->dateToDisplayedFormat($this->scorecard_data['date']);
             $rows = $this->fetch("SELECT *"
                           . " FROM scorecard_end"
                           . " WHERE scorecard_id = ?"
@@ -175,7 +183,7 @@ class RHAC_Scorecards {
             $scorecard_end_data = $rows;
         }
         else {
-            $scorecard_data = array();
+            $this->scorecard_data = array();
             $scorecard_end_data = array();
         }
         include "scorecard.php";
@@ -215,6 +223,107 @@ class RHAC_Scorecards {
 
     private function homePage() {
         include "scorecard_homepage.php";
+    }
+
+    /**
+     * Generate round data to html that javascript can inspect.
+     */
+    public function roundData() {
+        $text = '<span id="round-data">';
+        foreach (GNAS_Page::roundData() as $round) {
+            $name = $round->getName();
+            $text .= '<span name="' . $name . '">';
+            $text .= '<span class="measure">'
+                   . $round->getMeasure()->getName()
+                   . '</span>';
+            foreach ($round->getDistances()->rawData() as $distance) {
+                $text .= '<span class="count">'
+                       . $distance->getNumArrows()
+                       . '</span>';
+            }
+            $text .= "</span>\n";
+        }
+        $text .= '</span>';
+        return $text;
+    }
+
+    /**
+     * Generate round data to JSON directly.
+     */
+    public function roundDataAsJSON() {
+        $rounds = array();
+        foreach (GNAS_Page::roundData() as $round) {
+            $round_json = '"' . $round->getName() . '":{';
+            $round_json .= '"measure":"' . $round->getMeasure()->getName() . '",';
+            $count = 0;
+            foreach ($round->getDistances()->rawData() as $distance) {
+                $count += $distance->getNumArrows();
+            }
+            $round_json .= '"arrows":' . $count . '}';
+            $rounds []= $round_json;
+        }
+        return '{' . implode(',', $rounds) . '}';
+    }
+
+    public function roundDataAsSelect() {
+        $text = array('<select name="round" id="round">');
+        $text []= "<option value=''>- - -</option>\n";
+        foreach (GNAS_Page::roundData() as $round) {
+            $text []= "<option value='" . $round->getName() . "'";
+            if ($round->getName() == $this->scorecard_data['round']) {
+                $text []= " selected='1'";
+            }
+            $text []= ">" . $round->getName() . "</option>\n";
+        }
+        $text []= '<select>';
+        return implode($text);
+    }
+
+    public function dateAsInput() {
+        $text = array();
+        $text []= '<input type="text" name="date" ';
+        if ($this->scorecard_data['date']) {
+            $text []= "value='" . $this->scorecard_data["date"] . "'";
+        }
+        $text []= 'id="date"/>';
+        return implode($text);
+    }
+
+    public function archersAsSelect() {
+        $text = array('<select name="archer" id="archer">');
+        $text []= "<option value=''>- - -</option>\n";
+        $archers = RHAC_Scorecards::getInstance()->fetch(
+                            'SELECT name FROM archer ORDER BY name');
+        foreach ($archers as $archer) {
+            $text []= "<option value='$archer[name]'"
+                . ($archer["name"] == $this->scorecard_data["archer"]
+                    ? ' selected="1"'
+                    : '')
+                .">"
+                . $archer["name"]
+                . "</option>\n";
+        }
+        $text []= '</select>';
+        return implode($text);
+    }
+
+    public function bowsAsRadio() {
+        $text = array();
+        foreach(array('R' => 'recurve',
+                      'C' => 'compound',
+                      'L' => 'longbow',
+                      'B' => 'barebow') as $initial => $bow) {
+            $text []= '<input type="radio" name="bow" id="bow"';
+            if ($this->scorecard_data['bow'] == $bow) {
+                $text []= " selected='1'";
+            }
+            $text []= " value='$bow'>$initial</input>\n";
+        }
+        return implode($text);
+    }
+
+    public function scorecardIdAsHidden() {
+        return '<input type="hidden" name="scorecard-id" value="' . $this->scorecard_id . '" />';
     }
 }
 

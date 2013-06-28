@@ -86,12 +86,12 @@ function RHAC_Scorer() {
     function setMeasure(measure) {
         if (measure == "imperial") {
             zoneMap = new RHAC_FiveZoneMap();
-            $('#TenZoneChart').css('display', 'none');
-            $('#FiveZoneChart').css('display', 'inline');
+            jQuery('#TenZoneChart').css('display', 'none');
+            jQuery('#FiveZoneChart').css('display', 'inline');
         } else if (measure == "metric") {
             zoneMap = new RHAC_TenZoneMap();
-            $('#TenZoneChart').css('display', 'inline');
-            $('#FiveZoneChart').css('display', 'none');
+            jQuery('#TenZoneChart').css('display', 'inline');
+            jQuery('#FiveZoneChart').css('display', 'none');
         } else {
             alert("unrecognised measure: " + measure);
         }
@@ -103,7 +103,7 @@ function RHAC_Scorer() {
             for (var even in [false, true]) {
                 ++end;
                 for (var arrow = 1; arrow < 7; ++arrow) {
-                    var score = $( '#arrow-' + end + '-' + arrow);
+                    var score = jQuery( '#arrow-' + end + '-' + arrow);
                     if (!fn(score)) {
                         return;
                     }
@@ -139,7 +139,7 @@ function RHAC_Scorer() {
                 var end_total = 0;
                 var end_empty = true;
                 for (var arrow = 1; arrow < 7; ++arrow) {
-                    var element = $("#arrow-" + counts.end + "-" + arrow);
+                    var element = jQuery("#arrow-" + counts.end + "-" + arrow);
                     var score = element.data("score") || 0;
                     end_total += score;
                     doz_doz += score;
@@ -158,25 +158,25 @@ function RHAC_Scorer() {
                     }
                 }
                 if (!end_empty) {
-                    $("#end-total-" + counts.end).text(String(end_total));
+                    jQuery("#end-total-" + counts.end).text(String(end_total));
                 }
             }
             if (!doz_empty) {
-                $("#doz-hits-" + dozen).text(String(doz_hits));
-                $("#doz-xs-" + dozen).text(String(doz_xs));
-                $("#doz-golds-" + dozen).text(String(doz_golds));
-                $("#doz-doz-" + dozen).text(String(doz_doz));
-                $("#doz-tot-" + dozen).text(String(counts.doz_tot));
+                jQuery("#doz-hits-" + dozen).text(String(doz_hits));
+                jQuery("#doz-xs-" + dozen).text(String(doz_xs));
+                jQuery("#doz-golds-" + dozen).text(String(doz_golds));
+                jQuery("#doz-doz-" + dozen).text(String(doz_doz));
+                jQuery("#doz-tot-" + dozen).text(String(counts.doz_tot));
             }
         }
-        $("#total-hits").text(String(counts.total_hits));
-        $("#i-total-hits").text(String(counts.total_hits));
-        $("#total-xs").text(String(counts.total_xs));
-        $("#i-total-xs").text(String(counts.total_xs));
-        $("#total-golds").text(String(counts.total_golds));
-        $("#i-total-golds").text(String(counts.total_golds));
-        $("#total-total").text(String(total_total));
-        $("#i-total-total").text(String(total_total));
+        jQuery("#total-hits").text(String(counts.total_hits));
+        jQuery("#i-total-hits").text(String(counts.total_hits));
+        jQuery("#total-xs").text(String(counts.total_xs));
+        jQuery("#i-total-xs").text(String(counts.total_xs));
+        jQuery("#total-golds").text(String(counts.total_golds));
+        jQuery("#i-total-golds").text(String(counts.total_golds));
+        jQuery("#total-total").text(String(total_total));
+        jQuery("#i-total-total").text(String(total_total));
         var max = 0;
         for (bar_class in zoneCounts) {
             if (max < zoneCounts[bar_class]) {
@@ -185,22 +185,22 @@ function RHAC_Scorer() {
         }
         if (max) {
             for (bar_class in zoneCounts) {
-                $('#' + bar_class).attr("height",
+                jQuery('#' + bar_class).attr("height",
                                         (zoneCounts[bar_class] / max) * 300);
             }
         }
     }
 
     function watchScore() {
-        changeScore($(this));
+        changeScore(jQuery(this));
         addUp();
     }
 
     function totalArrowsForRound(round) {
         var total = 0;
-        $( '#round-data span[name="' + round + '"] span.count' ).each(
+        jQuery( '#round-data span[name="' + round + '"] span.count' ).each(
             function() {
-                total += Number($(this).text());
+                total += Number(jQuery(this).text());
             }
         );
         return total;
@@ -208,12 +208,12 @@ function RHAC_Scorer() {
 
     function changeRound(round) {
         setMeasure(
-            $( '#round-data span[name="' + round + '"] span.measure' ).text()
+            jQuery( '#round-data span[name="' + round + '"] span.measure' ).text()
         );
     }
 
     function watchRound() {
-        changeRound($(this).val());
+        changeRound(jQuery(this).val());
         everyArrow(changeScore);
         addUp();
     }
@@ -235,24 +235,24 @@ function RHAC_Scorer() {
     }
 
     function validate() {
-        if (!$('#archer').val()) {
+        if (!jQuery('#archer').val()) {
             alert("Archer is a required field");
             return false;
         }
-        if (!$('#round').val()) {
+        if (!jQuery('#round').val()) {
             alert("Round is a required field");
             return false;
         }
-        if ($('input[name="bow"]:checked').length == 0) {
+        if (jQuery('input[name="bow"]:checked').length == 0) {
             alert("Bow is a required field");
             return false;
         }
-        if (!$('#date').val()) {
+        if (!jQuery('#date').val()) {
             alert("Date is a required field");
             return false;
         }
         var seenArrows = countArrows();
-        var expectedArrows = totalArrowsForRound($('#round').val());
+        var expectedArrows = totalArrowsForRound(jQuery('#round').val());
         if (seenArrows != expectedArrows) {
             alert("Expected "
                 + expectedArrows
@@ -264,9 +264,9 @@ function RHAC_Scorer() {
     }
 
     function setup() {
-        $('#TenZoneChart').css('display', 'none');
-        $('#FiveZoneChart').css('display', 'none');
-        var round = $('#round');
+        jQuery('#TenZoneChart').css('display', 'none');
+        jQuery('#FiveZoneChart').css('display', 'none');
+        var round = jQuery('#round');
         if (round.val()) {
             changeRound(round.val());
         }
@@ -279,25 +279,25 @@ function RHAC_Scorer() {
             }
         )
         addUp();
-        $('#edit-scorecard').submit(validate);
+        jQuery('#edit-scorecard').submit(validate);
     }
 
     setup();
 }
 
-$(
+jQuery(
     function() {
-        if ($('#round-data').text()) {
+        if (jQuery('#round-data').text()) {
             var scorer = new RHAC_Scorer();
-            $( "#date" ).datepicker(
+            jQuery( "#date" ).datepicker(
                     { dateFormat: "D, d M yy" }
                 );
         }
-        if ($('#datepicker-lower')) {
-            $( '#datepicker-lower' ).datepicker(
+        if (jQuery('#datepicker-lower')) {
+            jQuery( '#datepicker-lower' ).datepicker(
                 { dateFormat: "D, d M yy" }
             );
-            $( '#datepicker-upper' ).datepicker(
+            jQuery( '#datepicker-upper' ).datepicker(
                 { dateFormat: "D, d M yy" }
             );
         }

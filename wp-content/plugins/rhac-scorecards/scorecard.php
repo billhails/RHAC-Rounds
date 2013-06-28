@@ -1,77 +1,30 @@
 <h1>Edit Score Card</h1>
-<span id="round-data">
-<?php
-    foreach (GNAS_Page::roundData() as $round) {
-        $name = $round->getName();
-        print '<span name="' . $name . '">';
-        print '<span class="measure">'
-            . $round->getMeasure()->getName()
-            . '</span>';
-        foreach ($round->getDistances()->rawData() as $distance) {
-            print '<span class="count">'
-                . $distance->getNumArrows()
-                . '</span>';
-        }
-        print "</span>\n";
-    }
-?>
-</span>
+<?php print RHAC_Scorecards::getInstance()->roundData(); ?>
 <form method="post" action="" id="edit-scorecard">
-    <input type="hidden"
-           name="scorecard-id"
-           value="<?php echo($scorecard_id) ?>"/>
+    <?php
+        print RHAC_Scorecards::getInstance()->scorecardIdAsHidden();
+    ?>
     <table>
         <thead>
             <tr>
                 <th colspan="3">Archer</th>
-                <td colspan="7"><select name="archer" id="archer"><?php
-                    print "<option value=''>- - -</option>\n";
-                    $archers = RHAC_Scorecards::getInstance()->fetch('SELECT name FROM archer ORDER BY name');
-                    foreach ($archers as $archer) {
-                        print "<option value='$archer[name]'"
-                            . ($archer["name"] == $scorecard_data["archer"]
-                                ? ' selected="1"'
-                                : '')
-                            .">"
-                            . $archer["name"]
-                            . "</option>\n";
-                    }
-                ?></select></td>
+                <td colspan="7"><?php
+                    print RHAC_Scorecards::getInstance()->archersAsSelect();
+                ?></td>
                 <th colspan="3">Bow</th>
-                <td colspan="6">
-                <?php
-                    foreach(array('R' => 'recurve',
-                                  'C' => 'compound',
-                                  'L' => 'longbow',
-                                  'B' => 'barebow') as $initial => $bow) {
-                        print('<input type="radio" name="bow" id="bow"');
-                        if ($scorecard_data['bow'] == $bow) {
-                            print(" selected='1'");
-                        }
-                        print(" value='$bow'>$initial</input>\n");
-                   } ?>
-                </td>
+                <td colspan="6"><?php
+                    print RHAC_Scorecards::getInstance()->bowsAsRadio();
+                ?></td>
             </tr>
             <tr>
                 <th colspan="3">Round</th>
-                <td colspan="7"><select name="round" id="round"><?php
-                print "<option value=''>- - -</option>\n";
-                foreach (GNAS_Page::roundData() as $round) {
-                    print "<option value='" . $round->getName() . "'";
-                    if ($round->getName() == $scorecard_data['round']) {
-                        print " selected='1'";
-                    }
-                    print ">" . $round->getName() . "</option>\n";
-                }
-                ?></select></td>
+                <td colspan="7"><?php
+                    print RHAC_Scorecards::getInstance()->roundDataAsSelect();
+                ?></td>
                 <th colspan="3">Date</th>
-                <td colspan="6"><input type="text" name="date"
-                <?php
-                    if ($scorecard_data['date']) {
-                        print "value='$scorecard_data[date]'";
-                    }
-                ?>
-                id="date"/></td>
+                <td colspan="6"><?php
+                    print RHAC_Scorecards::getInstance()->dateAsInput();
+                ?></td>
             </tr>
             <tr>
                 <th colspan="6">&nbsp;</th>
