@@ -65,7 +65,7 @@ function RHAC_FiveZoneMap() {
         5: {score: 5, className: "blue", value: "5"},
         4: {score: 3, className: "black", value: "3"},
         3: {score: 3, className: "black", value: "3"},
-        2: {score: 1, className: "white", value: "2"},
+        2: {score: 1, className: "white", value: "1"},
         1: {score: 1, className: "white", value: "1"},
         0: {score: 0, className: "miss", value: "M"},
         M: {score: 0, className: "miss", value: "M"},
@@ -170,13 +170,13 @@ function RHAC_Scorer() {
             }
         }
         jQuery("#total-hits").text(String(counts.total_hits));
-        jQuery("#i-total-hits").text(String(counts.total_hits));
+        jQuery("#i-total-hits").val(String(counts.total_hits));
         jQuery("#total-xs").text(String(counts.total_xs));
-        jQuery("#i-total-xs").text(String(counts.total_xs));
+        jQuery("#i-total-xs").val(String(counts.total_xs));
         jQuery("#total-golds").text(String(counts.total_golds));
-        jQuery("#i-total-golds").text(String(counts.total_golds));
+        jQuery("#i-total-golds").val(String(counts.total_golds));
         jQuery("#total-total").text(String(total_total));
-        jQuery("#i-total-total").text(String(total_total));
+        jQuery("#i-total-total").val(String(total_total));
         var max = 0;
         for (bar_class in zoneCounts) {
             if (max < zoneCounts[bar_class]) {

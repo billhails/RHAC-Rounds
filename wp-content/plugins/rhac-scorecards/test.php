@@ -12,8 +12,9 @@
     <body>
     <?php
         function plugin_dir_path() { return "./";  }
-        $_GET['edit-scorecard'] = 'New';
+        //$_GET['edit-scorecard'] = 'New';
         include "toplevel.php";
+        RHAC_Scorecards::getInstance()->topLevel();
     ?>
 </body>
 </html>
