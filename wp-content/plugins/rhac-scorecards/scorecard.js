@@ -31,6 +31,7 @@ function RHAC_TenZoneMap() {
     this.map = {
         X: {score: 10, className: "gold", value: "X"},
         10: {score: 10, className: "gold", value: "10"},
+        0: {score: 10, className: "gold", value: "10"},
         9: {score: 9, className: "gold", value: "9"},
         8: {score: 8, className: "red", value: "8"},
         7: {score: 7, className: "red", value: "7"},
@@ -40,7 +41,6 @@ function RHAC_TenZoneMap() {
         3: {score: 3, className: "black", value: "3"},
         2: {score: 2, className: "white", value: "2"},
         1: {score: 1, className: "white", value: "1"},
-        0: {score: 0, className: "miss", value: "M"},
         M: {score: 0, className: "miss", value: "M"},
     };
     this.getZoneCounts = function() {
@@ -58,6 +58,7 @@ function RHAC_FiveZoneMap() {
     this.map = {
         X: {score: 9, className: "gold", value: "9"},
         10: {score: 9, className: "gold", value: "9"},
+        0: {score: 9, className: "gold", value: "9"},
         9: {score: 9, className: "gold", value: "9"},
         8: {score: 7, className: "red", value: "7"},
         7: {score: 7, className: "red", value: "7"},
@@ -67,7 +68,6 @@ function RHAC_FiveZoneMap() {
         3: {score: 3, className: "black", value: "3"},
         2: {score: 1, className: "white", value: "1"},
         1: {score: 1, className: "white", value: "1"},
-        0: {score: 0, className: "miss", value: "M"},
         M: {score: 0, className: "miss", value: "M"},
     };
     this.getZoneCounts = function() {
@@ -82,6 +82,8 @@ RHAC_FiveZoneMap.prototype.constructor = RHAC_FiveZoneMap;
 
 function RHAC_Scorer() {
     var zoneMap = new RHAC_TenZoneMap();
+
+    var focusables = jQuery(":focusable");
 
     function setMeasure(measure) {
         if (measure == "imperial") {
@@ -114,10 +116,13 @@ function RHAC_Scorer() {
 
     function changeScore(score) {
         var val = score.val();
-        var value = val.toUpperCase();
-        score.get(0).className = zoneMap.classes(value);
-        score.val(zoneMap.value(value));
-        score.data("score", zoneMap.score(value));
+        var ucval = val.toUpperCase();
+        score.get(0).className = zoneMap.classes(ucval);
+        var newval = zoneMap.value(ucval);
+        if (newval != val) {
+            score.val(newval);
+        }
+        score.data("score", zoneMap.score(ucval));
         return true;
     }
 
@@ -127,6 +132,7 @@ function RHAC_Scorer() {
             total_xs: 0, total_golds: 0
         };
         var total_total = 0;
+        var arrow_count = 0;
         var zoneCounts = zoneMap.getZoneCounts();
         for (var dozen = 1; dozen < 13; dozen++) {
             var doz_hits = 0;
@@ -151,6 +157,7 @@ function RHAC_Scorer() {
                     if (element.val() == "X") { ++doz_xs; ++counts.total_xs; }
 
                     if (element.val() != "") {
+                        ++arrow_count;
                         end_empty = false;
                         doz_empty = false;
                         var bar_class = zoneMap.bar_prefix + element.val();
@@ -189,10 +196,23 @@ function RHAC_Scorer() {
                                         (zoneCounts[bar_class] / max) * 300);
             }
         }
+        if (arrow_count > 0) {
+            jQuery('#average').text((total_total / arrow_count).toFixed(1));
+        }
     }
 
-    function watchScore() {
-        changeScore(jQuery(this));
+    function watchScore(e) {
+        var jqthis = jQuery(this);
+        changeScore(jqthis);
+        if (jqthis.val() != "") {
+            if (e.keyCode != 9) {
+                var current = focusables.index(this),
+                    next    = focusables.eq(current+1).length
+                            ? focusables.eq(current+1)
+                            : focusables.eq(0);
+                next.focus();
+            }
+        }
         addUp();
     }
 
@@ -208,7 +228,9 @@ function RHAC_Scorer() {
 
     function changeRound(round) {
         setMeasure(
-            jQuery( '#round-data span[name="' + round + '"] span.measure' ).text()
+            jQuery(
+                '#round-data span[name="' + round + '"] span.measure'
+            ).text()
         );
     }
 
@@ -274,7 +296,7 @@ function RHAC_Scorer() {
         everyArrow(
             function(score) {
                 changeScore(score);
-                score.blur(watchScore);
+                score.keyup(watchScore);
                 return true;
             }
         )

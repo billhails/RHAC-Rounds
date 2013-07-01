@@ -38,7 +38,8 @@ class RHAC_Scorecards {
     public function fetch($query, $params = array()) {
         $stmt = $this->pdo->prepare($query);
         if (!$stmt) {
-            die("query: [$query] failed to prepare: " . print_r($this->pdo->errorInfo(), true));
+            die("query: [$query] failed to prepare: "
+                . print_r($this->pdo->errorInfo(), true));
         }
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
@@ -49,7 +50,8 @@ class RHAC_Scorecards {
     public function exec($query, $params = array()) {
         $stmt = $this->pdo->prepare($query);
         if (!$stmt) {
-            die("statement: [$query] failed to prepare: " . print_r($this->pdo->errorInfo(), true));
+            die("statement: [$query] failed to prepare: "
+                . print_r($this->pdo->errorInfo(), true));
         }
         $status = $stmt->execute($params);
         $stmt->closeCursor();
@@ -58,18 +60,21 @@ class RHAC_Scorecards {
 
     public function topLevel() {
 
-        echo '<p>topLevel() entered</p>';
+        // echo '<p>topLevel() entered</p>';
         if (isset($_POST['edit-scorecard'])) { // update or insert requested
             if ($_POST['scorecard-id']) { // update requested
-                echo '<p>topLevel() update req</p>';
+                // echo '<p>topLevel() update req</p>';
                 $this->update();
                 $this->edit($_POST['scorecard-id']);
             }
             else { // insert requested
-                echo '<p>topLevel() insert req</p>';
+                // echo '<p>topLevel() insert req</p>';
                 $id = $this->insert();
                 $this->edit($id);
             }
+        } elseif (isset($_POST['add-archer'])) {
+            $this->addArcher($_POST['archer']);
+            $this->homePage();
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
                 $this->edit($_GET['scorecard-id']);
@@ -83,6 +88,11 @@ class RHAC_Scorecards {
             // echo '<p>doing home page</p>';
             $this->homePage();
         }
+    }
+
+    private function addArcher($archer) {
+        $this->exec("INSERT INTO archer(name) VALUES(?)", array($archer));
+        echo "<p>Archer $archer added</p>";
     }
 
     private function dateToStoredFormat($date) {
@@ -120,7 +130,7 @@ class RHAC_Scorecards {
             $_POST['total-total'],
             $id
         );
-        echo '<p>update() ' . print_r($params, true) . '</p>';
+        // echo '<p>update() ' . print_r($params, true) . '</p>';
         $this->pdo->beginTransaction();
         $this->exec("UPDATE scorecards"
                  . " SET archer = ?,"
@@ -141,7 +151,7 @@ class RHAC_Scorecards {
 
     private function insert() {
         $this->pdo->beginTransaction();
-        echo '<p>insert() inside transaction</p>';
+        // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
                  . "(archer, date, round, bow, hits, xs, golds, score)"
                  . " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -154,7 +164,8 @@ class RHAC_Scorecards {
                        $_POST['total-golds'],
                        $_POST['total-total']));
         if (!$status) {
-            echo '<p>INSERT returned false:' . print_r($this->pdo->errorInfo(), true) . '</p>';
+            echo '<p>INSERT returned false:'
+                . print_r($this->pdo->errorInfo(), true) . '</p>';
             $this->pdo->rollback();
             return 0;
         }
@@ -203,7 +214,7 @@ class RHAC_Scorecards {
     }
 
     private function edit($id) {
-        echo "<p>edit($id)</p>";
+        // echo "<p>edit($id)</p>";
         $this->scorecard_id = $id;
         if ($id) {
             $this->populateScorecardData($id);
@@ -368,6 +379,11 @@ class RHAC_Scorecards {
                     . $_GET[page] . '"/>';
         $text []= '<input type="submit" name="edit-scorecard" value="New" />';
         $text []= '</form>';
+        $text []= '<hr/>';
+        $text []= '<form method="post" action="">';
+        $text []= '<input type="text" name="archer"/>';
+        $text []= '<input type="submit" name="add-archer" value="Add Archer"/>';
+        $text []= '</form>';
         // echo '<p>homePageHTML() about to return</p>';
         return implode($text);
     }
@@ -420,7 +436,7 @@ class RHAC_Scorecards {
         $text []= '<tbody id="scorecard">';
         $end = 0;
         for ($dozen = 1; $dozen < 13; ++$dozen) {
-            $text []= '<tr>' . "\n";
+            $text []= '<tr>' . "\n<th>$dozen</th>\n";
             foreach (array('odd', 'even') as $pos) {
                 $end++;
                 for ($arrow = 1; $arrow < 7; ++$arrow) {
@@ -514,13 +530,14 @@ class RHAC_Scorecards {
         $text = array();
         $text []= $this->tenZoneChart();
         $text []= $this->fiveZoneChart();
+        $text []= '<p><b>Average:</b> <span id="average">-</span></p>';
         return implode($text);
     }
 
     private function scorecardHeaderRow() {
         $text = array();
         $text []= '<tr>';
-        $text []= '<th colspan="6">&nbsp;</th>';
+        $text []= '<th colspan="7">&nbsp;</th>';
         $text []= '<th>End</th>';
         $text []= '<th colspan="6">&nbsp;</th>';
         $text []= '<th>End</th>';
@@ -537,7 +554,7 @@ class RHAC_Scorecards {
         $text = array();
         $text []= '<tfoot>';
         $text []= '<tr>';
-        $text []= '<th colspan="14">Totals:</th>';
+        $text []= '<th colspan="15">Totals:</th>';
         $text []= '<td class="total-hits" id="total-hits">&nbsp;</td>';
         $text []= '<td class="total-Xs" id="total-xs">&nbsp;</td>';
         $text []= '<td class="total-golds" id="total-golds">&nbsp;</td>';
@@ -552,7 +569,7 @@ class RHAC_Scorecards {
         $text = array();
         $text []= '<thead>';
         $text []= '<tr>';
-        $text []= '<th colspan="3">Archer</th>';
+        $text []= '<th colspan="4">Archer</th>';
         $text []= '<td colspan="7">';
         $text []= $this->archersAsSelect();
         $text []= '</td>';
@@ -562,7 +579,7 @@ class RHAC_Scorecards {
         $text []= '</td>';
         $text []= '</tr>';
         $text []= '<tr>';
-        $text []= '<th colspan="3">Round</th>';
+        $text []= '<th colspan="4">Round</th>';
         $text []= '<td colspan="7">';
         $text []= $this->roundDataAsSelect();
         $text []= '</td>';
@@ -571,7 +588,7 @@ class RHAC_Scorecards {
         $text []= $this->dateAsInput();
         $text []= '</td>';
         $text []= '</tr>';
-        $text []= $this->ScorecardHeaderRow();
+        $text []= $this->scorecardHeaderRow();
         $text []= '</thead>';
         return implode($text);
     }
