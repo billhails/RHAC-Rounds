@@ -1,32 +1,30 @@
 <?php
 
-include plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
+include_once plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
 
 class RHAC_Scorecards {
 
     private $pdo;
     private $scorecard_data;
     private $scorecard_id;
+    private $scorecard_end_data;
+    private $homepath;
+    private $homeurl;
     private static $instance;
-    private static $zones = array(
-        'TenZoneChart' => array(
-            'class' => 'bar',
-            'width' => 30,
-            'height' => 300,
-            'zones' => array()
-        )
-    );
 
     private function __construct() {
+        $this->homepath = plugin_dir_path(__FILE__);
+        $this->homeurl = plugin_dir_url(__FILE__);
         try {
             $this->pdo = new PDO('sqlite:'
-                         . plugin_dir_path(__FILE__)
-                         . '../rhac-scorecards/scorecard.db');
+                         . $this->homepath
+                         . 'scorecard.db');
         } catch (PDOException $e) {
-            wp_die('Error!: ' . $e->getMessage());
+            die('Error!: ' . $e->getMessage());
             exit();
         }
         $this->pdo->exec('PRAGMA foreign_keys = ON');
+        // echo '<p>construct successful</p>';
     }
 
     public static function getInstance() {
@@ -40,7 +38,7 @@ class RHAC_Scorecards {
     public function fetch($query, $params = array()) {
         $stmt = $this->pdo->prepare($query);
         if (!$stmt) {
-            die("query: [$query] failed to prepare: " . $this->pdo->errmsg);
+            die("query: [$query] failed to prepare: " . print_r($this->pdo->errorInfo(), true));
         }
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
@@ -48,20 +46,33 @@ class RHAC_Scorecards {
         return $rows;
     }
 
+    public function exec($query, $params = array()) {
+        $stmt = $this->pdo->prepare($query);
+        if (!$stmt) {
+            die("statement: [$query] failed to prepare: " . print_r($this->pdo->errorInfo(), true));
+        }
+        $status = $stmt->execute($params);
+        $stmt->closeCursor();
+        return $status;
+    }
+
     public function topLevel() {
 
+        echo '<p>topLevel() entered</p>';
         if (isset($_POST['edit-scorecard'])) { // update or insert requested
             if ($_POST['scorecard-id']) { // update requested
+                echo '<p>topLevel() update req</p>';
                 $this->update();
                 $this->edit($_POST['scorecard-id']);
             }
             else { // insert requested
+                echo '<p>topLevel() insert req</p>';
                 $id = $this->insert();
                 $this->edit($id);
             }
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
-                $this->edit($_GET['scorecard-id'] || 0);
+                $this->edit($_GET['scorecard-id']);
             }
             else { // create requested
                 $this->edit(0);
@@ -69,6 +80,7 @@ class RHAC_Scorecards {
         } elseif (isset($_GET['find-scorecard'])) { // search requested
             $this->find();
         } else { // homePage
+            // echo '<p>doing home page</p>';
             $this->homePage();
         }
     }
@@ -87,13 +99,12 @@ class RHAC_Scorecards {
     private function dateToDisplayedFormat($date) {
         $obj = date_create($date);
         if ($obj) {
-            return $obj->format('D, j M yy');
+            return $obj->format('D, j M Y');
         }
         else {
             wp_die("can't recognise internal date: $date");
             exit();
         }
-
     }
 
     private function update() {
@@ -103,13 +114,15 @@ class RHAC_Scorecards {
             $this->dateToStoredFormat($_POST['date']),
             $_POST['round'],
             $_POST['bow'],
-            $_POST['i-total-hits'],
-            $_POST['i-total-xs'],
-            $_POST['i-total-golds'],
-            $_POST['i-total-score'],
+            $_POST['total-hits'],
+            $_POST['total-xs'],
+            $_POST['total-golds'],
+            $_POST['total-total'],
             $id
         );
-        $this->pdo->exec("UPDATE scorecards"
+        echo '<p>update() ' . print_r($params, true) . '</p>';
+        $this->pdo->beginTransaction();
+        $this->exec("UPDATE scorecards"
                  . " SET archer = ?,"
                  . " date = ?,"
                  . " round = ?,"
@@ -118,27 +131,36 @@ class RHAC_Scorecards {
                  . " xs = ?,"
                  . " golds = ?,"
                  . " score = ?"
-                 . " WHERE id = ?",
+                 . " WHERE scorecard_id = ?",
                     $params);
-        $this->pdo->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?",
+        $this->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?",
                          array($id));
         $this->insertEnds($id);
+        $this->pdo->commit();
     }
 
     private function insert() {
-        // FIXME needs to be in a transaction
-        $this->pdo->exec("INSERT INTO scorecard"
+        $this->pdo->beginTransaction();
+        echo '<p>insert() inside transaction</p>';
+        $status = $this->exec("INSERT INTO scorecards"
                  . "(archer, date, round, bow, hits, xs, golds, score)"
                  . " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
                        $this->dateToStoredFormat($_POST['date']),
                        $_POST['round'],
-                       $_POST['bow'], $_POST['i-total-hits'],
-                       $_POST['i-total-xs'], $_POST['i-total-golds'],
-                       $_POST['i-total-total']));
+                       $_POST['bow'],
+                       $_POST['total-hits'],
+                       $_POST['total-xs'],
+                       $_POST['total-golds'],
+                       $_POST['total-total']));
+        if (!$status) {
+            echo '<p>INSERT returned false:' . print_r($this->pdo->errorInfo(), true) . '</p>';
+            $this->pdo->rollback();
+            return 0;
+        }
         $id = $this->pdo->lastInsertId();
         $this->insertEnds($id);
-        // FIXME end transaction
+        $this->pdo->commit();
         return $id;
     }
 
@@ -158,7 +180,7 @@ class RHAC_Scorecards {
                             $_POST["arrow-$end-4"],
                             $_POST["arrow-$end-5"],
                             $_POST["arrow-$end-6"]);
-            $this->pdo->exec("INSERT INTO scorecard_end"
+            $this->exec("INSERT INTO scorecard_end"
                        . "(scorecard_id, end_number, arrow_1, arrow_2,"
                        . " arrow_3, arrow_4, arrow_5, arrow_6)"
                        . " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -166,27 +188,31 @@ class RHAC_Scorecards {
         }
     }
 
+    private function populateScorecardData($id) {
+        $rows = $this->fetch("SELECT * FROM scorecards WHERE scorecard_id = ?",
+                             array($id));
+        $this->scorecard_data = $rows[0];
+        $this->scorecard_data['date'] =
+            $this->dateToDisplayedFormat($this->scorecard_data['date']);
+        $rows = $this->fetch("SELECT *"
+                      . " FROM scorecard_end"
+                      . " WHERE scorecard_id = ?"
+                      . " ORDER BY end_number",
+                      array($id));
+        $this->scorecard_end_data = $rows;
+    }
+
     private function edit($id) {
-        global $scorecard_end_data;
+        echo "<p>edit($id)</p>";
         $this->scorecard_id = $id;
         if ($id) {
-            $rows = $this->fetch("SELECT * FROM scorecard WHERE id = ?",
-                                 array($id));
-            $this->scorecard_data = $rows[0];
-            $this->scorecard_data['date'] =
-                $this->dateToDisplayedFormat($this->scorecard_data['date']);
-            $rows = $this->fetch("SELECT *"
-                          . " FROM scorecard_end"
-                          . " WHERE scorecard_id = ?"
-                          . " ORDER BY end_number",
-                          array($id));
-            $scorecard_end_data = $rows;
+            $this->populateScorecardData($id);
         }
         else {
             $this->scorecard_data = array();
-            $scorecard_end_data = array();
+            $this->scorecard_end_data = array();
         }
-        include "scorecard.php";
+        print $this->editScorecardPage();
     }
 
     private function find() {
@@ -211,24 +237,41 @@ class RHAC_Scorecards {
                 $params []= $this->dateToStoredFormat($_GET["lower-date"]);
             }
         }
-        $query = "SELECT * FROM scorecard WHERE "
+        $query = "SELECT * FROM scorecards WHERE "
                . implode(' AND ', $criteria);
-        global $search_results;
         $search_results = $this->fetch($query, $params);
-        foreach ($search_results as $result) {
-            $result['date'] = $this->dateToDisplayedFormat($result['date']);
-        }
-        include "scorecard_search_results.php";
+        print $this->searchResultsPage($search_results);
     }
 
-    private function homePage() {
-        include "scorecard_homepage.php";
+    private function searchResultsPage($search_results) {
+        $text = array();
+        $text []= '<h1>Search Results</h1>';
+        $text []= '<table>';
+        foreach ($search_results as $result) {
+            $text []= '<tr><td>';
+            $text []=
+                "$result[archer], $result[bow], $result[round], "
+                        . $this->dateToDisplayedFormat($result['date']) . '.';
+            $text []= " Hits: $result[hits], Xs: $result[xs], Golds: $result[golds], Score: $result[score]";
+            $text []= '</td><td>';
+            $text []= "<form method='get' action=''>";
+            $text []= '<input type="hidden" name="page" value="'
+                        . $_GET[page] . '"/>';
+            $text []=
+            "<input type='hidden' name='scorecard-id' value='$result[scorecard_id]' />";
+            $text []=
+            "<input type='submit' name='edit-scorecard' value='Edit' />";
+            $text []= "</form>";
+            $text []= "</td></tr>\n";
+        }
+        $text []= '</table>';
+        return implode($text);
     }
 
     /**
      * Generate round data to html that javascript can inspect.
      */
-    public function roundData() {
+    private function roundData() {
         $text = '<span id="round-data">';
         foreach (GNAS_Page::roundData() as $round) {
             $name = $round->getName();
@@ -250,7 +293,7 @@ class RHAC_Scorecards {
     /**
      * Generate round data to JSON directly.
      */
-    public function roundDataAsJSON() {
+    private function roundDataAsJSON() {
         $rounds = array();
         foreach (GNAS_Page::roundData() as $round) {
             $round_json = '"' . $round->getName() . '":{';
@@ -266,9 +309,11 @@ class RHAC_Scorecards {
     }
 
     public function roundDataAsSelect() {
+        // echo '<p>in roundDataAsSelect()</p>';
         $text = array('<select name="round" id="round">');
         $text []= "<option value=''>- - -</option>\n";
         foreach (GNAS_Page::roundData() as $round) {
+            // echo '<p>roundDataAsSelect() got round</p>';
             $text []= "<option value='" . $round->getName() . "'";
             if ($round->getName() == $this->scorecard_data['round']) {
                 $text []= " selected='1'";
@@ -276,10 +321,58 @@ class RHAC_Scorecards {
             $text []= ">" . $round->getName() . "</option>\n";
         }
         $text []= '<select>';
+        // echo '<p>roundDataAsSelect() returning</p>';
         return implode($text);
     }
 
-    public function dateAsInput() {
+
+    private function homePage() {
+        // echo '<p>in homePage()</p>';
+        print $this->homePageHTML();
+        // echo '<p>finished homePage()</p>';
+    }
+
+    public function homePageHTML() {
+        // echo '<p>in homePageHTML()</p>';
+        $text = array();
+        $text []= '<h1>Score Cards</h1>';
+        $text []= '<form method="get" action="">';
+        $text []= '<input type="hidden" name="page" value="'
+                    . $_GET[page] . '"/>';
+        $text []= '<table>';
+        $text []= '<tr><td>Archer</td><td colspan="2">';
+        $text []= $this->archersAsSelect();
+        // echo '<p>homePageHTML() done archers</p>';
+        $text []= '</td></tr>';
+        $text []= '<tr><td>Round</td><td colspan="2">';
+        $text []= $this->roundDataAsSelect();
+        // echo '<p>homePageHTML() done rounds</p>';
+        $text []= '</td></tr>';
+        $text []= '<tr><td>Date or Date Range</td>';
+        $text []= '<td>';
+        $text []=
+            '<input type="text" name="lower-date" id="datepicker-lower"/>';
+        $text []= '</td>';
+        $text []= '<td>';
+        $text []=
+            '<input type="text" name="upper-date" id="datepicker-upper"/>';
+        $text []= '</td>';
+        $text []= '</tr>';
+        $text []= '</table>';
+        $text []=
+            '<input type="submit" name="find-scorecard" value="Search" />';
+        $text []= '</form>';
+        $text []= '<hr/>';
+        $text []= '<form method="get" action="">';
+        $text []= '<input type="hidden" name="page" value="'
+                    . $_GET[page] . '"/>';
+        $text []= '<input type="submit" name="edit-scorecard" value="New" />';
+        $text []= '</form>';
+        // echo '<p>homePageHTML() about to return</p>';
+        return implode($text);
+    }
+
+    private function dateAsInput() {
         $text = array();
         $text []= '<input type="text" name="date" ';
         if ($this->scorecard_data['date']) {
@@ -307,7 +400,7 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
-    public function bowsAsRadio() {
+    private function bowsAsRadio() {
         $text = array();
         foreach(array('R' => 'recurve',
                       'C' => 'compound',
@@ -315,16 +408,221 @@ class RHAC_Scorecards {
                       'B' => 'barebow') as $initial => $bow) {
             $text []= '<input type="radio" name="bow" id="bow"';
             if ($this->scorecard_data['bow'] == $bow) {
-                $text []= " selected='1'";
+                $text []= " checked='1'";
             }
             $text []= " value='$bow'>$initial</input>\n";
         }
         return implode($text);
     }
 
-    public function scorecardIdAsHidden() {
-        return '<input type="hidden" name="scorecard-id" value="' . $this->scorecard_id . '" />';
+    private function endDataAsTBody() {
+        $text = array();
+        $text []= '<tbody id="scorecard">';
+        $end = 0;
+        for ($dozen = 1; $dozen < 13; ++$dozen) {
+            $text []= '<tr>' . "\n";
+            foreach (array('odd', 'even') as $pos) {
+                $end++;
+                for ($arrow = 1; $arrow < 7; ++$arrow) {
+                    $text []= " <td><input type='text'"
+                        . " class='score'"
+                        . "value='"
+                        . $this->scorecard_end_data[$end -1]["arrow_$arrow"]
+                        . "'"
+                        . " name='arrow-$end-$arrow'"
+                        . " id='arrow-$end-$arrow'/></td>\n";
+                }
+                $text []= " <td class='end' name='end-total-$end'"
+                    . " id='end-total-$end'>&nbsp;</td>\n";
+            }
+            $text []= " <td class='hits' name='doz-hits-$dozen'"
+                . " id='doz-hits-$dozen'>&nbsp;</td>\n";
+            $text []= " <td class='Xs' name='doz-xs-$dozen'"
+                . " id='doz-xs-$dozen'>&nbsp;</td>\n";
+            $text []= " <td class='golds' name='doz-golds-$dozen'"
+                . " id='doz-golds-$dozen'>&nbsp;</td>\n";
+            $text []= " <td class='doz' name='doz-doz-$dozen'"
+                . " id='doz-doz-$dozen'>&nbsp;</td>\n";
+            $text []= " <td class='tot' name='doz-tot-$dozen'"
+                . " id='doz-tot-$dozen'>&nbsp;</td>\n";
+            $text []= "</tr>\n";
+        }
+        $text []= '</tbody>';
+        return implode($text);
     }
+
+    private function tenZoneData() {
+        return array(
+            array('label' => 'X', 'png' => 'gold'),
+            array('label' => '10', 'png' => 'gold'),
+            array('label' => '9', 'png' => 'gold'),
+            array('label' => '8', 'png' => 'red'),
+            array('label' => '7', 'png' => 'red'),
+            array('label' => '6', 'png' => 'blue'),
+            array('label' => '5', 'png' => 'blue'),
+            array('label' => '4', 'png' => 'black'),
+            array('label' => '3', 'png' => 'black'),
+            array('label' => '2', 'png' => 'white'),
+            array('label' => '1', 'png' => 'white'),
+            array('label' => 'M', 'png' => 'green')
+        );
+    }
+
+    private function tenZoneChart() {
+        return $this->zoneChart($this->tenZoneData(),
+                                'TenZoneChart', 'tbar_', 30);
+    }
+
+    private function fiveZoneData() {
+        return array(
+            array('label' => '9', 'png' => 'gold'),
+            array('label' => '7', 'png' => 'red'),
+            array('label' => '5', 'png' => 'blue'),
+            array('label' => '3', 'png' => 'black'),
+            array('label' => '1', 'png' => 'white'),
+            array('label' => 'M', 'png' => 'green')
+        );
+    }
+
+    private function fiveZoneChart() {
+        return $this->zoneChart($this->fiveZoneData(),
+                                'FiveZoneChart', 'fbar_', 50);
+    }
+
+    private function zoneChart($zoneData, $tableId, $idPrefix, $width) {
+        $text = array();
+        $text []= '<table id="' . $tableId . '"><tr>';
+        foreach ($zoneData as $zone) {
+            $text []= '<td class="bar">';
+            $text []= '<img id="'
+                    . $idPrefix
+                    . $zone['label']
+                    . '" src="'
+                    . $this->png($zone['png'])
+                    . '" height="300" width="' . $width . '"/>';
+            $text []= '</td>';
+        }
+        $text []= '</tr></table>';
+        return implode($text);
+    }
+
+    private function png($basename) {
+        return $this->homeurl . $basename . '.png';
+    }
+
+    private function zoneCharts() {
+        $text = array();
+        $text []= $this->tenZoneChart();
+        $text []= $this->fiveZoneChart();
+        return implode($text);
+    }
+
+    private function scorecardHeaderRow() {
+        $text = array();
+        $text []= '<tr>';
+        $text []= '<th colspan="6">&nbsp;</th>';
+        $text []= '<th>End</th>';
+        $text []= '<th colspan="6">&nbsp;</th>';
+        $text []= '<th>End</th>';
+        $text []= '<th>Hits</th>';
+        $text []= '<th>Xs</th>';
+        $text []= '<th>Golds</th>';
+        $text []= '<th>Doz</th>';
+        $text []= '<th>Tot</th>';
+        $text []= '</tr>';
+        return implode($text);
+    }
+
+    private function tFooter() {
+        $text = array();
+        $text []= '<tfoot>';
+        $text []= '<tr>';
+        $text []= '<th colspan="14">Totals:</th>';
+        $text []= '<td class="total-hits" id="total-hits">&nbsp;</td>';
+        $text []= '<td class="total-Xs" id="total-xs">&nbsp;</td>';
+        $text []= '<td class="total-golds" id="total-golds">&nbsp;</td>';
+        $text []= '<td>&nbsp;</td>';
+        $text []= '<td class="total-total" id="total-total" >&nbsp;</td>';
+        $text []= '</tr>';
+        $text []= '</tfoot>';
+        return implode($text);
+    }
+
+    private function tHeader() {
+        $text = array();
+        $text []= '<thead>';
+        $text []= '<tr>';
+        $text []= '<th colspan="3">Archer</th>';
+        $text []= '<td colspan="7">';
+        $text []= $this->archersAsSelect();
+        $text []= '</td>';
+        $text []= '<th colspan="3">Bow</th>';
+        $text []= '<td colspan="6">';
+        $text []= $this->bowsAsRadio();
+        $text []= '</td>';
+        $text []= '</tr>';
+        $text []= '<tr>';
+        $text []= '<th colspan="3">Round</th>';
+        $text []= '<td colspan="7">';
+        $text []= $this->roundDataAsSelect();
+        $text []= '</td>';
+        $text []= '<th colspan="3">Date</th>';
+        $text []= '<td colspan="6">';
+        $text []= $this->dateAsInput();
+        $text []= '</td>';
+        $text []= '</tr>';
+        $text []= $this->ScorecardHeaderRow();
+        $text []= '</thead>';
+        return implode($text);
+    }
+
+    private function formInputs() {
+        $text = array();
+        $text []= '<input type="hidden" name="scorecard-id" value="'
+                . $this->scorecard_id . '" />';
+        $text []= '<input type="hidden"'
+                . ' name="total-hits" id="i-total-hits" />';
+        $text []= '<input type="hidden"'
+                . ' name="total-xs" id="i-total-xs" />';
+        $text []= '<input type="hidden"'
+                . ' name="total-golds" id="i-total-golds" />';
+        $text []= '<input type="hidden"'
+                . ' name="total-total" id="i-total-total" />';
+        $text []= '<input type="submit" name="edit-scorecard" />';
+        return implode($text);
+    }
+
+    private function scorecardTable() {
+        $text = array();
+        $text []= '<table>';
+        $text []= $this->tHeader();
+        $text []= $this->endDataAsTBody();
+        $text []= $this->tFooter();
+        $text []= '</table>';
+        return implode($text);
+    }
+
+    private function scorecardForm() {
+        $text = array();
+        $text []= '<form method="post" action="" id="edit-scorecard">';
+        $text []= $this->scorecardTable();
+        $text []= $this->formInputs();
+        $text []= '</form>';
+        return implode($text);
+    }
+
+    private function editScorecardPage() {
+        $text = array();
+        $text []= '<h1>Edit Score Card';
+        if ($this->scorecard_id) {
+            $text []= ' #' . $this->scorecard_id;
+        }
+        $text []= '</h1>';
+        $text []= $this->roundData();
+        $text []= $this->scorecardForm();
+        $text []= $this->zoneCharts();
+        return implode($text);
+    }
+
 }
 
-RHAC_Scorecards::getInstance()->topLevel();
