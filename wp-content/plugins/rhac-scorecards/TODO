@@ -1,22 +1,42 @@
-php parse (in) and format (out) date
+Delete.
 
-wordpress queue headers to instantiate scorecard.js and jquery_ui.
+Backup/restore.
 
-build admin page for data entry and editing.
+Improved data entry.
+    State tables (different for ten and five zone)
 
-need delete().
-
-Need members pages for viewing scorecards.
+Members pages for viewing scorecards.
+    Admins can see all scorecards (admin page).
+    Members can only see their own scorecards.
     could present:
         1. Individual scorecard.
         2. Bar charts.
             a. By round.
             b. By distance + face.
+            c. By date.
+        3. Trigonometric calculations.
+            estimates of scores (linear interpolation).
+            actual scores vs. estimates (performance).
 
-Need scores distinct from scorecards.
+Scores distinct from scorecards.
     Maybe foreign key allowing null referencing scorecard id.
     Then we can scrape the golden records html once.
-    "Your history for this round"
-    "Club records for this round"
+    "Your scores for this round"
+        inline with link to scorecard where available.
+    "Club records for this round".
 
-Need backup/restore.
+Should move all data from sqlite to the WP MySQL dabase.
+
+Rounds selector needs submenus for real families.
+
+Extend rounds to cover indoor rounds.
+
+Extend rounds to allow arbitrary unofficial classifications.
+
+AJAX/REST API
+    GET scorecard/$id
+    POST scorecard
+    PUT scorecard/$id
+    GET scorecard?
+    DELETE scorecard/$id
+
