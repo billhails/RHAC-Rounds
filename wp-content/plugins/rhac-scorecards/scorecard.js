@@ -196,7 +196,7 @@ function RHAC_Scorer() {
         if (max) {
             for (bar_class in zoneCounts) {
                 jQuery('#' + bar_class).attr("height",
-                                        (zoneCounts[bar_class] / max) * 300);
+                                        (zoneCounts[bar_class] / max) * 425);
             }
         }
         if (arrow_count > 0) {

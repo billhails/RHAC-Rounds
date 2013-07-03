@@ -515,7 +515,7 @@ class RHAC_Scorecards {
                     . $zone['label']
                     . '" src="'
                     . $this->png($zone['png'])
-                    . '" height="300" width="' . $width . '"/>';
+                    . '" height="425" width="' . $width . '"/>';
             $text []= '</td>';
         }
         $text []= '</tr></table>';
