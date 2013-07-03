@@ -98,3 +98,7 @@ th.totals {
 span#round-data {
     display: none;
 }
+
+form#edit-scorecard {
+    float: left;
+}

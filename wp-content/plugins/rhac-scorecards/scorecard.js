@@ -128,8 +128,11 @@ function RHAC_Scorer() {
 
     function addUp() {
         var counts = {
-            end: 0, doz_tot: 0, total_hits: 0,
-            total_xs: 0, total_golds: 0
+            end: 0,
+            doz_tot: 0,
+            total_hits: 0,
+            total_xs: 0,
+            total_golds: 0
         };
         var total_total = 0;
         var arrow_count = 0;
@@ -197,19 +200,22 @@ function RHAC_Scorer() {
             }
         }
         if (arrow_count > 0) {
-            jQuery('#average').text((total_total / arrow_count).toFixed(1));
+            jQuery('#average').text((total_total / arrow_count).toFixed(2));
         }
     }
+
+    var TAB = 9;
 
     function watchScore(e) {
         var jqthis = jQuery(this);
         changeScore(jqthis);
         if (jqthis.val() != "") {
-            if (e.keyCode != 9) {
-                var current = focusables.index(this),
-                    next    = focusables.eq(current+1).length
-                            ? focusables.eq(current+1)
-                            : focusables.eq(0);
+            if (e.keyCode != TAB) {
+                var current = focusables.index(this);
+                var next = focusables.eq(current+1);
+                if (next.length == 0) {
+                    next = focusables.eq(0);
+                }
                 next.focus();
             }
         }
@@ -256,22 +262,23 @@ function RHAC_Scorer() {
         return count;
     }
 
+    function missing(thing) {
+        alert("Please select the " + thing + " first");
+        return false;
+    }
+
     function validate() {
         if (!jQuery('#archer').val()) {
-            alert("Archer is a required field");
-            return false;
+            return missing("Archer");
         }
         if (!jQuery('#round').val()) {
-            alert("Round is a required field");
-            return false;
+            return missing("Round");
         }
         if (jQuery('input[name="bow"]:checked').length == 0) {
-            alert("Bow is a required field");
-            return false;
+            return missing("Bow");
         }
         if (!jQuery('#date').val()) {
-            alert("Date is a required field");
-            return false;
+            return missing("Date");
         }
         var seenArrows = countArrows();
         var expectedArrows = totalArrowsForRound(jQuery('#round').val());

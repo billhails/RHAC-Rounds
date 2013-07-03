@@ -628,6 +628,18 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    private function deleteScorecardButton() {
+        $text = array();
+        $text []= '<form method="post" action="" id="delete-scorecard">';
+        $text []= '<input type="hidden" name="scorecard-id" value="';
+        $text []= $this->scorecard_id;
+        $text []= '"/>';
+        $text []= '<input type="submit" name="delete-scorecard"';
+        $text []= ' value="Delete" />';
+        $text []= '</form>';
+        return implode($text);
+    }
+
     private function editScorecardPage() {
         $text = array();
         $text []= '<h1>Edit Score Card';
