@@ -623,6 +623,7 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         }
         return self::$instances[$name];
     }
+
 }
 
 interface GNAS_RoundInterface {

@@ -91,8 +91,10 @@ class RHAC_Scorecards {
     }
 
     private function addArcher($archer) {
-        $this->exec("INSERT INTO archer(name) VALUES(?)", array($archer));
-        echo "<p>Archer $archer added</p>";
+        if ($archer) {
+            $this->exec("INSERT INTO archer(name) VALUES(?)", array($archer));
+            echo "<p>Archer $archer added</p>";
+        }
     }
 
     private function dateToStoredFormat($date) {
