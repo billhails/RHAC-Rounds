@@ -640,6 +640,27 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    private function helpBox() {
+        $text = array();
+        $text []= '<button id="help-button">help</button>';
+        $text []= '<br/>';
+        $text []= '<div id="help-text">';
+        $text []= '<p>';
+        $text []= '';
+        $text []= 'Select the Archer and Round from the drop down menus.';
+        $text []= ' You can add new archers from the main admin page.';
+        $text []= ' Next, select the Bow type and the Date.';
+        $text []= ' Click on the first arrow and start entering scores.';
+        $text []= ' Valid inputs are <q>x</q>, <q>0</q>-<q>9</q> and <q>m</q>.';
+        $text []= ' <b>Note</b> Use a <q>0</q> to enter a 10.';
+        $text []= ' If you have selected an imperial round, any scores that';
+        $text []= ' you enter will be';
+        $text []= ' rounded down to the nearest valid five-zone score.';
+        $text []= '</p>';
+        $text []= '</div>';
+        return implode($text);
+    }
+
     private function editScorecardPage() {
         $text = array();
         $text []= '<h1>Edit Score Card';
@@ -647,6 +668,7 @@ class RHAC_Scorecards {
             $text []= ' #' . $this->scorecard_id;
         }
         $text []= '</h1>';
+        $text []= $this->helpBox();
         $text []= $this->roundData();
         $text []= $this->scorecardForm();
         $text []= $this->zoneCharts();

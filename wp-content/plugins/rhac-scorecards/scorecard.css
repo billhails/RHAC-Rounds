@@ -102,3 +102,12 @@ span#round-data {
 form#edit-scorecard {
     float: left;
 }
+
+div#help-text {
+    width: 40em;
+    border: 1px solid black;
+    padding-left: 0.5em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    display: none;
+}

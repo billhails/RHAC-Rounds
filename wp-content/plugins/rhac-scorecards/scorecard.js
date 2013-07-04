@@ -292,9 +292,19 @@ function RHAC_Scorer() {
         return true;
     }
 
+    function toggleHelp() {
+        var help_text = jQuery('#help-text');
+        if (help_text.css('display') == 'none') {
+            help_text.css('display', 'block');
+        } else {
+            help_text.css('display', 'none');
+        }
+    }
+
     function setup() {
         jQuery('#TenZoneChart').css('display', 'none');
         jQuery('#FiveZoneChart').css('display', 'none');
+        jQuery('#help-button').click(toggleHelp);
         var round = jQuery('#round');
         if (round.val()) {
             changeRound(round.val());
@@ -317,7 +327,7 @@ function RHAC_Scorer() {
 jQuery(
     function() {
         if (jQuery('#round-data').text()) {
-            var scorer = new RHAC_Scorer();
+            new RHAC_Scorer();
             jQuery( "#date" ).datepicker(
                     { dateFormat: "D, d M yy" }
                 );
