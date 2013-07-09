@@ -13,7 +13,7 @@
     <?php
         function plugin_dir_path() { return "./";  }
         function plugin_dir_url() { return "./";  }
-        $_GET['edit-scorecard'] = 'New';
+        // $_GET['find-scorecard'] = '1';
         include "toplevel.php";
         RHAC_Scorecards::getInstance()->topLevel();
     ?>
