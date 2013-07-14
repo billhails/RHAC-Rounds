@@ -1,0 +1,273 @@
+<html>
+  <head>
+    <title>Score Card Mockup</title>
+    <style>
+div.scorecard {
+    border: 1px solid black;
+    padding: 0.5em;
+    font-family: "Optima", "Helvetica", "Sans-serif";
+    width: auto;
+    /* width: 47.2em; */
+}
+table.scorecard: {
+    float: left;
+}
+span.headers {
+    word-spacing: 1em;
+}
+span.header {
+    word-spacing: normal;
+}
+th {
+    text-align: left;
+}
+td.totals {
+    text-align: right;
+    font-weight: bold;
+}
+td {
+    width: 2.0em;
+}
+td, tr {
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+}
+
+td.gold, td.red, td.blue, td.black, td.white, td.miss {
+    width: 1.5em;
+    text-align: center;
+}
+th.arrow {
+    text-align: center;
+}
+.gold {
+    background-color: yellow;
+}
+.red {
+    background-color: red;
+    color: white;
+}
+.blue {
+    background-color: blue;
+    color: white;
+}
+.black {
+    background-color: black;
+    color: white;
+}
+.white {
+    background-color: white;
+    color: black;
+}
+.miss {
+    background-color: green;
+    color: white;
+}
+td.end, td.doz, td.tot {
+    border: 1px solid black;
+}
+td.end {
+    text-align: right;
+}
+td.bar {
+    vertical-align: bottom;
+    text-align: center;
+}
+
+td.hits, td.Xs, td.golds, td.doz, td.tot {
+    text-align: right;
+}
+td.hits, td.Xs, td.golds, td.total-hits, td.total-Xs, td.total-golds {
+    background-color: #CCCCCC;
+}
+td.total-hits, td.total-Xs, td.total-golds, td.total-total {
+    border: 1px solid black;
+    text-align: right;
+    font-weight: bold;
+}
+td.dist {
+    border: 1px solid black;
+    text-align: center;
+}
+td.value, th.label {
+    text-align: center;
+}
+td.value {
+    border: 1px solid black;
+}
+th.pad, td.pad {
+    width: 0.5em;
+}
+th.totals {
+    text-align: right;
+}
+    </style>
+  </head>
+  <body>
+    <div class="scorecard">
+      <span class="headers">
+          <span class="header"><b>Archer:</b> Joe Public,</span>
+          <span class="header"><b>Bow:</b> Recurve,</span>
+          <span class="header"><b>Round:</b> Frostbite,</span>
+          <span class="header"><b>Date:</b> 21st Dec 2012.</span>
+      </span>
+      <table class="scorecard">
+        <thead>
+          <tr>
+            <th>dist</th>
+            <th class="arrow">1</th>
+            <th class="arrow">2</th>
+            <th class="arrow">3</th>
+            <th class="arrow">4</th>
+            <th class="arrow">5</th>
+            <th class="arrow">6</th>
+            <th class="totals">end</th>
+            <th class="pad"></th>
+            <th class="arrow">1</th>
+            <th class="arrow">2</th>
+            <th class="arrow">3</th>
+            <th class="arrow">4</th>
+            <th class="arrow">5</th>
+            <th class="arrow">6</th>
+            <th class="totals">end</th>
+            <th class="pad"></th>
+            <th class="totals">hits</th>
+            <th class="totals">Xs</th>
+            <th class="totals">golds</th>
+            <th class="totals">doz</th>
+            <th class="totals">tot</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowspan="3" class="dist">30m</td>
+            <td class="gold">X</td>
+            <td class="gold">10</td>
+            <td class="red">8</td>
+            <td class="blue">6</td>
+            <td class="blue">6</td>
+            <td class="white">1</td>
+            <td class="end">44</td>
+            <td class="pad"></td>
+            <td class="gold">X</td>
+            <td class="gold">10</td>
+            <td class="red">8</td>
+            <td class="blue">6</td>
+            <td class="blue">6</td>
+            <td class="miss">M</td>
+            <td class="end">44</td>
+            <td class="pad"></td>
+            <td class="hits">12</td>
+            <td class="Xs">2</td>
+            <td class="golds">4</td>
+            <td class="doz">88</td>
+            <td class="tot">88</td>
+          </tr>
+          <tr>
+            <td class="gold">X</td>
+            <td class="gold">10</td>
+            <td class="red">8</td>
+            <td class="blue">6</td>
+            <td class="blue">6</td>
+            <td class="black">4</td>
+            <td class="end">44</td>
+            <td class="pad"></td>
+            <td class="gold">X</td>
+            <td class="gold">10</td>
+            <td class="red">8</td>
+            <td class="blue">6</td>
+            <td class="blue">6</td>
+            <td class="black">4</td>
+            <td class="end">44</td>
+            <td class="pad"></td>
+            <td class="hits">12</td>
+            <td class="Xs">2</td>
+            <td class="golds">4</td>
+            <td class="doz">88</td>
+            <td class="tot">176</td>
+          </tr>
+          <tr>
+            <td class="gold">X</td>
+            <td class="gold">10</td>
+            <td class="red">8</td>
+            <td class="blue">6</td>
+            <td class="blue">6</td>
+            <td class="black">4</td>
+            <td class="end">44</td>
+            <td class="pad"></td>
+            <td class="gold">X</td>
+            <td class="gold">10</td>
+            <td class="red">8</td>
+            <td class="blue">6</td>
+            <td class="blue">6</td>
+            <td class="black">4</td>
+            <td class="end">44</td>
+            <td class="pad"></td>
+            <td class="hits">12</td>
+            <td class="Xs">2</td>
+            <td class="golds">4</td>
+            <td class="doz">88</td>
+            <td class="tot">176</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <td class="totals" colspan="16">Totals:</td>
+            <td class="total-hits">35</td>
+            <td class="total-Xs">4</td>
+            <td class="total-golds">8</td>
+            <td class="total-doz"></td>
+            <td class="total-total">176</td>
+          </tr>
+        </tfoot>
+      </table>
+      <table>
+        <tr class="bars">
+          <td rowspan="3" class="dist">30m</td>
+          <td class="bar"><img src="gold.png" height="60" width="30"/></td>
+          <td class="bar"><img src="gold.png" height="60" width="30"/></td>
+          <td class="bar"><img src="gold.png" height="60" width="30"/></td>
+          <td class="bar"><img src="red.png" height="60" width="30"/></td>
+          <td class="bar"><img src="red.png" height="00" width="30"/></td>
+          <td class="bar"><img src="blue.png" height="60" width="30"/></td>
+          <td class="bar"><img src="blue.png" height="60" width="30"/></td>
+          <td class="bar"><img src="black.png" height="40" width="30"/></td>
+          <td class="bar"><img src="black.png" height="00" width="30"/></td>
+          <td class="bar"><img src="white.png" height="00" width="30"/></td>
+          <td class="bar"><img src="white.png" height="10" width="30"/></td>
+          <td class="bar"><img src="green.png" height="10" width="30"/></td>
+        </tr>
+        <tr class="values">
+          <td class="value">6</td>
+          <td class="value">6</td>
+          <td class="value">6</td>
+          <td class="value">6</td>
+          <td class="value">0</td>
+          <td class="value">6</td>
+          <td class="value">6</td>
+          <td class="value">4</td>
+          <td class="value">0</td>
+          <td class="value">0</td>
+          <td class="value">1</td>
+          <td class="value">1</td>
+        </tr>
+        <tr class="labels">
+          <th class="label">Xs</th>
+          <th class="label">10s</th>
+          <th class="label">9s</th>
+          <th class="label">8s</th>
+          <th class="label">7s</th>
+          <th class="label">6s</th>
+          <th class="label">5s</th>
+          <th class="label">4s</th>
+          <th class="label">3s</th>
+          <th class="label">2s</th>
+          <th class="label">1s</th>
+          <th class="label">Ms</th>
+        </tr>
+      </table>
+      <b>Average: 4.89</b>
+    </div>
+  </body>
+</html>
