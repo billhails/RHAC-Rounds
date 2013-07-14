@@ -260,13 +260,31 @@ class RHAC_Scorecards {
         $text = array();
         $text []= '<h1>Search Results</h1>';
         $text []= '<table>';
+        $text []= '<thead>';
+        $text []= '<tr>';
+        $text []= '<th>Archer</th>';
+        $text []= '<th>Bow</th>';
+        $text []= '<th>Round</th>';
+        $text []= '<th>Date</th>';
+        $text []= '<th>Hits</th>';
+        $text []= '<th>Xs</th>';
+        $text []= '<th>Golds</th>';
+        $text []= '<th>Score</th>';
+        $text []= '<th>&nbsp;</th>';
+        $text []= '</tr>';
+        $text []= '</thead>';
+        $text []= '<tbody>';
         foreach ($search_results as $result) {
-            $text []= '<tr><td>';
-            $text []=
-                "$result[archer], $result[bow], $result[round], "
-                        . $this->dateToDisplayedFormat($result['date']) . '.';
-            $text []= " Hits: $result[hits], Xs: $result[xs], Golds: $result[golds], Score: $result[score]";
-            $text []= '</td><td>';
+            $text []= '<tr>';
+            $text []= "<td>$result[archer]</td>";
+            $text []= "<td>$result[bow]</td>";
+            $text []= "<td>$result[round]</td>";
+            $yext []= '<td>' . $this->dateToDisplayedFormat($result['date']) . '</td>';
+            $text []= "<td>$result[hits]</td>";
+            $text []= "<td>$result[xs]</td>";
+            $text []= "<td>$result[golds]</td>";
+            $text []= "<td>$result[score]</td>";
+            $text []= "<td>";
             $text []= "<form method='get' action=''>";
             $text []= '<input type="hidden" name="page" value="'
                         . $_GET[page] . '"/>';
@@ -275,9 +293,10 @@ class RHAC_Scorecards {
             $text []=
             "<input type='submit' name='edit-scorecard' value='Edit' />";
             $text []= "</form>";
-            $text []= "</td></tr>\n";
+            $text []= "</td>";
+            $text []= "</tr>\n";
         }
-        $text []= '</table>';
+        $text []= '</tbody></table>';
         return implode($text);
     }
 
@@ -346,7 +365,6 @@ class RHAC_Scorecards {
     }
 
     public function homePageHTML() {
-        // echo '<p>in homePageHTML()</p>';
         $text = array();
         $text []= '<h1>Score Cards</h1>';
         $text []= '<form method="get" action="">';
@@ -355,11 +373,9 @@ class RHAC_Scorecards {
         $text []= '<table>';
         $text []= '<tr><td>Archer</td><td colspan="2">';
         $text []= $this->archersAsSelect();
-        // echo '<p>homePageHTML() done archers</p>';
         $text []= '</td></tr>';
         $text []= '<tr><td>Round</td><td colspan="2">';
         $text []= $this->roundDataAsSelect();
-        // echo '<p>homePageHTML() done rounds</p>';
         $text []= '</td></tr>';
         $text []= '<tr><td>Date or Date Range</td>';
         $text []= '<td>';
@@ -386,7 +402,8 @@ class RHAC_Scorecards {
         $text []= '<input type="text" name="archer"/>';
         $text []= '<input type="submit" name="add-archer" value="Add Archer"/>';
         $text []= '</form>';
-        // echo '<p>homePageHTML() about to return</p>';
+        $text []= '<hr/>';
+        $text []= "<a href='" . $this->homeurl . 'scorecard.db' ."'>Download a backup</a>";
         return implode($text);
     }
 
