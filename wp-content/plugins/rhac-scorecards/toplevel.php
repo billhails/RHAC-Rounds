@@ -279,7 +279,7 @@ class RHAC_Scorecards {
             $text []= "<td>$result[archer]</td>";
             $text []= "<td>$result[bow]</td>";
             $text []= "<td>$result[round]</td>";
-            $yext []= '<td>' . $this->dateToDisplayedFormat($result['date']) . '</td>';
+            $text []= '<td>' . $this->dateToDisplayedFormat($result['date']) . '</td>';
             $text []= "<td>$result[hits]</td>";
             $text []= "<td>$result[xs]</td>";
             $text []= "<td>$result[golds]</td>";
@@ -403,7 +403,7 @@ class RHAC_Scorecards {
         $text []= '<input type="submit" name="add-archer" value="Add Archer"/>';
         $text []= '</form>';
         $text []= '<hr/>';
-        $text []= "<a href='" . $this->homeurl . 'scorecard.db' ."'>Download a backup</a>";
+        $text []= "<a href='" . $this->homeurl . 'scorecard.db' ."'>Download a backup</a> (click right and save as...)";
         return implode($text);
     }
 
