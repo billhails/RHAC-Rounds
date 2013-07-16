@@ -42,7 +42,7 @@ class RHAC_Scorecards {
                 . print_r($this->pdo->errorInfo(), true));
         }
         $stmt->execute($params);
-        $rows = $stmt->fetchAll();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
         return $rows;
     }
@@ -199,6 +199,16 @@ class RHAC_Scorecards {
                        . " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                        $params);
         }
+    }
+
+    public function scorecardJSON($id) {
+        $this->populateScorecardData($id);
+        $data = array();
+        foreach ($this->scorecard_data as $key => $value) {
+            $data[$key] = $value;
+        }
+        $data['ends'] = $this->scorecard_end_data;
+        return json_encode($data);
     }
 
     private function populateScorecardData($id) {

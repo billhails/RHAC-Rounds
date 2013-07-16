@@ -1,3 +1,5 @@
+<?php
+/*
 <html>
     <head>
     <link rel="stylesheet" href="scorecard.css"/>
@@ -11,11 +13,15 @@
     </head>
     <body>
     <?php
+    */
         function plugin_dir_path() { return "./";  }
         function plugin_dir_url() { return "./";  }
         // $_GET['find-scorecard'] = '1';
-        include "toplevel.php";
-        RHAC_Scorecards::getInstance()->topLevel();
+        $_GET['id'] = '1';
+        include "scorecard.php";
+        // RHAC_Scorecards::getInstance()->topLevel();
+        /*
     ?>
 </body>
 </html>
+*/
