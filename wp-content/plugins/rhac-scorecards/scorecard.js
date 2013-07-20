@@ -114,6 +114,211 @@ function RHAC_Scorer() {
         }
     }
 
+    function scorecardHTML(data) {
+        var html = '<div class="scorecard">';
+        html += '<span class="headers">';
+        html += '<span class="header"><b>Archer:</b> ';
+        html += data.archer;
+        html += ',</span>';
+        html += '<span class="header"><b>Bow:</b> ';
+        html += data.bow;
+        html += ',</span>';
+        html += '<span class="header"><b>Round:</b> ';
+        html += data.round;
+        html += ',</span>';
+        html += '<span class="header"><b>Date:</b> '
+        html += data.date;
+        html += '.</span>';
+        html += '.</span>';
+        html += '<table class="scorecard">';
+        html += '<thead>';
+        html += '<tr>';
+        html += '<th>dist</th>';
+        for (var lr = 0; lr < 2; ++lr) {
+            for (var arrow = 1; arrow < 7; ++arrow) {
+                html += '<th class="arrow">' + arrow + '</th>';
+            }
+            html += '<th class="totals">end</th>';
+            html += '<th class="pad"></th>';
+        }
+        html += '<th class="totals">hits</th>';
+        html += '<th class="totals">Xs</th>';
+        html += '<th class="totals">golds</th>';
+        html += '<th class="totals">doz</th>';
+        html += '<th class="totals">tot</th>';
+        html += '</tr>';
+        html += '</thead>';
+        html += '<tbody>';
+        var right = false;
+        var totals = {
+            end: 0,
+            hits: 0, total_hits: 0,
+            xs: 0, total_xs: 0,
+            golds: 0, total_golds: 0,
+            doz: 0, total: 0,
+        };
+        data.ends.each(function(index, end) {
+            totals.end = 0;
+            if (!right) {
+                html += '<tr>';
+                totals.hits = 0;
+                totals.xs = 0;
+                total.golds = 0;
+                totals.doz = 0;
+            }
+            html += oneEnd(end, totals);
+            if (right) {
+                html += endTotal(totals);
+            }
+            right = !right;
+        });
+        if (right) {
+            html += emptyEnd();
+            html += endTotal(totals);
+        }
+        html += '</tbody>';
+        html += '<tfoot>';
+        html += '<tr>';
+        html += '<td class="totals" colspan="16">Totals:</td>';
+        html += '<td class="total-hits">' + totals.total_hits + '</td>';
+        html += '<td class="total-Xs">' + totals.total_xs + '</td>';
+        html += '<td class="total-golds">' + totals.total_golds + '</td>';
+        html += '<td class="total-doz"></td>';
+        html += '<td class="total-total">' + totals.total + '</td>';
+        html += '</tr>';
+        html += '</tfoot>';
+        html += '</table>';
+    }
+
+    function endTotal(totals) {
+        var html = '';
+        html += '<td class="hits">' + totals.hits + '</td>';
+        html += '<td class="Xs">' + totals.xs + '</td>';
+        html += '<td class="golds">' + totals.golds + '</td>';
+        html += '<td class="doz">' + totals.doz + '</td>';
+        html += '<td class="tot">' + totals.total + '</td>';
+        html += '</tr>';
+        return html;
+    }
+
+    function emptyEnd() {
+        var html = '';
+        for (var i = 0; i < 6; ++i) {
+            html += '<td class="empty"></td>';
+        }
+        html += '<td class="pad"></td>';
+        return html;
+    }
+
+    function oneEnd(end, totals) {
+        var html = '';
+        html += oneArrow(end.arrow_1, totals);
+        html += oneArrow(end.arrow_2, totals);
+        html += oneArrow(end.arrow_3, totals);
+        html += oneArrow(end.arrow_4, totals);
+        html += oneArrow(end.arrow_5, totals);
+        html += oneArrow(end.arrow_6, totals);
+        html += '<td class="pad"></td>';
+        return html;
+    }
+
+    function oneArrow(arrow, totals) {
+        var css_class = '';
+        switch(arrow) {
+            case 'X':
+                totals.xs += 1;
+                totals.total_xs += 1;
+            case 10:
+                totals.golds += 1;
+                totals.total_golds += 1;
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 10;
+                totals.doz += 10;
+                totals.total += 10;
+                css_class = 'gold';
+                break;
+            case 9:
+                totals.golds += 1;
+                totals.total_golds += 1;
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 9;
+                totals.doz += 9;
+                totals.total += 9;
+                css_class = 'gold';
+                break;
+            case 8:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 8;
+                totals.doz += 8;
+                totals.total += 8;
+                css_class = 'red';
+                break;
+            case 7:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 7;
+                totals.doz += 7;
+                totals.total += 7;
+                css_class = 'red';
+                break;
+            case 6:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 6;
+                totals.doz += 6;
+                totals.total += 6;
+                css_class = 'blue';
+                break;
+            case 5:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 5;
+                totals.doz += 5;
+                totals.total += 5;
+                css_class = 'blue';
+                break;
+            case 4:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 4;
+                totals.doz += 4;
+                totals.total += 4;
+                css_class = 'black';
+                break;
+            case 3:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 3;
+                totals.doz += 3;
+                totals.total += 3;
+                css_class = 'black';
+                break;
+            case 2:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 2;
+                totals.doz += 2;
+                totals.total += 2;
+                css_class = 'white';
+                break;
+            case 1:
+                totals.hits += 1;
+                totals.total_hits += 1;
+                totals.end += 1;
+                totals.doz += 1;
+                totals.total += 1;
+                css_class = 'white';
+                break;
+            case 'M':
+                css_class = 'green';
+                break;
+        }
+        return '<td class="' + css_class + '">' + arrow + '</td>';
+    }
+
     function changeScore(score) {
         var val = score.val();
         var ucval = val.toUpperCase();

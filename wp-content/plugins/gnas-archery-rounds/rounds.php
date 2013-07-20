@@ -24,9 +24,9 @@ class GNAS_PDO {
         return self::$pdo;
     }
 
-    public static function fetch($query, $params = array()) {
+    public static function SELECT($query, $params = array()) {
         // is_array
-        $stmt = self::get()->prepare($query);
+        $stmt = self::get()->prepare('SELECT ' . $query);
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
         $stmt->closeCursor();
@@ -77,7 +77,7 @@ class GNAS_AgeGroups {
 
     static function get() {
         if (!isset(self::$age_groups)) {
-            $rows = GNAS_PDO::fetch('SELECT age_group'
+            $rows = GNAS_PDO::SELECT('age_group'
                                     . ' FROM age_groups'
                                     . ' ORDER BY display_order');
             $age_groups = array();
@@ -94,9 +94,15 @@ class GNAS_AgeGroups {
 class GNAS_Genders {
     private static $genders;
 
+    /**
+     * disallow creation of instances.
+     */
+    private function __construct() {
+    }
+
     static function get() {
         if (!isset(self::$genders)) {
-            $rows = GNAS_PDO::fetch('SELECT gender'
+            $rows = GNAS_PDO::SELECT('gender'
                                     . ' FROM genders'
                                     . ' ORDER BY gender');
             $genders = array();
@@ -311,8 +317,7 @@ class GNAS_ArrowCounts {
     }
 
     public static function create($familyName) {
-        $rows = GNAS_PDO::fetch(
-            'SELECT *'
+        $rows = GNAS_PDO::SELECT('*'
             . ' FROM arrow_count'
             . ' WHERE family_name = ?'
             . ' ORDER BY distance_number',
@@ -433,8 +438,7 @@ class GNAS_Distances {
     public static function create($roundName,
                                   GNAS_ArrowCounts $arrowCounts,
                                   GNAS_Measure $measure) {
-        $rows = GNAS_PDO::fetch(
-            'SELECT *'
+        $rows = GNAS_PDO::SELECT('*'
             . ' FROM distance'
             . ' WHERE round_name = ?'
             . ' ORDER BY distance_number',
@@ -525,6 +529,20 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
              . $this->getTable();
     }
 
+    public function asMenu() {
+        $this->populate();
+        if (count($this->rounds) == 1) {
+            return array($this->rounds[0]->getName());
+        }
+        else {
+            $children = array();
+            foreach ($this->rounds as $round) {
+                $children []= $round->getName();
+            }
+            return array($this->name => $children);
+        }
+    }
+
     private function getTitle() {
         return '<h1>' . $this->name . '</h1>';
     }
@@ -578,15 +596,14 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
     private function populate() {
         if (isset($this->rounds)) return;
         $this->rounds = array();
-        $rows = GNAS_PDO::fetch(
-            'SELECT *'
+        $rows = GNAS_PDO::SELECT('*'
             . ' FROM round'
             . ' WHERE family_name = ?'
             . ' ORDER by display_order',
             array($this->name));
         foreach ($rows as $row) {
             $this->rounds[$row['display_order']] =
-                GNAS_Round::getInstanceByRow($row);
+                GNAS_Round::getInstanceFromRow($row);
         }
     }
 
@@ -607,7 +624,7 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
     public static function getInstance($name) {
         if (!array_key_exists($name, self::$instances)) {
             $family = array();
-            $rows = GNAS_PDO::fetch('SELECT *'
+            $rows = GNAS_PDO::SELECT('*'
                                     . ' FROM round_family'
                                     . ' WHERE name = ?',
                                     array($name));
@@ -737,7 +754,7 @@ class GNAS_Round implements GNAS_RoundInterface {
         $this->searchTerm = implode('+', explode(' ', $name));
     }
 
-    public static function getInstanceByRow(array $row) {
+    public static function getInstanceFromRow(array $row) {
         if (!array_key_exists($row['name'], self::$instances)) {
             self::$instances[$row['name']] = new self($row['name'],
                                                       $row['family_name'],
@@ -749,13 +766,13 @@ class GNAS_Round implements GNAS_RoundInterface {
     public static function getInstanceByName($name) {
         if (!array_key_exists($name, self::$instances)) {
             $family = array();
-            $rows = GNAS_PDO::fetch('SELECT *'
+            $rows = GNAS_PDO::SELECT('*'
                                     . ' FROM round'
                                     . ' WHERE name = ?',
                                     array($name));
             $row = $rows[0];
             if (isset($row['name']))
-                return self::getInstanceByRow($row);
+                return self::getInstanceFromRow($row);
             else
                 self::$instances[$name] = new GNAS_UnrecognisedRound($name);
         }
@@ -841,8 +858,7 @@ class GNAS_Classifications {
         $fields []= 'mbm';
         $fields []= 'gmbm';
 
-        $query = 'SELECT '
-                . implode(', ', $fields)
+        $query = implode(', ', $fields)
                 . ' FROM outdoor_classifications'
                 . ' JOIN age_groups'
                 . ' ON outdoor_classifications.age_group'
@@ -855,7 +871,7 @@ class GNAS_Classifications {
                    . implode('</th><th>', $headers)
                    . '</th></tr></thead><tbody>';
 
-        $rows = GNAS_PDO::fetch($query, $parameters);
+        $rows = GNAS_PDO::SELECT($query, $parameters);
 
         $seen = false;
         foreach ($rows as $row) {
@@ -945,16 +961,16 @@ abstract class GNAS_AllRounds {
     }
 
     private function getAllRounds() {
-        $query = 'SELECT round.* FROM round, round_family'
+        $query = 'round.* FROM round, round_family'
                . ' WHERE round.family_name = round_family.name'
                . ' AND round_family.measure = ?'
                . ' AND round_family.venue = ?'
                . ' ORDER BY round.family_name, round.display_order';
         $params = array($this->getMeasure(), 'outdoor');
-        $rows = GNAS_PDO::fetch($query, $params);
+        $rows = GNAS_PDO::SELECT($query, $params);
         $rounds = array();
         foreach ($rows as $row) {
-            $rounds []= GNAS_Round::getInstanceByRow($row);
+            $rounds []= GNAS_Round::getInstanceFromRow($row);
         }
         return $rounds;
 
@@ -1227,13 +1243,13 @@ class GNAS_OutdoorTable {
                 $placeholders []= '?';
                 $arguments []= $header['round'];
             }
-            $query = 'SELECT *'
+            $query = '*'
                    . ' FROM outdoor_classifications'
                    . ' WHERE round IN ('
                    . implode(',', $placeholders)
                    . ') and bow = ?';
             $arguments []= $table['bow'];
-            $rows = GNAS_PDO::fetch($query, $arguments);
+            $rows = GNAS_PDO::SELECT($query, $arguments);
             foreach ($rows as $row) {
                 $key = $row['gender'] . ' ' . $row['age_group'];
                 $round = $row['round'];
@@ -1265,7 +1281,7 @@ class GNAS_OutdoorTable {
     private function getDBTable() {
         if (!isset($this->agb_outdoor_table)) {
             $this->agb_outdoor_table = array();
-            $rows = GNAS_PDO::fetch('SELECT *'
+            $rows = GNAS_PDO::SELECT('*'
                                     . ' FROM agb_outdoor_table'
                                     . ' WHERE table_number = ?',
                                     array($this->table_number));
@@ -1277,8 +1293,8 @@ class GNAS_OutdoorTable {
     private function getDBHeaderTable() {
         if (!isset($this->agb_outdoor_table_columns)) {
             $table = $this->getDBTable();
-            $this->agb_outdoor_table_columns = GNAS_PDO::fetch(
-                'SELECT * FROM agb_outdoor_table_column'
+            $this->agb_outdoor_table_columns = GNAS_PDO::SELECT('*'
+                . ' FROM agb_outdoor_table_column'
                 . ' WHERE header_number = ? ORDER BY column_number',
                 array($table['header_number']));
         }
