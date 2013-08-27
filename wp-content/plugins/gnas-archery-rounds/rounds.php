@@ -38,32 +38,46 @@ class GNAS_PDO {
 ####################
 class GNAS_PageURL {
     private static $pageURL;
+    private static $existingParams;
     /**
      * disallow creation of instances.
      */
     private function __construct() {
     }
 
-    public static function get() {
+    public static function make($params) {
         if (!isset(self::$pageURL)) {
             $pageURL = 'http';
             if ($_SERVER['HTTPS'] == 'on') {
                 $pageURL .= 's';
             }
             $pageURL .= '://';
+            $pageURL .= $_SERVER['SERVER_NAME'];
             if ($_SERVER['SERVER_PORT'] != '80') {
-                $pageURL .= $_SERVER['SERVER_NAME']
-                            . ':'
-                            . $_SERVER['SERVER_PORT']
-                            . $_SERVER['REQUEST_URI'];
-            } else {
-                $pageURL .= $_SERVER['SERVER_NAME']
-                            . $_SERVER['REQUEST_URI'];
+                 $pageURL .= ':' . $_SERVER['SERVER_PORT'];
             }
-            $pageURL = preg_replace('/\?.*/', '', $pageURL);
+            $parts = explode('?', $_SERVER['REQUEST_URI'], 2);
+            $requestURI = $parts[0];
+            self::$existingParams = array();
+            foreach (explode('&', $parts[1]) as $param) {
+                list($key, $value) = explode('=', $param);
+                if ($key == 'page_id') {
+                    self::$existingParams[$key] = $value;
+                }
+            }
+            $pageURL .= $requestURI;
             self::$pageURL = $pageURL;
         }
-        return self::$pageURL;
+        $params = array_merge(self::$existingParams, $params);
+        if (count($params) > 0) {
+            $p = array();
+            foreach ($params as $key => $value) {
+                $p []= $key . '=' . $value;
+            }
+            return self::$pageURL . '?' . implode('&', $p);
+        } else {
+            return self::$pageURL;
+        }
     }
 
 }
@@ -737,9 +751,7 @@ class GNAS_Round implements GNAS_RoundInterface {
 
     private function getLink() {
         return '<a href="'
-             . GNAS_PageURL::get()
-             . '?round='
-             . $this->searchTerm
+             . GNAS_PageURL::make(array('round' => $this->searchTerm))
              . '">'
              . $this->name
              . '</a>';
@@ -798,11 +810,108 @@ class GNAS_Round implements GNAS_RoundInterface {
 
 }
 
+class GNAS_Requirements {
+
+    public function __construct() {
+    }
+
+    public function finder() {
+        $ret = $this->form();
+        if (   $_GET['classification']
+            && $_GET['age_group']
+            && $_GET['bow']
+            && $_GET['gender']) {
+            $ret .= $this->results();
+        }
+        return $ret;
+    }
+
+    private function form() {
+        $result = "<form method='get' action=''>\n";
+        if ($_GET['page_id']) {
+            $result .= "<input type='hidden' name='page_id' value='$_GET[page_id]'/>\n";
+        }
+        $result .= "<table>\n";
+        $result .= $this->option('Desired Classification', 'classification',
+            array(
+            'third' => 'Third Class',
+            'second' => 'Second Class',
+            'first' => 'First Class',
+            'bm' => 'Bowman',
+            'mbm' => 'Master Bowman',
+            'gmbm' => 'Grand Master Bowman'));
+        $result .= $this->option('Age Group', 'age_group', array(
+            'adult' => 'Adult',
+            'U18' => 'Under Eighteen',
+            'U16' => 'Under Sixteen',
+            'U14' => 'Under Fourteen',
+            'U12' => 'Under Twelve'));
+        $result .= $this->option('Bow', 'bow', array(
+            'recurve' => 'Recurve',
+            'compound' => 'Compound',
+            'longbow' => 'Longbow',
+            'barebow' => 'Barebow'));
+        $result .= $this->option('Gender', 'gender', array(
+            'M' => 'Gent',
+            'F' => 'Lady'));
+        $result .= "<tr><th>&nbsp;</th>
+<td><input type='submit' value='Search'/></td></tr>
+</table>
+</form>
+";
+    return $result;
+    }
+
+    private function option($title, $id, $options) {
+        $result = "<tr><th>$title</th><td><select name='$id' id='$id'>\n";
+        foreach ($options as $value => $label) {
+            $result .= "<option value='$value'";
+            if ($_GET[$id] == $value) {
+                $result .= " selected='selected'";
+            }
+            $result .= ">$label</option>\n";
+        }
+        $result .= "</select></td></tr>\n";
+        return $result;
+    }
+
+    private function results() {
+        $result = '';
+        $class = $_GET['classification'];
+        if (   $class != 'third'
+            && $class != 'second'
+            && $class != 'first'
+            && $class != 'bm'
+            && $class != 'mbm'
+            && $class != 'gmbm') {
+            return "<p>Please don't hack me!</p>\n";
+        }
+
+        $rows = GNAS_PDO::SELECT("round, $class as score"
+                               . " from outdoor_classifications"
+                               . " where $class > 0"
+                               . " and age_group = ?"
+                               . " and bow = ?"
+                               . " and gender = ?"
+                               . " order by round",
+                               array($_GET['age_group'],
+                                     $_GET['bow'],
+                                     $_GET['gender']));
+        $result = "<table><thead><tr><th>Round</th><th>Score</th></tr></thead>\n";
+        $result .= "<tbody>\n";
+        foreach ($rows as $row) {
+            $result .= "<tr><td>$row[round]</td><td>$row[score]</td></tr>\n";
+        }
+        $result .= "<tbody></table>\n";
+        return $result;
+    }
+}
+
 ############################
 class GNAS_Classifications {
 
     private $roundName;
-    private $gender_magender_map;
+    private $gender_map;
 
     public function __construct($roundName) {
         $this->roundName = $roundName;
@@ -916,18 +1025,16 @@ class GNAS_Classifications {
         $wrap = false;
         foreach(array('round', 'gender', 'age_group', 'bow') as $valid) {
             if ($key == $valid) {
-                $params []= $valid . '=' . urlencode($row[$key]);
+                $params [$valid] = urlencode($row[$key]);
                 $wrap = true;
             }
             else if (array_key_exists($valid, $_GET)) {
-                $params []= $valid . '=' . urlencode($_GET[$valid]);
+                $params [$valid] = urlencode($_GET[$valid]);
             }
         }
         if ($wrap) {
             return ('<a href="'
-                    . GNAS_PageURL::get()
-                    . '?'
-                    . implode('&', $params)
+                    . GNAS_PageURL::make($params)
                     . '">'
                     . $row[$key]
                     . '</a>');
@@ -1026,7 +1133,7 @@ class GNAS_MetricRounds extends GNAS_AllRounds {
 #########################
 /**
  * Renders the admin menus.
- * Produces as closely as possible a represdentation of the given GNAS table.
+ * Reproduces as closely as possible a representation of the given GNAS table.
  */
 class GNAS_OutdoorTable {
 
@@ -1352,7 +1459,7 @@ class GNAS_Page {
     }
 
     /**
-     * used by the shortcode.
+     * used by the [rounds] shortcode.
      */
     public static function asText() {
         if (array_key_exists('round', $_GET)) {
@@ -1379,5 +1486,10 @@ class GNAS_Page {
      */
     public static function roundData() {
         return GNAS_AllRounds::asData();
+    }
+
+    public static function roundFinder() {
+        $requirements = new GNAS_Requirements();
+        return $requirements->finder();
     }
 }

@@ -16,11 +16,16 @@ function gnas_archery_rounds_display() {
     return GNAS_Page::asText();
 }
 
+function gnas_archery_rounds_find() {
+    return GNAS_Page::roundFinder();
+}
+
 function gnas_archery_table_display() {
     return GNAS_Page::outdoorTable();
 }
 
 add_shortcode('rounds', 'gnas_archery_rounds_display');
+add_shortcode('requirements', 'gnas_archery_rounds_find');
 
 add_action( 'admin_menu', 'register_gnas_plugin_menu' );
 
