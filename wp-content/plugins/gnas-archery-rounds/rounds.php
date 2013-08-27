@@ -1,5 +1,6 @@
 <?php
 
+################
 class GNAS_PDO {
     private static $pdo;
 
@@ -34,6 +35,7 @@ class GNAS_PDO {
     }
 }
 
+####################
 class GNAS_PageURL {
     private static $pageURL;
     /**
@@ -66,6 +68,7 @@ class GNAS_PageURL {
 
 }
 
+######################
 class GNAS_AgeGroups {
     private static $age_groups;
 
@@ -91,6 +94,7 @@ class GNAS_AgeGroups {
 }
 
 
+####################
 class GNAS_Genders {
     private static $genders;
 
@@ -115,8 +119,8 @@ class GNAS_Genders {
     }
 }
 
+#############################
 abstract class GNAS_Measure {
-
     abstract public function getUnits();
     abstract public function getAllDistances();
     abstract public function getName();
@@ -174,6 +178,7 @@ abstract class GNAS_Measure {
 
 }
 
+#################################################
 class GNAS_ImperialMeasure extends GNAS_Measure {
 
     public function getUnits() {
@@ -190,6 +195,7 @@ class GNAS_ImperialMeasure extends GNAS_Measure {
 
 }
 
+###############################################
 class GNAS_MetricMeasure extends GNAS_Measure {
 
     public function getUnits() {
@@ -207,6 +213,7 @@ class GNAS_MetricMeasure extends GNAS_Measure {
 
 }
 
+#############################
 abstract class GNAS_Scoring {
     abstract public function getName();
     abstract public function getMultiplier();
@@ -217,23 +224,26 @@ abstract class GNAS_Scoring {
 
 }
 
+################################################
 class GNAS_TenZoneScoring extends GNAS_Scoring {
     public function getName() { return 'ten zone'; }
     public function getMultiplier() { return 10; }
 }
 
+#################################################
 class GNAS_FiveZoneScoring extends GNAS_Scoring {
     public function getName() { return 'five zone'; }
     public function getMultiplier() { return 9; }
 }
 
+################################################
 class GNAS_FiveMaxScoring extends GNAS_Scoring {
     public function getName() { return 'five max'; }
     public function getMultiplier() { return 5; }
 }
 
+#############################
 class GNAS_SingleArrowCount {
-
     private $numArrows;
     private $dozens;
     private $face;
@@ -274,6 +284,7 @@ class GNAS_SingleArrowCount {
     }
 }
 
+########################
 class GNAS_ArrowCounts {
     private $counts;
     private $total;
@@ -330,6 +341,7 @@ class GNAS_ArrowCounts {
     }
 }
 
+###########################
 class GNAS_SingleDistance {
     private $distance;
     private $singleArrowCount;
@@ -377,6 +389,7 @@ class GNAS_SingleDistance {
 
 }
 
+######################
 class GNAS_Distances {
     private $roundName;
     private $distances;
@@ -471,6 +484,7 @@ class GNAS_Distances {
 
 }
 
+##################################
 abstract class GNAS_Unrecognised {
     private $name;
 
@@ -498,11 +512,13 @@ abstract class GNAS_Unrecognised {
 }
 
 
+################################
 interface GNAS_FamilyInterface {
     public function asText();
     public function getTableBody();
 }
 
+##################################
 class GNAS_UnrecognisedRoundFamily
     extends GNAS_Unrecognised
     implements GNAS_FamilyInterface {
@@ -513,6 +529,7 @@ class GNAS_UnrecognisedRoundFamily
 
 }
 
+########################################################
 class GNAS_RoundFamily implements GNAS_FamilyInterface {
     private $name;
     private $scoring;
@@ -643,20 +660,19 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
 
 }
 
+###############################
 interface GNAS_RoundInterface {
     public function getTableRow();
     public function asText();
 }
 
+############################
 class GNAS_UnrecognisedRound
     extends GNAS_Unrecognised
     implements GNAS_RoundInterface {
 
     public function getTypeName() {
         return 'round';
-    }
-    public function asText() {
-        return super();
     }
 
     public function getTableRow() {
@@ -665,6 +681,7 @@ class GNAS_UnrecognisedRound
 
 }
 
+#################################################
 class GNAS_Round implements GNAS_RoundInterface {
 
     private $name;
@@ -781,6 +798,7 @@ class GNAS_Round implements GNAS_RoundInterface {
 
 }
 
+############################
 class GNAS_Classifications {
 
     private $roundName;
@@ -921,6 +939,7 @@ class GNAS_Classifications {
 
 }
 
+###############################
 abstract class GNAS_AllRounds {
 
     public static function asText() {
@@ -978,6 +997,7 @@ abstract class GNAS_AllRounds {
 
 }
 
+##################################################
 class GNAS_ImperialRounds extends GNAS_AllRounds {
 
     public function getTitle() {
@@ -990,6 +1010,7 @@ class GNAS_ImperialRounds extends GNAS_AllRounds {
 
 }
 
+################################################
 class GNAS_MetricRounds extends GNAS_AllRounds {
 
     public function getTitle() {
@@ -1002,6 +1023,7 @@ class GNAS_MetricRounds extends GNAS_AllRounds {
 
 }
 
+#########################
 /**
  * Renders the admin menus.
  * Produces as closely as possible a represdentation of the given GNAS table.
@@ -1317,6 +1339,7 @@ EOCSS;
 
 }
 
+#################
 /*
  * Entry Point.
  */
