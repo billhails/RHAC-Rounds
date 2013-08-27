@@ -19,14 +19,13 @@ add_action('admin_menu', 'rhac_scorecards_hook');
 add_action('admin_enqueue_scripts', 'rhac_admin_css');
 
 function rhac_scorecards_hook() {
-    add_options_page('Score Cards', 'Score Cards', 'manage_options', 'scorecards', 'rhac_scorecards_toplevel');
+    add_users_page('Score Cards', 'Score Cards', 'manage_options', 'scorecards', 'rhac_scorecards_toplevel');
 }
 
 function rhac_scorecards_toplevel() {
     if ( !current_user_can( 'manage_options' ) )  {
         wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
     }
-    echo '<h1>Testing!</h1>';
     RHAC_Scorecards::getInstance()->topLevel();
 }
 

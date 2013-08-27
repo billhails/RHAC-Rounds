@@ -8,4 +8,5 @@ include_once (RHAC_PLUGIN_DIR . 'toplevel.php');
 if ($_GET['id']) {
     header('Content-Type: application/json; charset=utf-8');
     print RHAC_Scorecards::getInstance()->scorecardJSON($_GET['id']);
+    exit;
 }

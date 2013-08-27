@@ -208,6 +208,8 @@ class RHAC_Scorecards {
             $data[$key] = $value;
         }
         $data['ends'] = $this->scorecard_end_data;
+        $gnas_round = GNAS_Round::getInstanceByName($data['round']);
+        $data['measure'] = $gnas_round->getMeasure()->getName();
         return json_encode($data);
     }
 
@@ -338,16 +340,16 @@ class RHAC_Scorecards {
     private function roundDataAsJSON() {
         $rounds = array();
         foreach (GNAS_Page::roundData() as $round) {
-            $round_json = '"' . $round->getName() . '":{';
-            $round_json .= '"measure":"' . $round->getMeasure()->getName() . '",';
+            $round_json = array();
+            $round_json['measure'] = $round->getMeasure()->getName();
             $count = 0;
             foreach ($round->getDistances()->rawData() as $distance) {
                 $count += $distance->getNumArrows();
             }
-            $round_json .= '"arrows":' . $count . '}';
-            $rounds []= $round_json;
+            $round_json['arrows'] = $count;
+            $rounds[$round->getName()] = $round_json;
         }
-        return '{' . implode(',', $rounds) . '}';
+        return json_encode($rounds);
     }
 
     public function roundDataAsSelect() {

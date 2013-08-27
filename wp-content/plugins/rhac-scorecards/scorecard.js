@@ -156,6 +156,18 @@ function RHAC_Scorer() {
             xs: 0, total_xs: 0,
             golds: 0, total_golds: 0,
             doz: 0, total: 0,
+            total_tens: 0,
+            total_nines: 0,
+            total_eights: 0,
+            total_sevens: 0,
+            total_sixes: 0,
+            total_fives: 0,
+            total_fours: 0,
+            total_threes: 0,
+            total_twos: 0,
+            total_ones: 0,
+            total_misses: 0,
+            total_arrows: 0
         };
         data.ends.each(function(index, end) {
             totals.end = 0;
@@ -163,7 +175,7 @@ function RHAC_Scorer() {
                 html += '<tr>';
                 totals.hits = 0;
                 totals.xs = 0;
-                total.golds = 0;
+                totals.golds = 0;
                 totals.doz = 0;
             }
             html += oneEnd(end, totals);
@@ -188,6 +200,139 @@ function RHAC_Scorer() {
         html += '</tr>';
         html += '</tfoot>';
         html += '</table>';
+        if (totals.total_arrows > 0) {
+            if ('imperial' == data.measure) {
+                html += imperialBarchart(totals);
+            }
+            else {
+                html += metricBarchart(totals);
+            }
+            html += '<span><b>Average:</b> ' +
+                (totals.total / totals.total_arrows).toFixed(2) +
+                '</span>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function metricBarChart(totals) {
+        var width = 30;
+        var height = 100;
+        var html = '';
+        html += '<table>';
+        html += '<tr class="bars">';
+        html += '<td class="bar"><img src="gold.png" height="' +
+            (height * totals.total_xs / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="gold.png" height="' +
+            (height * totals.total_tens / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="gold.png" height="' +
+            (height * totals.total_nines / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="red.png" height="' +
+            (height * totals.total_eights / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="red.png" height="' +
+            (height * totals.total_sevens / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="blue.png" height="' +
+            (height * totals.total_sixes / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="blue.png" height="' +
+            (height * totals.total_fives / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="black.png" height="' +
+            (height * totals.total_fours / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="black.png" height="' +
+            (height * totals.total_threes / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="white.png" height="' +
+            (height * totals.total_twos / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="white.png" height="' +
+            (height * totals.total_ones / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="green.png" height="' +
+            (height * totals.total_misses / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '</tr>';
+        html += '<tr class="values">';
+        html += '<td class="value">' + totals.total_xs + '</td>';
+        html += '<td class="value">' + totals.total_tens + '</td>';
+        html += '<td class="value">' + totals.total_nines + '</td>';
+        html += '<td class="value">' + totals.total_eights + '</td>';
+        html += '<td class="value">' + totals.total_sevens + '</td>';
+        html += '<td class="value">' + totals.total_sixes + '</td>';
+        html += '<td class="value">' + totals.total_fives + '</td>';
+        html += '<td class="value">' + totals.total_fours + '</td>';
+        html += '<td class="value">' + totals.total_threes + '</td>';
+        html += '<td class="value">' + totals.total_twos + '</td>';
+        html += '<td class="value">' + totals.total_ones + '</td>';
+        html += '<td class="value">' + totals.total_misses + '</td>';
+        html += '</tr>';
+        html += '<tr class="labels">';
+        html += '<th class="label">Xs</th>';
+        html += '<th class="label">10s</th>';
+        html += '<th class="label">9s</th>';
+        html += '<th class="label">8s</th>';
+        html += '<th class="label">7s</th>';
+        html += '<th class="label">6s</th>';
+        html += '<th class="label">5s</th>';
+        html += '<th class="label">4s</th>';
+        html += '<th class="label">3s</th>';
+        html += '<th class="label">2s</th>';
+        html += '<th class="label">1s</th>';
+        html += '<th class="label">Ms</th>';
+        html += '</tr>';
+        html += '</table>';
+        return html;
+    }
+
+    function imperialBarChart(totals) {
+        var width = 50;
+        var height = 100;
+        var html = '';
+        html += '<table>';
+        html += '<tr class="bars">';
+        html += '<td class="bar"><img src="gold.png" height="' +
+            (height * totals.total_nines / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="red.png" height="' +
+            (height * totals.total_sevens / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="blue.png" height="' +
+            (height * totals.total_fives / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="black.png" height="' +
+            (height * totals.total_threes / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="white.png" height="' +
+            (height * totals.total_ones / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '<td class="bar"><img src="green.png" height="' +
+            (height * totals.total_misses / totals.total_arrows).toFixed() +
+            '" width="' + width + '"/></td>';
+        html += '</tr>';
+        html += '<tr class="values">';
+        html += '<td class="value">' + totals.total_nines + '</td>';
+        html += '<td class="value">' + totals.total_sevens + '</td>';
+        html += '<td class="value">' + totals.total_fives + '</td>';
+        html += '<td class="value">' + totals.total_threes + '</td>';
+        html += '<td class="value">' + totals.total_ones + '</td>';
+        html += '<td class="value">' + totals.total_misses + '</td>';
+        html += '</tr>';
+        html += '<tr class="labels">';
+        html += '<th class="label">9s</th>';
+        html += '<th class="label">7s</th>';
+        html += '<th class="label">5s</th>';
+        html += '<th class="label">3s</th>';
+        html += '<th class="label">1s</th>';
+        html += '<th class="label">Ms</th>';
+        html += '</tr>';
+        html += '</table>';
+        return html;
     }
 
     function endTotal(totals) {
@@ -224,95 +369,116 @@ function RHAC_Scorer() {
 
     function oneArrow(arrow, totals) {
         var css_class = '';
+        totals.total_arrows++;
         switch(arrow) {
             case 'X':
-                totals.xs += 1;
-                totals.total_xs += 1;
+                totals.xs++;
+                totals.total_xs++;
+                totals.golds++;
+                totals.total_golds++;
+                totals.hits++;
+                totals.total_hits++;
+                totals.end += 10;
+                totals.doz += 10;
+                totals.total += 10;
+                css_class = 'gold';
+                break;
             case 10:
-                totals.golds += 1;
-                totals.total_golds += 1;
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_tens++;
+                totals.golds++;
+                totals.total_golds++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 10;
                 totals.doz += 10;
                 totals.total += 10;
                 css_class = 'gold';
                 break;
             case 9:
-                totals.golds += 1;
-                totals.total_golds += 1;
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_nines++;
+                totals.golds++;
+                totals.total_golds++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 9;
                 totals.doz += 9;
                 totals.total += 9;
                 css_class = 'gold';
                 break;
             case 8:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_eights++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 8;
                 totals.doz += 8;
                 totals.total += 8;
                 css_class = 'red';
                 break;
             case 7:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_sevens++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 7;
                 totals.doz += 7;
                 totals.total += 7;
                 css_class = 'red';
                 break;
             case 6:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_sixes++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 6;
                 totals.doz += 6;
                 totals.total += 6;
                 css_class = 'blue';
                 break;
             case 5:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_fives++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 5;
                 totals.doz += 5;
                 totals.total += 5;
                 css_class = 'blue';
                 break;
             case 4:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_fours++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 4;
                 totals.doz += 4;
                 totals.total += 4;
                 css_class = 'black';
                 break;
             case 3:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_threes++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 3;
                 totals.doz += 3;
                 totals.total += 3;
                 css_class = 'black';
                 break;
             case 2:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_twos++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 2;
                 totals.doz += 2;
                 totals.total += 2;
                 css_class = 'white';
                 break;
             case 1:
-                totals.hits += 1;
-                totals.total_hits += 1;
+                totals.total_ones++;
+                totals.hits++;
+                totals.total_hits++;
                 totals.end += 1;
                 totals.doz += 1;
                 totals.total += 1;
                 css_class = 'white';
                 break;
             case 'M':
+                totals.total_misses++;
                 css_class = 'green';
                 break;
         }
