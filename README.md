@@ -38,6 +38,11 @@ Records, at the same time storing the scorecards and allowing members
 to view their own scorecards as well as providing summaries in chart
 form (bar and/or pie charts) based on round and/or distance.
 
+The sunset plugin is just a utility that displays the sunset and last light
+for a configured latitude and longditude. It's useful for our club
+when shooting in the evenings during the summer to know exactly
+how much daylight we have left.
+
 The <tt>wp-content/themes/</tt> is just a backup of the modified
 themes our website uses.
 
