@@ -263,7 +263,8 @@ class RHAC_Scorecards {
             }
         }
         $query = "SELECT * FROM scorecards WHERE "
-               . implode(' AND ', $criteria);
+               . implode(' AND ', $criteria)
+               . " ORDER BY date";
         $search_results = $this->fetch($query, $params);
         print $this->searchResultsPage($search_results);
     }
