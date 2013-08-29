@@ -810,6 +810,7 @@ class GNAS_Round implements GNAS_RoundInterface {
 
 }
 
+#########################
 class GNAS_Requirements {
 
     public function __construct() {
@@ -900,7 +901,11 @@ class GNAS_Requirements {
         $result = "<table><thead><tr><th>Round</th><th>Score</th></tr></thead>\n";
         $result .= "<tbody>\n";
         foreach ($rows as $row) {
-            $result .= "<tr><td>$row[round]</td><td>$row[score]</td></tr>\n";
+            $round = $row['round'];
+            if ($round == 'National') {
+                $round = ':National';
+            }
+            $result .= "<tr><td>$round</td><td>$row[score]</td></tr>\n";
         }
         $result .= "<tbody></table>\n";
         return $result;
