@@ -61,17 +61,23 @@ class RHAC_Scorecards {
     public function topLevel() {
 
         // echo '<p>topLevel() entered</p>';
-        if (isset($_POST['edit-scorecard'])) { // update or insert requested
+        if (isset($_POST['submit-scorecard-and-edit'])) { // update or insert requested
             if ($_POST['scorecard-id']) { // update requested
                 // echo '<p>topLevel() update req</p>';
                 $this->update();
-                $this->edit($_POST['scorecard-id']);
-            }
-            else { // insert requested
+                $id = $_POST['scorecard-id'];
+            } else { // insert requested
                 // echo '<p>topLevel() insert req</p>';
                 $id = $this->insert();
-                $this->edit($id);
             }
+            $this->edit($id);
+        } elseif (isset($_POST['submit-scorecard-and-new'])) {
+            if ($_POST['scorecard-id']) { // update requested
+                $this->update();
+            } else { // insert requested
+                $this->insert();
+            }
+            $this->edit(0);
         } elseif (isset($_POST['add-archer'])) {
             $this->addArcher($_POST['archer']);
             $this->homePage();
@@ -235,6 +241,12 @@ class RHAC_Scorecards {
         }
         else {
             $this->scorecard_data = array();
+            if (isset($_POST['date'])) {
+                $this->scorecard_data['date'] = $_POST['date'];
+            }
+            if (isset($_POST['round'])) {
+                $this->scorecard_data['round'] = $_POST['round'];
+            }
             $this->scorecard_end_data = array();
         }
         print $this->editScorecardPage();
@@ -637,7 +649,8 @@ class RHAC_Scorecards {
                 . ' name="total-golds" id="i-total-golds" />';
         $text []= '<input type="hidden"'
                 . ' name="total-total" id="i-total-total" />';
-        $text []= '<input type="submit" name="edit-scorecard" />';
+        $text []= '<input type="submit" name="submit-scorecard-and-edit" value="Submit and Edit" />';
+        $text []= '<input type="submit" name="submit-scorecard-and-new" value="Submit and New" />';
         return implode($text);
     }
 
