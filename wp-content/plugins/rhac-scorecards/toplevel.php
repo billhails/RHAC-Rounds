@@ -306,8 +306,15 @@ class RHAC_Scorecards {
         $text []= '</tr>';
         $text []= '</thead>';
         $text []= '<tbody>';
+        $odd = true;
+        $prev_date = '';
         foreach ($search_results as $result) {
-            $text []= '<tr>';
+            if ($result['date'] != $prev_date) {
+                $odd = !$odd;
+                $prev_date = $result['date'];
+            }
+            $tr_class = $odd ? 'odd' : 'even';
+            $text []= "<tr class='$tr_class'>";
             $text []= "<td>$result[archer]</td>";
             $text []= "<td>$result[bow]</td>";
             $text []= "<td>$result[round]</td>";

@@ -111,3 +111,13 @@ div#help-text {
     margin-bottom: 0.5em;
     display: none;
 }
+
+
+tr.odd td {
+    background-color:green;
+    color:white;
+}
+tr.even td {
+    color:green;
+    background-color:white;
+}
