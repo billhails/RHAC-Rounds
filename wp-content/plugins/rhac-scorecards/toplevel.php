@@ -717,6 +717,9 @@ class RHAC_Scorecards {
     private function cancelButton() {
         $text = array();
         $text []= '<form method="get" action="">';
+        if ($_GET['page']) {
+            $text []= '<input type="hidden" name="page" value="' . $_GET['page'] . '">';
+        }
         $text []= '<input type="submit" name="cancel" value="Cancel">';
         $text []= '</form>';
         return implode($text);
