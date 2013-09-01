@@ -85,8 +85,6 @@ class RHAC_Scorecards {
                 $this->insert();
             }
             $this->homePage();
-        } elseif (isset($_POST['cancel-scorecard'])) {
-            $this->homePage();
         } elseif (isset($_POST['add-archer'])) {
             $this->addArcher($_POST['archer']);
             $this->homePage();
@@ -661,7 +659,6 @@ class RHAC_Scorecards {
         $text []= '<input type="submit" name="submit-scorecard-and-edit" value="Submit and Edit" />';
         $text []= '<input type="submit" name="submit-scorecard-and-new" value="Submit and New" />';
         $text []= '<input type="submit" name="submit-scorecard-and-finish" value="Submit and Finish" />';
-        $text []= '<input type="submit" name="cancel-scorecard" value="Cancel" />';
         return implode($text);
     }
 
@@ -717,6 +714,14 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    private function cancelButton() {
+        $text = array();
+        $text []= '<form method="get" action="">';
+        $text []= '<input type="submit" name="cancel" value="Cancel">';
+        $text []= '</form>';
+        return implode($text);
+    }
+
     private function editScorecardPage() {
         $text = array();
         $text []= '<h1>Edit Score Card';
@@ -725,6 +730,7 @@ class RHAC_Scorecards {
         }
         $text []= '</h1>';
         $text []= $this->helpBox();
+        $text []= $this->cancelButton();
         $text []= $this->roundData();
         $text []= $this->scorecardForm();
         $text []= $this->zoneCharts();
