@@ -78,6 +78,15 @@ class RHAC_Scorecards {
                 $this->insert();
             }
             $this->edit(0);
+        } elseif (isset($_POST['submit-scorecard-and-finish'])) {
+            if ($_POST['scorecard-id']) { // update requested
+                $this->update();
+            } else { // insert requested
+                $this->insert();
+            }
+            $this->homePage();
+        } elseif (isset($_POST['cancel-scorecard'])) {
+            $this->homePage();
         } elseif (isset($_POST['add-archer'])) {
             $this->addArcher($_POST['archer']);
             $this->homePage();
@@ -651,6 +660,8 @@ class RHAC_Scorecards {
                 . ' name="total-total" id="i-total-total" />';
         $text []= '<input type="submit" name="submit-scorecard-and-edit" value="Submit and Edit" />';
         $text []= '<input type="submit" name="submit-scorecard-and-new" value="Submit and New" />';
+        $text []= '<input type="submit" name="submit-scorecard-and-finish" value="Submit and Finish" />';
+        $text []= '<input type="submit" name="cancel-scorecard" value="Cancel" />';
         return implode($text);
     }
 
