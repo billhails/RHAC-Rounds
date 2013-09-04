@@ -46,3 +46,13 @@ how much daylight we have left.
 The <tt>wp-content/themes/</tt> is just a backup of the modified
 themes our website uses.
 
+To Do
+-----
+
+* Move all the databases out of SQLite and in to the WordPress MySQL database.
+* Unify the user list in the scoresheets with the WordPress user list.
+* Extend user metadata to include DoB and current classification.
+* Figure out WordPress's REST support and use that with jQuery.
+  > need to use OAuth or similar if the api is public.
+* Present read-only version of a user"s scorecards and other performance data
+  to logged in users.
