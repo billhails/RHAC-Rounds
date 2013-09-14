@@ -538,11 +538,19 @@ function RHAC_Scorer() {
                         zoneCounts[bar_class]++;
                     }
                 }
-                if (!end_empty) {
+                if (end_empty) {
+                    jQuery("#end-total-" + counts.end).text("");
+                } else {
                     jQuery("#end-total-" + counts.end).text(String(end_total));
                 }
             }
-            if (!doz_empty) {
+            if (doz_empty) {
+                jQuery("#doz-hits-" + dozen).text("");
+                jQuery("#doz-xs-" + dozen).text("");
+                jQuery("#doz-golds-" + dozen).text("");
+                jQuery("#doz-doz-" + dozen).text("");
+                jQuery("#doz-tot-" + dozen).text("");
+            } else {
                 jQuery("#doz-hits-" + dozen).text(String(doz_hits));
                 jQuery("#doz-xs-" + dozen).text(String(doz_xs));
                 jQuery("#doz-golds-" + dozen).text(String(doz_golds));
@@ -576,12 +584,25 @@ function RHAC_Scorer() {
     }
 
     var TAB = 9;
+    var BS = 8;
 
     function watchScore(e) {
         var jqthis = jQuery(this);
         changeScore(jqthis);
-        if (jqthis.val() != "") {
-            if (e.keyCode != TAB) {
+        if (jqthis.val() == "") {
+            if (e.keyCode == BS) {
+                var current = focusables.index(this);
+                var prev = focusables.eq(current-1);
+                if (prev.length == 0) {
+                    prev = focusables.eq(0);
+                }
+                prev.focus();
+            }
+        } else {
+            if (e.keyCode == TAB) {
+            } else if (e.keyCode == BS) {
+                jqthis.val("");
+            } else {
                 var current = focusables.index(this);
                 var next = focusables.eq(current+1);
                 if (next.length == 0) {
