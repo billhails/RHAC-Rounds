@@ -12,10 +12,10 @@ class GNAS_PDO {
 
     public static function get() {
         if (!isset(self::$pdo)) {
+            $path = plugin_dir_path(__FILE__)
+                     . '../gnas-archery-rounds/archery.db';
             try {
-                self::$pdo = new PDO('sqlite:'
-                                     . plugin_dir_path(__FILE__)
-                                     . '../gnas-archery-rounds/archery.db');
+                self::$pdo = new PDO('sqlite:' . $path);
             } catch (PDOException $e) {
                 wp_die('Error!: ' . $e->getMessage());
                 exit();
@@ -1142,7 +1142,7 @@ class GNAS_MetricRounds extends GNAS_AllRounds {
  */
 class GNAS_OutdoorTable {
 
-    private $table_number;
+    protected $table_number;
     private $agb_outdoor_table;
     private $agb_outdoor_table_columns;
     private $classifications;
@@ -1156,20 +1156,24 @@ class GNAS_OutdoorTable {
         array('gmbm', 'mbm', 'bm', 'first', 'second', 'third');
 
     public function __construct($table_number) {
+        // print "<p>GNAS_OutdoorTable::new</p>";
         $this->table_number = $table_number;
     }
 
     public function handlePOST() {
+        // print "<p>GNAS_OutdoorTable::handlePOST</p>";
         if ($_POST[$this->submit_key] == 'true') {
             $this->do_handlePOST();
         }
     }
 
     public function asText() {
+        // print "<p>GNAS_OutdoorTable::asText</p>";
         return $this->getTitle() . $this->getTables();
     }
 
-    private function do_handlePOST() {
+    protected function do_handlePOST() {
+        // print "<p>GNAS_OutdoorTable::do_handlePOST</p>";
         $this->collected_posts = array();
         foreach ($_POST as $name => $score) {
             $exploded_post_name = explode('_', $name);
@@ -1206,6 +1210,7 @@ class GNAS_OutdoorTable {
                                      $age_group,
                                      $round,
                                      $score) {
+        // print "<p>GNAS_OutdoorTable::collectFromPOST</p>";
         $key = "$gender $age_group $bow $round";
         if (!isset($this->collected_posts[$key])) {
             $this->collected_posts[$key] = array(
@@ -1224,6 +1229,7 @@ class GNAS_OutdoorTable {
     }
 
     private function updateFromPOSTs() {
+        // print "<p>GNAS_OutdoorTable::updateFromPOSTs</p>";
         $query = 'INSERT OR REPLACE INTO outdoor_classifications'
                . ' (gmbm, mbm, bm, first, second, third,'
                . ' round, bow, gender, age_group) VALUES'
@@ -1246,7 +1252,8 @@ class GNAS_OutdoorTable {
         }
     }
 
-    private function getTHead() {
+    protected function getTHead() {
+        // print "<p>GNAS_OutdoorTable::getTHead</p>";
         if (!isset($this->thead)) {
             $parts = array();
             $parts []='<thead><tr><th colspan="2">&nbsp;</th>';
@@ -1265,7 +1272,8 @@ class GNAS_OutdoorTable {
         return $this->thead;
     }
 
-    private function getTables() {
+    protected function getTables() {
+        // print "<p>GNAS_OutdoorTable::getTables</p>";
         $table = $this->getDBTable();
         $bow = $table['bow'];
         $tables = array();
@@ -1279,6 +1287,7 @@ class GNAS_OutdoorTable {
     }
 
     private function getSingleTableForm($bow, $gender, $age_group) {
+        // print "<p>GNAS_OutdoorTable::getSingleTableForm</p>";
         $parts = array();
         $parts []= '<form method="POST" action=""><table>';
         $parts []= $this->getTHead();
@@ -1297,6 +1306,7 @@ class GNAS_OutdoorTable {
     }
 
     private function getTBody($bow, $gender, $age_group) {
+        // print "<p>GNAS_OutdoorTable::getTBody</p>";
         $parts = array();
         $parts []= '<tbody>';
         $body = $this->getDBBodyTable();
@@ -1333,6 +1343,7 @@ class GNAS_OutdoorTable {
     }
 
     private function niceName($gender, $age_group) {
+        // print "<p>GNAS_OutdoorTable::niceName</p>";
         $parts = array();
         if ($gender == 'F') {
             $parts []= 'Ladies';
@@ -1355,6 +1366,7 @@ class GNAS_OutdoorTable {
                                  $age_group,
                                  $standard,
                                  $round) {
+        // print "<p>GNAS_OutdoorTable::makeEditBox</p>";
         $value = $body["$gender $age_group"][$standard][$round];
         return '<input type="text" name="'
             . implode('_',
@@ -1368,6 +1380,7 @@ class GNAS_OutdoorTable {
     }
 
     private function getDBBodyTable() {
+        // print "<p>GNAS_OutdoorTable::getDBBodyTable</p>";
         if (!isset($this->classifications)) {
             $this->classifications = array();
             $placeholders = array();
@@ -1402,7 +1415,8 @@ class GNAS_OutdoorTable {
         return $this->classifications;
     }
 
-    private function getTitle() {
+    protected function getTitle() {
+        // print "<p>GNAS_OutdoorTable::getTitle</p>";
         $table = $this->getDBTable();
         return '<h1>'
                . 'Table '
@@ -1412,7 +1426,8 @@ class GNAS_OutdoorTable {
                . '</h1>';
     }
 
-    private function getDBTable() {
+    protected function getDBTable() {
+        // print "<p>GNAS_OutdoorTable::getDBTable</p>";
         if (!isset($this->agb_outdoor_table)) {
             $this->agb_outdoor_table = array();
             $rows = GNAS_PDO::SELECT('*'
@@ -1424,7 +1439,8 @@ class GNAS_OutdoorTable {
         return $this->agb_outdoor_table;
     }
 
-    private function getDBHeaderTable() {
+    protected function getDBHeaderTable() {
+        // print "<p>GNAS_OutdoorTable::getDBHeaderTable</p>";
         if (!isset($this->agb_outdoor_table_columns)) {
             $table = $this->getDBTable();
             $this->agb_outdoor_table_columns = GNAS_PDO::SELECT('*'
@@ -1436,6 +1452,7 @@ class GNAS_OutdoorTable {
     }
 
     public function tableCSS() {
+        // print "<p>GNAS_OutdoorTable::tableCSS</p>";
         return <<<EOCSS
 <style type="text/css">
 td.gnas-edge, th.gnas-edge {
@@ -1447,6 +1464,246 @@ tr.gnas-edge td {
 </style>
 
 EOCSS;
+    }
+
+}
+
+class GNAS_IndoorTable extends GNAS_OutdoorTable {
+
+    private $agb_outdoor_table_columns;
+    private $classifications;
+    private $thead;
+    private $submit_key = 'gnas-submit';
+    private $table_number_key = 'gnas-table-number';
+    private $value_prefix = 'gnas-value';
+    private $collected_posts;
+
+    private static $STANDARDS =
+        array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
+
+
+    protected function do_handlePOST() {
+        // print "<p>GNAS_IndoorTable::do_handlePOST</p>";
+        $this->collected_posts = array();
+        foreach ($_POST as $name => $score) {
+        // print "<p>$name =&gt; $score</p>";
+            $exploded_post_name = explode('_', $name);
+            if ($exploded_post_name[0] != $this->value_prefix) {
+                continue;
+            }
+            array_shift($exploded_post_name);
+            list($bow, $gender, $standard, $triple) =
+                array_splice($exploded_post_name, 0, 4);
+            $valid = false;
+            foreach (self::$STANDARDS as $valid_standard) {
+                if ($standard == $valid_standard) {
+                    $valid = true;
+                    break;
+                }
+            }
+            if (!$valid) {
+                continue;
+            }
+            $round = implode(' ', $exploded_post_name);
+            $this->collectFromPOST($standard,
+                                   $bow,
+                                   $gender,
+                                   $triple,
+                                   $round,
+                                   $score);
+        }
+        $this->updateFromPOSTs();
+    }
+
+    private function collectFromPOST($standard,
+                                     $bow,
+                                     $gender,
+                                     $triple,
+                                     $round,
+                                     $score) {
+        $key = "$gender $triple $bow $round";
+        // print "<p>GNAS_IndoorTable::collectFromPOST $key</p>";
+        if (!isset($this->collected_posts[$key])) {
+            $this->collected_posts[$key] = array(
+                'gender' => $gender,
+                'triple' => $triple,
+                'bow' => $bow,
+                'round' => $round,
+            );
+            foreach (self::$STANDARDS as $std) {
+                $this->collected_posts[$key][$std] = NULL;
+            }
+        }
+        if (ctype_digit($score)) {
+            $this->collected_posts[$key][$standard] = $score;
+        }
+        // print "<pre>\n";
+        // print_r($this->collected_posts);
+        // print "</pre>\n";
+    }
+
+    private function updateFromPOSTs() {
+        // print "<p>GNAS_IndoorTable::updateFromPOSTs</p>";
+        $query = 'INSERT OR REPLACE INTO indoor_classifications'
+               . ' (A, B, C, D, E, F, G, H,'
+               . ' round, bow, gender, triple) VALUES'
+               . ' (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        $stmt = GNAS_PDO::get()->prepare($query);
+        foreach ($this->collected_posts as $collected_post) {
+            $arguments = array(
+                $collected_post['A'],
+                $collected_post['B'],
+                $collected_post['C'],
+                $collected_post['D'],
+                $collected_post['E'],
+                $collected_post['F'],
+                $collected_post['G'],
+                $collected_post['H'],
+                $collected_post['round'],
+                $collected_post['bow'],
+                $collected_post['gender'],
+                $collected_post['triple']
+            );
+            // print "<pre>\n";
+            // print "$query\n";
+            // print_r($arguments);
+            $stmt->execute($arguments);
+            // print_r($stmt->errorInfo());
+            // print "</pre>\n";
+        }
+    }
+
+    protected function getTables() {
+        // print "<p>GNAS_IndoorTable::getTables</p>";
+        $table = $this->getDBTable();
+        $bow = $table['bow'];
+        $tables = array();
+        foreach (GNAS_Genders::get() as $gender) {
+            $tables []= $this->getSingleTableForm($bow, $gender);
+        }
+        return implode($tables);
+    }
+
+    private function getSingleTableForm($bow, $gender) {
+        // print "<p>GNAS_IndoorTable::getSingleTableForm</p>";
+        $parts = array();
+        $parts []= '<form method="POST" action=""><table>';
+        $parts []= $this->getTHead();
+        $parts []= $this->getTBody($bow, $gender);
+        $parts []= '</table>'
+                 . '<input type="hidden" name="'
+                 . $this->submit_key
+                 . '" value="true"/>'
+                 . '<input type="hidden" name="'
+                 . $this->table_number_key
+                 . '" value="'
+                 . $this->table_number . '"/>'
+                 . '<input type="submit" value="Update"/>'
+                 . '</form>';
+        return implode($parts);
+    }
+
+    private function getTBody($bow, $gender) {
+        // print "<p>GNAS_IndoorTable::getTBody</p>";
+        $parts = array();
+        $parts []= '<tbody>';
+        $body = $this->getDBBodyTable();
+        $key = $this->niceName($gender);
+        $parts []= '<tr><td rowspan="9">' . $key . '</td>';
+        foreach (self::$STANDARDS as $standard) {
+            if ($standard == 'H') {
+                $parts []= '<tr class="gnas-edge">';
+            }
+            else {
+                $parts []= '<tr>';
+            }
+            $parts []= '<td class="gnas-edge">' . $standard . '</td>';
+            foreach ($this->getDBHeaderTable() as $header) {
+                $td_class = '';
+                if ($header['edge']) {
+                    $td_class = ' class="gnas-edge"';
+                }
+                $parts []= "<td$td_class>"
+                           . $this->makeEditBox($body,
+                                                $bow,
+                                                $gender,
+                                                $standard,
+                                                $header['triple'],
+                                                $header['round'])
+                           . '</td>';
+            }
+            $parts []= '</tr>';
+        }
+        $parts []='</tbody>';
+        return implode($parts);
+    }
+
+    private function niceName($gender) {
+        // print "<p>GNAS_IndoorTable::niceName</p>";
+        if ($gender == 'F') {
+            return implode('<br/>', explode(' ', 'Ladies Senior and Junior'));
+        }
+        else {
+            return implode('<br/>', explode(' ', 'Gents Senior and Junior'));
+        }
+    }
+
+    private function makeEditBox($body,
+                                 $bow,
+                                 $gender,
+                                 $standard,
+                                 $triple,
+                                 $round) {
+        // print "<p>GNAS_IndoorTable::makeEditBox</p>";
+        $value = $body["$gender $triple"][$standard][$round];
+        return '<input type="text" name="'
+            . implode('_',
+                      array($this->value_prefix,
+                            $bow,
+                            $gender,
+                            $standard,
+                            $triple,
+                            implode('_', explode(' ', $round))))
+            . '" size="4" value="' . $value . '"/>';
+    }
+
+    private function getDBBodyTable() {
+        // print "<p>GNAS_IndoorTable::getDBBodyTable</p>";
+        if (!isset($this->classifications)) {
+            $this->classifications = array();
+            $placeholders = array();
+            $arguments = array();
+            $table = $this->getDBTable();
+            foreach ($this->getDBHeaderTable() as $header) {
+                $placeholders []= '?';
+                $arguments []= $header['round'];
+            }
+            $query = '*'
+                   . ' FROM indoor_classifications'
+                   . ' WHERE round IN ('
+                   . implode(',', $placeholders)
+                   . ') and bow = ?';
+            $arguments []= $table['bow'];
+            $rows = GNAS_PDO::SELECT($query, $arguments);
+            foreach ($rows as $row) {
+                $key = $row['gender'] . ' ' . $row['triple'];
+                $round = $row['round'];
+                if (!isset($this->classifications[$key])) {
+                    $this->classifications[$key] = array();
+                }
+                foreach (self::$STANDARDS as $standard) {
+                    if (!isset($this->classifications[$key][$standard])) {
+                        $this->classifications[$key][$standard] = array();
+                    }
+                    $this->classifications[$key][$standard][$round] =
+                        $row[$standard];
+                }
+            }
+        }
+        // print("<pre>\n");
+        // print_r($this->classifications);
+        // print("</pre>\n");
+        return $this->classifications;
     }
 
 }
@@ -1482,6 +1739,11 @@ class GNAS_Page {
      */
     public static function outdoorTable($table_number) {
         $table = new GNAS_OutdoorTable($table_number);
+        $table->handlePOST();
+        return $table->tableCSS() . $table->asText();
+    }
+    public static function indoorTable($table_number) {
+        $table = new GNAS_IndoorTable($table_number);
         $table->handlePOST();
         return $table->tableCSS() . $table->asText();
     }

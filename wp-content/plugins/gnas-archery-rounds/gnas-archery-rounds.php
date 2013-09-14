@@ -181,6 +181,18 @@ function register_gnas_plugin_menu() {
                      'manage_options',
                      'edit-table-27',
                      'gnas_edit_table_27');
+    add_submenu_page('gnas-archery-rounds',
+                     'Edit Table 28a',
+                     'Table 28a',
+                     'manage_options',
+                     'edit-table-28a',
+                     'gnas_edit_table_28a');
+    add_submenu_page('gnas-archery-rounds',
+                     'Edit Table 28b',
+                     'Table 28b',
+                     'manage_options',
+                     'edit-table-28b',
+                     'gnas_edit_table_28b');
 }
 
 function gnas_check_user() {
@@ -204,97 +216,105 @@ function gnas_edit_tables() {
 
 function gnas_edit_table_4() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(4);
+    print GNAS_Page::outdoorTable(4);
 }
 function gnas_edit_table_5() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(5);
+    print GNAS_Page::outdoorTable(5);
 }
 function gnas_edit_table_6() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(6);
+    print GNAS_Page::outdoorTable(6);
 }
 function gnas_edit_table_7() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(7);
+    print GNAS_Page::outdoorTable(7);
 }
 function gnas_edit_table_8() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(8);
+    print GNAS_Page::outdoorTable(8);
 }
 function gnas_edit_table_9() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(9);
+    print GNAS_Page::outdoorTable(9);
 }
 function gnas_edit_table_10() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(10);
+    print GNAS_Page::outdoorTable(10);
 }
 function gnas_edit_table_11() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(11);
+    print GNAS_Page::outdoorTable(11);
 }
 function gnas_edit_table_12() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(12);
+    print GNAS_Page::outdoorTable(12);
 }
 function gnas_edit_table_13() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(13);
+    print GNAS_Page::outdoorTable(13);
 }
 function gnas_edit_table_14() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(14);
+    print GNAS_Page::outdoorTable(14);
 }
 function gnas_edit_table_15() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(15);
+    print GNAS_Page::outdoorTable(15);
 }
 function gnas_edit_table_16() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(16);
+    print GNAS_Page::outdoorTable(16);
 }
 function gnas_edit_table_17() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(17);
+    print GNAS_Page::outdoorTable(17);
 }
 function gnas_edit_table_18() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(18);
+    print GNAS_Page::outdoorTable(18);
 }
 function gnas_edit_table_19() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(19);
+    print GNAS_Page::outdoorTable(19);
 }
 function gnas_edit_table_20() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(20);
+    print GNAS_Page::outdoorTable(20);
 }
 function gnas_edit_table_21() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(21);
+    print GNAS_Page::outdoorTable(21);
 }
 function gnas_edit_table_22() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(22);
+    print GNAS_Page::outdoorTable(22);
 }
 function gnas_edit_table_23() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(23);
+    print GNAS_Page::outdoorTable(23);
 }
 function gnas_edit_table_24() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(24);
+    print GNAS_Page::outdoorTable(24);
 }
 function gnas_edit_table_25() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(25);
+    print GNAS_Page::outdoorTable(25);
 }
 function gnas_edit_table_26() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(26);
+    print GNAS_Page::outdoorTable(26);
 }
 function gnas_edit_table_27() {
     gnas_check_user();
-    print GNAS_Page::outDoorTable(27);
+    print GNAS_Page::outdoorTable(27);
+}
+function gnas_edit_table_28a() {
+    gnas_check_user();
+    print GNAS_Page::indoorTable("28a");
+}
+function gnas_edit_table_28b() {
+    gnas_check_user();
+    print GNAS_Page::indoorTable("28b");
 }

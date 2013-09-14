@@ -15,7 +15,7 @@ function plugin_dir_path() { return "./";  }
 // $_GET['round'] = 'York';
 // // $_GET['gender'] = 'F';
 
-print GNAS_Page::asText();
+print GNAS_Page::indoorTable("28a");
 //$_POST['gnas-value_barebow_F_U18_bm_Long_Metric_I'] = '256';
 //$_POST['gnas-value_barebow_F_U18_first_Long_Metric_I'] = '128';
 //$_POST['gnas-submit'] = 'true';

@@ -1,4 +1,4 @@
-PRAGMA foreign_keys=OFF;
+PRAGMA foreign_keys=ON;
 BEGIN TRANSACTION;
 CREATE TABLE bows( bow TEXT NOT NULL PRIMARY KEY );
 INSERT INTO "bows" VALUES('recurve');
@@ -18,24 +18,6 @@ INSERT INTO "faces" VALUES('60cm');
 INSERT INTO "faces" VALUES('40cm');
 INSERT INTO "faces" VALUES('40cm special');
 INSERT INTO "faces" VALUES('16in special');
-CREATE TABLE measure_faces (
-    measure TEXT NOT NULL,
-    face TEXT NOT NULL,
-    PRIMARY KEY (measure, face),
-    FOREIGN KEY (face) REFERENCES faces(face), 
-    FOREIGN KEY (measure) REFERENCES measures(measure)
-);
-INSERT INTO "measure_faces" VALUES('imperial','122cm');
-INSERT INTO "measure_faces" VALUES('metric','122cm');
-INSERT INTO "measure_faces" VALUES('metric','80cm');
-CREATE TABLE measure_distances (
-    measure TEXT NOT NULL,
-    face TEXT NOT NULL,
-    distance INTEGER NOT NULL,
-    PRIMARY KEY (measure, face, distance),
-    FOREIGN KEY (measure, face) REFERENCES measure_faces(measure, face)
-);
-INSERT INTO "measure_distances" VALUES('imperial','122cm',100);
 CREATE TABLE genders( gender TEXT NOT NULL PRIMARY KEY );
 INSERT INTO "genders" VALUES('M');
 INSERT INTO "genders" VALUES('F');
@@ -456,6 +438,7 @@ CREATE TABLE outdoor_classifications(
     FOREIGN KEY (age_group) REFERENCES age_groups,
     FOREIGN KEY (bow) REFERENCES bows
 );
+
 INSERT INTO "outdoor_classifications" VALUES('York','M','adult','barebow',69,158,335,543,668,813);
 INSERT INTO "outdoor_classifications" VALUES('Hereford','M','adult','barebow',155,306,539,NULL,NULL,NULL);
 INSERT INTO "outdoor_classifications" VALUES('Bristol I','M','adult','barebow',155,306,539,NULL,NULL,NULL);
@@ -3016,6 +2999,32 @@ INSERT INTO "outdoor_classifications" VALUES('Long Metric Ladies','M','U12','bar
 INSERT INTO "outdoor_classifications" VALUES('Half FITA Gents','M','U12','barebow',6,16,37,67,NULL,NULL);
 INSERT INTO "outdoor_classifications" VALUES('Half FITA Ladies','M','U12','barebow',7,18,41,77,NULL,NULL);
 INSERT INTO "outdoor_classifications" VALUES('FITA Standard Round','M','U12','barebow',NULL,NULL,NULL,NULL,NULL,NULL);
+CREATE TABLE triples (
+    triple TEXT NOT NULL,
+    PRIMARY KEY (triple)
+);
+INSERT INTO "triples" VALUES("Y");
+INSERT INTO "triples" VALUES("N");
+INSERT INTO "triples" VALUES("A");
+CREATE TABLE indoor_classifications(
+    round TEXT NOT NULL,
+    gender TEXT NOT NULL,
+    bow TEXT NOT NULL,
+    triple TEXT NOT NULL,
+    A INTEGER,
+    B INTEGER,
+    C INTEGER,
+    D INTEGER,
+    E INTEGER,
+    F INTEGER,
+    G INTEGER,
+    H INTEGER,
+    PRIMARY KEY (round, gender, bow, triple),
+    FOREIGN KEY (round) REFERENCES round(name),
+    FOREIGN KEY (gender) REFERENCES genders,
+    FOREIGN KEY (bow) REFERENCES bows,
+    FOREIGN KEY (triple) REFERENCES triples
+);
 CREATE TABLE agb_outdoor_table_header(
     header_number INTEGER NOT NULL PRIMARY KEY
 );
@@ -3025,81 +3034,95 @@ INSERT INTO "agb_outdoor_table_header" VALUES(3);
 INSERT INTO "agb_outdoor_table_header" VALUES(4);
 INSERT INTO "agb_outdoor_table_header" VALUES(5);
 INSERT INTO "agb_outdoor_table_header" VALUES(6);
+INSERT INTO "agb_outdoor_table_header" VALUES(7);
 CREATE TABLE agb_outdoor_table_column(
     header_number INTEGER NOT NULL,
     column_number INTEGER NOT NULL,
     round TEXT NOT NULL,
     edge INTEGER NOT NULL,
+    triple TEXT NOT NULL DEFAULT "A",
     PRIMARY KEY (header_number, column_number),
     FOREIGN KEY (round) REFERENCES round(name),
+    FOREIGN KEY (triple) REFERENCES triples(triple),
     FOREIGN KEY (header_number) references agb_outdoor_table_header,
-    UNIQUE (round)
+    UNIQUE (round,triple)
 );
-INSERT INTO "agb_outdoor_table_column" VALUES(1,1,'York',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,2,'Bristol I',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,3,'Bristol II',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,4,'Bristol III',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,5,'Bristol IV',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,6,'Bristol V',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,7,'St George',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,8,'Albion',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,9,'Windsor',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,10,'Short Windsor',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,11,'Junior Windsor',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(1,12,'Short Junior Windsor',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,1,'New Western',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,2,'Long Western',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,3,'Western',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,4,'Short Western',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,5,'Junior Western',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,6,'Short Junior Western',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,7,'American',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(2,8,'St Nicholas',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,1,'New National',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,2,'Long National',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,3,'National',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,4,'Short National',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,5,'Junior National',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,6,'Short Junior National',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,7,'New Warwick',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,8,'Long Warwick',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,9,'Warwick',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,10,'Short Warwick',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,11,'Junior Warwick',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(3,12,'Short Junior Warwick',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,1,'Metric I',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,2,'Metric II',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,3,'Metric III',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,4,'Metric IV',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,5,'Metric V',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,6,'Half Metric I',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,7,'Half Metric II',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,8,'Half Metric III',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,9,'Half Metric IV',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(4,10,'Half Metric V',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,1,'Long Metric I',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,2,'Long Metric II',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,3,'Long Metric III',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,4,'Long Metric IV',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,5,'Long Metric V',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,6,'Short Metric I',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,7,'Short Metric II',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,8,'Short Metric III',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,9,'Short Metric IV',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(5,10,'Short Metric V',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,1,'FITA Gents',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,2,'FITA Ladies',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,3,'FITA 900',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,4,'FITA 70',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,5,'FITA 60',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,6,'FITA 50',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,7,'Long Metric Gents',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,8,'Long Metric Ladies',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,9,'Half FITA Gents',0);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,10,'Half FITA Ladies',1);
-INSERT INTO "agb_outdoor_table_column" VALUES(6,11,'FITA Standard Round',1);
+INSERT INTO "agb_outdoor_table_column" VALUES(1,1,'York',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,2,'Bristol I',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,3,'Bristol II',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,4,'Bristol III',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,5,'Bristol IV',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,6,'Bristol V',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,7,'St George',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,8,'Albion',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,9,'Windsor',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,10,'Short Windsor',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,11,'Junior Windsor',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(1,12,'Short Junior Windsor',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,1,'New Western',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,2,'Long Western',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,3,'Western',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,4,'Short Western',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,5,'Junior Western',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,6,'Short Junior Western',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,7,'American',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(2,8,'St Nicholas',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,1,'New National',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,2,'Long National',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,3,'National',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,4,'Short National',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,5,'Junior National',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,6,'Short Junior National',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,7,'New Warwick',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,8,'Long Warwick',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,9,'Warwick',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,10,'Short Warwick',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,11,'Junior Warwick',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(3,12,'Short Junior Warwick',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,1,'Metric I',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,2,'Metric II',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,3,'Metric III',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,4,'Metric IV',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,5,'Metric V',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,6,'Half Metric I',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,7,'Half Metric II',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,8,'Half Metric III',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,9,'Half Metric IV',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(4,10,'Half Metric V',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,1,'Long Metric I',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,2,'Long Metric II',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,3,'Long Metric III',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,4,'Long Metric IV',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,5,'Long Metric V',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,6,'Short Metric I',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,7,'Short Metric II',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,8,'Short Metric III',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,9,'Short Metric IV',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(5,10,'Short Metric V',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,1,'FITA Gents',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,2,'FITA Ladies',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,3,'FITA 900',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,4,'FITA 70',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,5,'FITA 60',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,6,'FITA 50',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,7,'Long Metric Gents',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,8,'Long Metric Ladies',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,9,'Half FITA Gents',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,10,'Half FITA Ladies',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(6,11,'FITA Standard Round',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,1,'Bray I',0,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,2,'Bray II',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,3,'Portsmouth',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,4,'Stafford',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,5,'Worcester',1,"A");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,6,'FITA 18',0,"N");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,7,'FITA 25',0,"N");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,8,'Combined FITA',1,"N");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,9,'FITA 18',0,"Y");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,10,'FITA 25',0,"Y");
+INSERT INTO "agb_outdoor_table_column" VALUES(7,11,'Combined FITA',1,"Y");
 CREATE TABLE agb_outdoor_table(
-    table_number INTEGER NOT NULL,
+    table_number TEXT NOT NULL,
     title TEXT NOT NULL,
     bow TEXT NOT NULL,
     header_number INTEGER NOT NULL,
@@ -3107,30 +3130,32 @@ CREATE TABLE agb_outdoor_table(
     FOREIGN KEY (bow) REFERENCES bows(bow),
     FOREIGN KEY (header_number) REFERENCES agb_outdoor_table_header
 );
-INSERT INTO "agb_outdoor_table" VALUES(4,'Archery GB Imperial Outdoor Rounds - Recurve Bows','recurve',1);
-INSERT INTO "agb_outdoor_table" VALUES(5,'Archery GB Imperial Outdoor Rounds - Compound Bows','compound',1);
-INSERT INTO "agb_outdoor_table" VALUES(6,'Archery GB Imperial Outdoor Rounds - Longbows','longbow',1);
-INSERT INTO "agb_outdoor_table" VALUES(7,'Archery GB Imperial Outdoor Rounds - Recurve Barebows','barebow',1);
-INSERT INTO "agb_outdoor_table" VALUES(8,'Archery GB Imperial Outdoor Rounds - Recurve Bows','recurve',2);
-INSERT INTO "agb_outdoor_table" VALUES(9,'Archery GB Imperial Outdoor Rounds - Compound Bows','compound',2);
-INSERT INTO "agb_outdoor_table" VALUES(10,'Archery GB Imperial Outdoor Rounds - Longbows','longbow',2);
-INSERT INTO "agb_outdoor_table" VALUES(11,'Archery GB Imperial Outdoor Rounds - Recurve Barebows','barebow',2);
-INSERT INTO "agb_outdoor_table" VALUES(12,'Archery GB Imperial Outdoor Rounds - Recurve Bows','recurve',3);
-INSERT INTO "agb_outdoor_table" VALUES(13,'Archery GB Imperial Outdoor Rounds - Compound Bows','compound',3);
-INSERT INTO "agb_outdoor_table" VALUES(14,'Archery GB Imperial Outdoor Rounds - Longbows','longbow',3);
-INSERT INTO "agb_outdoor_table" VALUES(15,'Archery GB Imperial Outdoor Rounds - Recurve Barebows','barebow',3);
-INSERT INTO "agb_outdoor_table" VALUES(16,'Archery GB Metric Outdoor Rounds - Recurve Bows','recurve',4);
-INSERT INTO "agb_outdoor_table" VALUES(17,'Archery GB Metric Outdoor Rounds - Compund Bows','compound',4);
-INSERT INTO "agb_outdoor_table" VALUES(18,'Archery GB Metric Outdoor Rounds - Longbows','longbow',4);
-INSERT INTO "agb_outdoor_table" VALUES(19,'Archery GB Metric Outdoor Rounds - Recurve Barebows','barebow',4);
-INSERT INTO "agb_outdoor_table" VALUES(20,'Archery GB Metric Outdoor Rounds - Recurve Bows','recurve',5);
-INSERT INTO "agb_outdoor_table" VALUES(21,'Archery GB Metric Outdoor Rounds - Compound Bows','compound',5);
-INSERT INTO "agb_outdoor_table" VALUES(22,'Archery GB Metric Outdoor Rounds - Longbows','longbow',5);
-INSERT INTO "agb_outdoor_table" VALUES(23,'Archery GB Metric Outdoor Rounds - Recurve Barebows','barebow',5);
-INSERT INTO "agb_outdoor_table" VALUES(24,'FITA Outdoor Rounds - Recurve Bows','recurve',6);
-INSERT INTO "agb_outdoor_table" VALUES(25,'FITA Outdoor Rounds - Compound Bows','compound',6);
-INSERT INTO "agb_outdoor_table" VALUES(26,'FITA Outdoor Rounds - Longbows','longbow',6);
-INSERT INTO "agb_outdoor_table" VALUES(27,'FITA Outdoor Rounds - Recurve Barebows','barebow',6);
+INSERT INTO "agb_outdoor_table" VALUES('4','Archery GB Imperial Outdoor Rounds - Recurve Bows','recurve',1);
+INSERT INTO "agb_outdoor_table" VALUES('5','Archery GB Imperial Outdoor Rounds - Compound Bows','compound',1);
+INSERT INTO "agb_outdoor_table" VALUES('6','Archery GB Imperial Outdoor Rounds - Longbows','longbow',1);
+INSERT INTO "agb_outdoor_table" VALUES('7','Archery GB Imperial Outdoor Rounds - Recurve Barebows','barebow',1);
+INSERT INTO "agb_outdoor_table" VALUES('8','Archery GB Imperial Outdoor Rounds - Recurve Bows','recurve',2);
+INSERT INTO "agb_outdoor_table" VALUES('9','Archery GB Imperial Outdoor Rounds - Compound Bows','compound',2);
+INSERT INTO "agb_outdoor_table" VALUES('10','Archery GB Imperial Outdoor Rounds - Longbows','longbow',2);
+INSERT INTO "agb_outdoor_table" VALUES('11','Archery GB Imperial Outdoor Rounds - Recurve Barebows','barebow',2);
+INSERT INTO "agb_outdoor_table" VALUES('12','Archery GB Imperial Outdoor Rounds - Recurve Bows','recurve',3);
+INSERT INTO "agb_outdoor_table" VALUES('13','Archery GB Imperial Outdoor Rounds - Compound Bows','compound',3);
+INSERT INTO "agb_outdoor_table" VALUES('14','Archery GB Imperial Outdoor Rounds - Longbows','longbow',3);
+INSERT INTO "agb_outdoor_table" VALUES('15','Archery GB Imperial Outdoor Rounds - Recurve Barebows','barebow',3);
+INSERT INTO "agb_outdoor_table" VALUES('16','Archery GB Metric Outdoor Rounds - Recurve Bows','recurve',4);
+INSERT INTO "agb_outdoor_table" VALUES('17','Archery GB Metric Outdoor Rounds - Compund Bows','compound',4);
+INSERT INTO "agb_outdoor_table" VALUES('18','Archery GB Metric Outdoor Rounds - Longbows','longbow',4);
+INSERT INTO "agb_outdoor_table" VALUES('19','Archery GB Metric Outdoor Rounds - Recurve Barebows','barebow',4);
+INSERT INTO "agb_outdoor_table" VALUES('20','Archery GB Metric Outdoor Rounds - Recurve Bows','recurve',5);
+INSERT INTO "agb_outdoor_table" VALUES('21','Archery GB Metric Outdoor Rounds - Compound Bows','compound',5);
+INSERT INTO "agb_outdoor_table" VALUES('22','Archery GB Metric Outdoor Rounds - Longbows','longbow',5);
+INSERT INTO "agb_outdoor_table" VALUES('23','Archery GB Metric Outdoor Rounds - Recurve Barebows','barebow',5);
+INSERT INTO "agb_outdoor_table" VALUES('24','FITA Outdoor Rounds - Recurve Bows','recurve',6);
+INSERT INTO "agb_outdoor_table" VALUES('25','FITA Outdoor Rounds - Compound Bows','compound',6);
+INSERT INTO "agb_outdoor_table" VALUES('26','FITA Outdoor Rounds - Longbows','longbow',6);
+INSERT INTO "agb_outdoor_table" VALUES('27','FITA Outdoor Rounds - Recurve Barebows','barebow',6);
+INSERT INTO "agb_outdoor_table" VALUES('28a','Archery GB and FITA Indoor Rounds - Recurve Bows','recurve',7);
+INSERT INTO "agb_outdoor_table" VALUES('28b','Archery GB and FITA Indoor Rounds - Compound Bows','compound',7);
 CREATE VIEW max_scores AS
     SELECT name, sum(num_arrows) * max_score AS max
     FROM round_family, arrow_count, scorings
