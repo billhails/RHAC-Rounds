@@ -107,9 +107,11 @@ jQuery(
     function() {
         if (jQuery('#handicap').val()) {
             function handicap_calc() {
+                var val = jQuery('#handicap').val();
+                jQuery('#handicap-copy').text(val);
                 jQuery('#prediction').text(
                     String(rhac_score(
-                        Number(jQuery('#handicap').val()),
+                        Number(val),
                         rhac_measure,
                         rhac_distances)))
             }
