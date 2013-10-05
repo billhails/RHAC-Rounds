@@ -261,6 +261,7 @@ class GNAS_SingleArrowCount {
     private $numArrows;
     private $dozens;
     private $face;
+    private $diameter;
 
     public function getNumArrows() {
         return $this->numArrows;
@@ -278,6 +279,7 @@ class GNAS_SingleArrowCount {
         $this->numArrows = $row['num_arrows'];
         $this->dozens = self::doz($row['num_arrows']);
         $this->face = $row['face'];
+        $this->diameter = $row['diameter'];
     }
 
     public function getDescriptionRow() {
@@ -286,6 +288,10 @@ class GNAS_SingleArrowCount {
                . ' doz, '
                . $this->face
                . ' face</li>';
+    }
+
+    public function getDiameter() {
+        return $this->diameter;
     }
 
     private static function doz($num) {
@@ -385,6 +391,10 @@ class GNAS_SingleDistance {
         return $this->singleArrowCount->getFace();
     }
 
+    public function getDiameter() {
+        return $this->singleArrowCount->getDiameter();
+    }
+
     public function getUnits() {
         return $this->measure->getUnits();
     }
@@ -399,6 +409,14 @@ class GNAS_SingleDistance {
             . $this->getFace()
             . ' face</li>';
 
+    }
+
+    public function getJavaScript() {
+        return '{'
+             . 'N: ' . $this->getNumArrows()
+             . ', D: ' . $this->getDiameter()
+             . ', R: ' . $this->getDistance()
+             . '}';
     }
 
 }
@@ -439,6 +457,20 @@ class GNAS_Distances {
 
     public function rawData() {
         return $this->rawDistances;
+    }
+
+    public function getJavaScript(GNAS_Measure $measure) {
+        $distances_js = array();
+        foreach ($this->distances as $face => $faceDistances) {
+            foreach ($faceDistances as $singleDistance) {
+                $distances_js []= $singleDistance->getJavaScript();
+            }
+        }
+        $javaScript = '<script>';
+        $javaScript .= 'rhac_measure="' . $measure->getName() . '";';
+        $javaScript .= 'rhac_distances=[' .implode(', ', $distances_js) . ']';
+        $javaScript .= '</script>';
+        return $javaScript;
     }
 
     public function getDescription(GNAS_Scoring $scoring,
@@ -711,6 +743,7 @@ class GNAS_Round implements GNAS_RoundInterface {
     public function asText() {
         return $this->getTitle()
              . $this->getDescription()
+             . $this->getJavaScript()
              . $this->getClassifications()->getTable();
     }
 
@@ -726,6 +759,18 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $this->getDistances()
                     ->getDescription($this->getFamily()->getScoring(),
                                      $this->getFamily()->getMeasure());
+    }
+
+    private function getJavaScript() {
+        $js = $this->getDistances()
+                   ->getJavaScript($this->getFamily()->getMeasure());
+        $js .= <<<EOJS
+<h3>Beat Your Handicap</h3>
+<p>Enter your current handicap:
+<input type="number" name="handicap" id="handicap" min="0" max="100" value="100"/>.</p>
+<p>Your predicted score for that handicap is: <span id="prediction">0</span>.</p>
+EOJS;
+        return $js;
     }
 
     private function getClassifications() {

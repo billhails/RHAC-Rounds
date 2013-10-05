@@ -12,6 +12,8 @@ define('GNAS_ARCHERY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
 require GNAS_ARCHERY_PLUGIN_DIR . 'rounds.php';
 
+wp_enqueue_script('rhac_handicaps', plugins_url('handicap.js', __FILE__), array('jquery'));
+
 function gnas_archery_rounds_display() {
     return GNAS_Page::asText();
 }
