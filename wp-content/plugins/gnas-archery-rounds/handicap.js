@@ -1,19 +1,19 @@
 function rhac_score(H, fn, distances) {
 
-    function sigma_theta(H) {
-        return Math.pow(1.036, H + 12.9) * 0.0005;
+    function square(x) {
+        return x * x;
     }
 
-    function sigma_r(R, H) {
-        return 100 * R * sigma_theta(H);
+    function sigma_theta(H) {
+        return Math.pow(1.036, H + 12.9) * 5e-4;
     }
 
     function K(H) {
-        return 0.000001429 * Math.pow(1.07, H + 4.3);
+        return 1.429e-6 * Math.pow(1.07, H + 4.3);
     }
 
     function F(R, H) {
-        return 1 + K(H) * Math.pow(R, 2);
+        return 1 + K(H) * square(R);
     }
 
     function Sigma(lower, upper, fn) {
@@ -25,7 +25,15 @@ function rhac_score(H, fn, distances) {
         }
     }
 
+    function sigma_r(R, H) {
+        return 100 * R * sigma_theta(H) * F(R, H);
+    }
+
     var r = 0.357;
+
+    function sigma_r_2(R, H) {
+        return square(sigma_r(R, H));
+    }
 
     function imperial(D, R, H) {
         return (
@@ -33,15 +41,15 @@ function rhac_score(H, fn, distances) {
                 function(n) {
                     return (
                         Math.exp(
-                            -Math.pow(n * D / 10 + r, 2)
-                            / Math.pow(sigma_r(R, H), 2)
+                            -square(n * D / 10 + r)
+                            / sigma_r_2(R, H)
                         )
                     )
                 }
             )
             - Math.exp(
-                    -Math.pow(D / 2 + r, 2)
-                    / Math.pow(sigma_r(R, H), 2)
+                    -square(D / 2 + r)
+                    / sigma_r_2(R, H)
             )
         );
     }
@@ -51,8 +59,8 @@ function rhac_score(H, fn, distances) {
             10 - Sigma(1, 10,
                 function(n) {
                     return Math.exp(
-                        -Math.pow(n * D / 20 + r, 2)
-                        / Math.pow(sigma_r(R, H), 2)
+                        -square(n * D / 20 + r)
+                        / sigma_r_2(R, H)
                     )
                 }
             )

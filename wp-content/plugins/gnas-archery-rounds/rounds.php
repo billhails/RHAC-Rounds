@@ -762,13 +762,14 @@ class GNAS_Round implements GNAS_RoundInterface {
     }
 
     private function getJavaScript() {
+        $name = $this->getName();
         $js = $this->getDistances()
                    ->getJavaScript($this->getFamily()->getMeasure());
         $js .= <<<EOJS
 <h3>Beat Your Handicap</h3>
 <p>Enter your current handicap:
-<input type="number" name="handicap" id="handicap" min="0" max="100" value="100"/>.</p>
-<p>Your predicted score for that handicap is: <span id="prediction">0</span>.</p>
+<input type="number" name="handicap" id="handicap" min="0" max="100" value="100"/></p>
+<p>Your predicted score for a $name with that handicap is: <span id="prediction">0</span>.</p>
 EOJS;
         return $js;
     }
