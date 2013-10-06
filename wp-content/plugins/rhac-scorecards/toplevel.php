@@ -61,7 +61,8 @@ class RHAC_Scorecards {
     public function topLevel() {
 
         // echo '<p>topLevel() entered</p>';
-        if (isset($_POST['submit-scorecard-and-edit'])) { // update or insert requested
+        if (isset($_POST['submit-scorecard-and-edit'])) {
+            // update or insert requested
             if ($_POST['scorecard-id']) { // update requested
                 // echo '<p>topLevel() update req</p>';
                 $this->update();
