@@ -4,6 +4,10 @@ function rhac_score(H, fn, distances) {
         return x * x;
     }
 
+    function exp(x) {
+        return Math.exp(x);
+    }
+
     function sigma_theta(H) {
         return Math.pow(1.036, H + 12.9) * 5e-4;
     }
@@ -36,50 +40,94 @@ function rhac_score(H, fn, distances) {
     }
 
     function imperial(D, R, H) {
+        var sr2 = sigma_r_2(R, H);
         return (
             9 - 2 * Sigma(1, 4,
                 function(n) {
-                    return (
-                        Math.exp(
-                            -square(n * D / 10 + r)
-                            / sigma_r_2(R, H)
-                        )
-                    )
+                    return exp(-square(n * D / 10 + r) / sr2)
                 }
             )
-            - Math.exp(
-                    -square(D / 2 + r)
-                    / sigma_r_2(R, H)
-            )
+            - exp(-square(D / 2 + r) / sr2)
         );
     }
 
     function metric(D, R, H) {
+        var sr2 = sigma_r_2(R, H);
         return (
             10 - Sigma(1, 10,
                 function(n) {
-                    return Math.exp(
-                        -square(n * D / 20 + r)
-                        / sigma_r_2(R, H)
-                    )
+                    return exp(-square(n * D / 20 + r) / sr2)
                 }
             )
         );
     }
 
-    function inner_ten(D, R, H) {
+    function metric_inner_ten(D, R, H) {
+        var sr2 = sigma_r_2(R, H);
         return(
-            10 - Math.exp(-Math.pow(D/40-r,2)/Math.pow(sigma_r(R, H),2))
-            - Sigma(2,10,function(n){
-                return Math.exp(-Math.pow(n*D/20+r,2)/Math.pow(sigma_r(R,H),2))
-            })
+            10 - exp(-square(D / 40 + r) / sr2)
+            - Sigma(2, 10,
+                function(n) {
+                    return exp(-square(n * D / 20 + r) / sr2)
+                }
+            )
+        );
+    }
+
+    function vegas(D, R, H) {
+        var sr2 = sigma_r_2(R, H);
+        return (
+            10 - Sigma(1, 4,
+                function(n) {
+                    return exp(-square(n * D / 20 + r) / sr2)
+                }
+            )
+            - 6 * exp(-square(5 * D / 20 + r) / sr2)
+        );
+    }
+
+    function vegas_inner_ten(D, R, H) {
+        var sr2 = sigma_r_2(R, H);
+        return (
+            10 - exp(-square(D / 40 + r) / sr2)
+            - Sigma(2, 4,
+                function(n) {
+                    return exp(-square(n * D / 20 + r) / sr2)
+                }
+            )
+            - 6 * exp(-square(5 * D / 20 + r) / sr2)
+        );
+    }
+
+    function worcester(D, R, H) {
+        var sr2 = sigma_r_2(R, H);
+        return (
+            5 - Sigma(1, 5,
+                function(n) {
+                    return exp(-square(n * D / 10 + r) / sr2)
+                }
+            )
+        );
+    }
+
+    function fita_six_zone(D, R, H) {
+        var sr2 = sigma_r_2(R, H);
+        return (
+            10 - Sigma(1, 5,
+                exp(-square(n * D / 20 + r) / sr2)
+            )
+            - 5 * exp(-square(6 * D / 20 + r) / sr2)
         );
     }
 
     var functions = {
         metric: metric,
         imperial: imperial,
-        inner_ten: inner_ten
+        "metric inner ten": metric_inner_ten,
+        vegas: vegas,
+        "vegas inner ten": vegas_inner_ten,
+        worcester: worcester,
+        "fita six zone": fita_six_zone
     };
 
     var y2m = 0.9144;
@@ -87,7 +135,11 @@ function rhac_score(H, fn, distances) {
     var conversions = {
         metric: 1.0,
         imperial: y2m,
-        inner_ten: 1.0
+        "metric inner ten": 1.0,
+        vegas: 1.0,
+        "vegas inner ten": 1.0,
+        worcester: y2m,
+        "fita six zone":  1.0
     };
 
     var total = 0;
@@ -106,14 +158,33 @@ var rhac_measure = ''; //ditto
 jQuery(
     function() {
         if (jQuery('#handicap').val()) {
-            function handicap_calc() {
-                var val = jQuery('#handicap').val();
-                jQuery('#handicap-copy').text(val);
-                jQuery('#prediction').text(
-                    String(rhac_score(
-                        Number(val),
-                        rhac_measure,
-                        rhac_distances)))
+            var handicap_calc;
+            if (jQuery('#predictions').text()) {
+                handicap_calc = function() {
+                    var val = jQuery('#handicap').val();
+                    jQuery('#predictions tbody tr').each(
+                        function () {
+                            var jqthis = jQuery(this);
+                            var measure = jqthis.attr('data-measure');
+                            var distances = jQuery.parseJSON(jqthis.attr('data-distances'));
+                            jqthis.find('td.prediction').text(
+                                String(rhac_score(
+                                    Number(val),
+                                    measure,
+                                    distances)));
+                        }
+                    );
+                }
+            } else if (jQuery('#handicap-copy').text()) {
+                handicap_calc = function() {
+                    var val = jQuery('#handicap').val();
+                    jQuery('#handicap-copy').text(val);
+                    jQuery('#prediction').text(
+                        String(rhac_score(
+                            Number(val),
+                            rhac_measure,
+                            rhac_distances)))
+                }
             }
             handicap_calc();
             jQuery('#handicap').change(handicap_calc);

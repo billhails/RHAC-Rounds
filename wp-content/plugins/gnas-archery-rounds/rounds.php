@@ -411,11 +411,11 @@ class GNAS_SingleDistance {
 
     }
 
-    public function getJavaScript() {
+    public function getJSON() {
         return '{'
-             . 'N: ' . $this->getNumArrows()
-             . ', D: ' . $this->getDiameter()
-             . ', R: ' . $this->getDistance()
+             . '"N": ' . $this->getNumArrows()
+             . ', "D": ' . $this->getDiameter()
+             . ', "R": ' . $this->getDistance()
              . '}';
     }
 
@@ -459,18 +459,14 @@ class GNAS_Distances {
         return $this->rawDistances;
     }
 
-    public function getJavaScript(GNAS_Measure $measure) {
+    public function getJSON() {
         $distances_js = array();
         foreach ($this->distances as $face => $faceDistances) {
             foreach ($faceDistances as $singleDistance) {
-                $distances_js []= $singleDistance->getJavaScript();
+                $distances_js []= $singleDistance->getJSON();
             }
         }
-        $javaScript = '<script>';
-        $javaScript .= 'rhac_measure="' . $measure->getName() . '";';
-        $javaScript .= 'rhac_distances=[' .implode(', ', $distances_js) . ']';
-        $javaScript .= '</script>';
-        return $javaScript;
+        return '[' .implode(', ', $distances_js) . ']';
     }
 
     public function getDescription(GNAS_Scoring $scoring,
@@ -744,6 +740,7 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $this->getTitle()
              . $this->getDescription()
              . $this->getJavaScript()
+             . $this->getHandicapText()
              . $this->getClassifications()->getTable();
     }
 
@@ -761,18 +758,31 @@ class GNAS_Round implements GNAS_RoundInterface {
                                      $this->getFamily()->getMeasure());
     }
 
-    private function getJavaScript() {
+    public function getJavaScript() {
+        $javascript = '<script>';
+        $javascript .= 'rhac_measure="' . $this->getMeasureName() . '";';
+        $javascript .= 'rhac_distances=' . $this->getJSON() . ';';
+        $javascript .= '</script>';
+        return $javascript;
+    }
+
+    public function getJSON() {
+        return $this->getDistances()->getJSON();
+    }
+
+    public function getMeasureName() {
+        return $this->getFamily()->getMeasure()->getName();
+    }
+
+    private function getHandicapText() {
         $name = $this->getName();
-        $js = $this->getDistances()
-                   ->getJavaScript($this->getFamily()->getMeasure());
-        $js .= <<<EOJS
+        return <<<EOJS
 <h3>Beat Your Handicap</h3>
 <p>Enter your current handicap:
 <input type="number" name="handicap" id="handicap" min="0" max="100" value="100"/></p>
 <p>Your predicted score for a $name with a handicap of
 <span id="handicap-copy">100</span> is <span id="prediction">0</span>.</p>
 EOJS;
-        return $js;
     }
 
     private function getClassifications() {
@@ -902,6 +912,7 @@ class GNAS_Requirements {
         $result .= $this->option('Gender', 'gender', array(
             'M' => 'Gent',
             'F' => 'Lady'));
+        $result .= $this->number('Handicap', 'handicap', 0, 100);
         $result .= "<tr><th>&nbsp;</th>
 <td><input type='submit' value='Search'/></td></tr>
 </table>
@@ -920,6 +931,19 @@ class GNAS_Requirements {
             $result .= ">$label</option>\n";
         }
         $result .= "</select></td></tr>\n";
+        return $result;
+    }
+
+    private function number($title, $id, $min, $max) {
+        if (isset($_GET[$id])) {
+            $value = $_GET[$id];
+        } else {
+            $value = $max;
+        }
+        $result = "<tr>";
+        $result .= "<th>$title</th>";
+        $result .= "<td><input type='number' name='$id' id='$id' min='$min max='$max' value='$value'/></td>";
+        $result .= "</tr>";
         return $result;
     }
 
@@ -945,14 +969,17 @@ class GNAS_Requirements {
                                array($_GET['age_group'],
                                      $_GET['bow'],
                                      $_GET['gender']));
-        $result = "<table><thead><tr><th>Round</th><th>Score</th></tr></thead>\n";
+        $result = "<table id='predictions'><thead><tr><th>Round</th><th>Required Score</th><th>Predicted Score</th></tr></thead>\n";
         $result .= "<tbody>\n";
         foreach ($rows as $row) {
-            $round = $row['round'];
-            if ($round == 'National') {
-                $round = ':National';
+            $printname = $roundname = $row['round'];
+            if ($printname == 'National') {
+                $printname = ':National';
             }
-            $result .= "<tr><td>$round</td><td>$row[score]</td></tr>\n";
+            $round = GNAS_Round::getInstanceByName($roundname);
+            $measure = $round->getMeasureName();
+            $json = $round->getJSON();
+            $result .= "<tr data-measure='$measure' data-distances='$json'><td>$printname</td><td class='score'>$row[score]</td><td class='prediction'>0</td></tr>\n";
         }
         $result .= "<tbody></table>\n";
         return $result;
