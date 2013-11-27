@@ -236,6 +236,10 @@ abstract class GNAS_Scoring {
         return $this->getMultiplier() * $arrowCounts->getTotalArrows();
     }
 
+    public function isPresent() {
+        return true;
+    }
+
 }
 
 ################################################
@@ -250,10 +254,41 @@ class GNAS_FiveZoneScoring extends GNAS_Scoring {
     public function getMultiplier() { return 9; }
 }
 
+#######################################################
+class GNAS_MetricInnerTenScoring extends GNAS_Scoring {
+    public function getName() { return 'metric inner ten'; }
+    public function getMultiplier() { return 10; }
+}
+
+#######################################################
+class GNAS_VegasScoring extends GNAS_Scoring {
+    public function getName() { return 'vegas'; }
+    public function getMultiplier() { return 10; }
+}
+
+#######################################################
+class GNAS_VegasInnerTenScoring extends GNAS_Scoring {
+    public function getName() { return 'vegas inner ten'; }
+    public function getMultiplier() { return 10; }
+}
+
 ################################################
-class GNAS_FiveMaxScoring extends GNAS_Scoring {
-    public function getName() { return 'five max'; }
+class GNAS_WorcesterScoring extends GNAS_Scoring {
+    public function getName() { return 'worcester'; }
     public function getMultiplier() { return 5; }
+}
+
+################################################
+class GNAS_FITASixZoneScoring extends GNAS_Scoring {
+    public function getName() { return 'fita six zone'; }
+    public function getMultiplier() { return 10; }
+}
+
+################################################
+class GNAS_NoScoring extends GNAS_Scoring {
+    public function getName() { return 'none'; }
+    public function getMultiplier() { return 0; }
+    public function isPresent() { return true; }
 }
 
 #############################
@@ -348,9 +383,10 @@ class GNAS_ArrowCounts {
     }
 
     public static function create($familyName) {
-        $rows = GNAS_PDO::SELECT('*'
-            . ' FROM arrow_count'
+        $rows = GNAS_PDO::SELECT('arrow_count.*, faces.diameter'
+            . ' FROM arrow_count, faces'
             . ' WHERE family_name = ?'
+            . ' AND arrow_count.face = faces.face'
             . ' ORDER BY distance_number',
             array($familyName));
         $counts = array();
@@ -574,7 +610,11 @@ class GNAS_UnrecognisedRoundFamily
 ########################################################
 class GNAS_RoundFamily implements GNAS_FamilyInterface {
     private $name;
+    private $sample_scoring;
     private $scoring;
+    private $triple_scoring;
+    private $compound_scoring;
+    private $compound_triple_scoring;
     private $venue;
     private $measure;
     private $rounds = null;
@@ -666,18 +706,48 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         }
     }
 
-    private function __construct($name, $scoring, $venue, $measure) {
+    private function __construct($name, $venue, $measure, $scoring, $triple_scoring, $compound_scoring, $compound_triple_scoring) {
         $this->name = $name;
-        if ($scoring == 'ten zone')
-            $this->scoring = new GNAS_TenZoneScoring();
-        else if ($scoring == 'five zone')
-            $this->scoring = new GNAS_FiveZoneScoring();
-        else
-            $this->scoring = new GNAS_FiveMaxScoring();
+        $this->scoring = self::calcScoring($scoring);
+        $this->sample_scoring = $this->scoring;
+        $this->triple_scoring = self::calcScoring($triple_scoring);
+        if (!$this->sample_scoring->isPresent())
+            $this->sample_scoring = $this->triple_scoring;
+        $this->compound_scoring = self::calcScoring($compound_scoring);
+        if (!$this->sample_scoring->isPresent())
+            $this->sample_scoring = $this->compound_scoring;
+        $this->compound_triple_scoring = self::calcScoring($compound_triple_scoring);
+        if (!$this->sample_scoring->isPresent())
+            $this->sample_scoring = $this->compound_triple_scoring;
         $this->venue = $venue;
         $this->measure = $measure == 'imperial'
                          ? new GNAS_ImperialMeasure()
                          : new GNAS_MetricMeasure();
+    }
+
+    private static function calcScoring($scoring) {
+        if (isset($scoring)) {
+            switch ($scoring) {
+                case 'ten zone':
+                    return new GNAS_TenZoneScoring();
+                case 'five zone':
+                    return new GNAS_FiveZoneScoring();
+                case 'metric inner ten':
+                    return new GNAS_MetricInnerTenScoring();
+                case 'vegas':
+                    return new GNAS_VegasScoring();
+                case 'vegas inner ten':
+                    return new GNAS_VegasInnerTenScoring();
+                case 'worcester':
+                    return new GNAS_WorcesterScoring();
+                case 'fita six zone':
+                    return new GNAS_FITASixZoneScoring();
+                default:
+                    wp_die('Error!: unrecognised scoring system: ' .$scoring);
+            }
+        } else {
+            return new GNAS_NoScoring();
+        }
     }
 
     public static function getInstance($name) {
@@ -690,9 +760,12 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
             $family = $rows[0];
             if (isset($family['name']))
                 self::$instances[$name] = new self($family['name'],
-                                                   $family['scoring'],
                                                    $family['venue'],
-                                                   $family['measure']);
+                                                   $family['measure'],
+                                                   $family['scoring'],
+                                                   $family['triple_scoring'],
+                                                   $family['compound_scoring'],
+                                                   $family['compound_triple_scoring']);
             else
                 self::$instances[$name] =
                     new GNAS_UnrecognisedRoundFamily($name);
@@ -760,7 +833,7 @@ class GNAS_Round implements GNAS_RoundInterface {
 
     public function getJavaScript() {
         $javascript = '<script>';
-        $javascript .= 'rhac_measure="' . $this->getMeasureName() . '";';
+        $javascript .= 'rhac_scoring="' . $this->getScoringName() . '";';
         $javascript .= 'rhac_distances=' . $this->getJSON() . ';';
         $javascript .= '</script>';
         return $javascript;
@@ -772,6 +845,10 @@ class GNAS_Round implements GNAS_RoundInterface {
 
     public function getMeasureName() {
         return $this->getFamily()->getMeasure()->getName();
+    }
+
+    public function getScoringName() {
+        return $this->getFamily()->getScoring()->getName();
     }
 
     private function getHandicapText() {
@@ -977,9 +1054,9 @@ class GNAS_Requirements {
                 $printname = ':National';
             }
             $round = GNAS_Round::getInstanceByName($roundname);
-            $measure = $round->getMeasureName();
+            $scoring = $round->getScoringName();
             $json = $round->getJSON();
-            $result .= "<tr data-measure='$measure' data-distances='$json'><td>$printname</td><td class='score'>$row[score]</td><td class='prediction'>0</td></tr>\n";
+            $result .= "<tr data-scoring='$scoring' data-distances='$json'><td>$printname</td><td class='score'>$row[score]</td><td class='prediction'>0</td></tr>\n";
         }
         $result .= "<tbody></table>\n";
         return $result;

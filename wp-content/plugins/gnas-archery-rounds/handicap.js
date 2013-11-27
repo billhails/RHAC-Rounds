@@ -121,8 +121,8 @@ function rhac_score(H, fn, distances) {
     }
 
     var functions = {
-        metric: metric,
-        imperial: imperial,
+        "ten zone": metric,
+        "five zone": imperial,
         "metric inner ten": metric_inner_ten,
         vegas: vegas,
         "vegas inner ten": vegas_inner_ten,
@@ -133,8 +133,8 @@ function rhac_score(H, fn, distances) {
     var y2m = 0.9144;
 
     var conversions = {
-        metric: 1.0,
-        imperial: y2m,
+        "ten zone": 1.0,
+        "five zone": y2m,
         "metric inner ten": 1.0,
         vegas: 1.0,
         "vegas inner ten": 1.0,
@@ -153,7 +153,7 @@ function rhac_score(H, fn, distances) {
 }
 
 var rhac_distances = new Array(); // in-line script will assign to this
-var rhac_measure = ''; //ditto
+var rhac_scoring = ''; //ditto
 
 jQuery(
     function() {
@@ -165,7 +165,7 @@ jQuery(
                     jQuery('#predictions tbody tr').each(
                         function () {
                             var jqthis = jQuery(this);
-                            var measure = jqthis.attr('data-measure');
+                            var measure = jqthis.attr('data-scoring');
                             var distances = jQuery.parseJSON(jqthis.attr('data-distances'));
                             jqthis.find('td.prediction').text(
                                 String(rhac_score(
@@ -182,7 +182,7 @@ jQuery(
                     jQuery('#prediction').text(
                         String(rhac_score(
                             Number(val),
-                            rhac_measure,
+                            rhac_scoring,
                             rhac_distances)))
                 }
             }
