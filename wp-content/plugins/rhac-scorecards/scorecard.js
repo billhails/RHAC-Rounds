@@ -685,7 +685,7 @@ function RHAC_Scorer() {
     }
 
     function confirm_delete() {
-        return confirm("Are you sure you want to delete this scorecard");
+        return confirm("Are you sure you want to delete this scorecard?");
     }
 
     function toggleHelp() {
@@ -723,6 +723,10 @@ function RHAC_Scorer() {
 
 jQuery(
     function() {
+        function confirm_merge() {
+            return confirm("Are you sure you want to merge these two archers?");
+        }
+
         if (jQuery('#round-data').text()) {
             new RHAC_Scorer();
             jQuery( "#date" ).datepicker(
@@ -736,6 +740,9 @@ jQuery(
             jQuery( '#datepicker-upper' ).datepicker(
                 { dateFormat: "D, d M yy" }
             );
+        }
+        if (jQuery('#merge-archers')) {
+            jQuery('#merge-archers').submit(confirm_merge);
         }
     }
 );

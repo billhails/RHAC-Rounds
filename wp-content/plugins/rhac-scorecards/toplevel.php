@@ -10,6 +10,7 @@ class RHAC_Scorecards {
     private $scorecard_end_data;
     private $homepath;
     private $homeurl;
+    private $archers;
     private static $instance;
 
     private function __construct() {
@@ -88,7 +89,13 @@ class RHAC_Scorecards {
             $this->homePage();
         } elseif (isset($_POST['delete-scorecard'])) { // delete requested
             // echo '<p>topLevel() delete req</p>';
-            $this->delete_scorecard($_POST['scorecard-id']);
+            $this->deleteScorecard($_POST['scorecard-id']);
+            $this->homePage();
+        } elseif (isset($_POST['delete-archer'])) { // delete requested
+            $this->deleteArcher($_POST['archer']);
+            $this->homePage();
+        } elseif (isset($_POST['merge-archers'])) { // merge requested
+            $this->mergeArchers($_POST['from-archer'], $_POST['to-archer']);
             $this->homePage();
         } elseif (isset($_POST['add-archer'])) {
             $this->addArcher($_POST['archer']);
@@ -102,12 +109,17 @@ class RHAC_Scorecards {
             }
         } elseif (isset($_GET['find-scorecard'])) { // search requested
             $this->find();
-        } elseif (isset($_POST['delete-archer'])) { // delete requested
-            $this->delete_archer($_POST['archer']);
-            $this->homePage();
         } else { // homePage
             // echo '<p>doing home page</p>';
             $this->homePage();
+        }
+    }
+
+    private function mergeArchers($from, $to) {
+        if ($from && $to && $from != $to) {
+            $this->exec("UPDATE scorecards SET archer = ? WHERE archer = ?", array($to, $from));
+            $this->exec("DELETE FROM archer WHERE name = ?", array($from));
+            echo "<p>Archer $from is now $to</p>";
         }
     }
 
@@ -118,7 +130,7 @@ class RHAC_Scorecards {
         }
     }
 
-    private function delete_scorecard($id) {
+    private function deleteScorecard($id) {
         if ($id) {
             $status1 = $this->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?", array($id));
             $status2 = $this->exec("DELETE FROM scorecards WHERE scorecard_id = ?", array($id));
@@ -126,8 +138,24 @@ class RHAC_Scorecards {
         }
     }
 
-    private function delete_archer($archer) {
-        echo "<p>Delete Archer not yet implemented</p>";
+    private function deleteArcher($archer) {
+        if ($this->noScorecards($archer)) {
+            $this->exec("DELETE FROM archer where name = ?", array($archer));
+            echo "<p>Archer $archer deleted.</p>";
+        } else {
+            echo "<p>Archer $archer cannot be deleted because they may have scorecards.</p>";
+        }
+    }
+
+    private function noScorecards($archer) {
+        $rows = $this->fetch("SELECT COUNT(*) AS num FROM scorecards WHERE archer = ?", array($archer));
+        $count = $rows[0]['num'];
+        if (isset($count)) {
+            return ($count == 0);
+        } else {
+            echo "<p>Cannot find count of scorecards for $archer.</p>";
+            return false;
+        }
     }
 
     private function dateToStoredFormat($date) {
@@ -424,9 +452,8 @@ class RHAC_Scorecards {
         // echo '<p>finished homePage()</p>';
     }
 
-    public function homePageHTML() {
+    private function searchForm() {
         $text = array();
-        $text []= '<h1>Score Cards</h1>';
         $text []= '<form method="get" action="">';
         $text []= '<input type="hidden" name="page" value="'
                     . $_GET[page] . '"/>';
@@ -451,17 +478,61 @@ class RHAC_Scorecards {
         $text []=
             '<input type="submit" name="find-scorecard" value="Search" />';
         $text []= '</form>';
-        $text []= '<hr/>';
+        return implode($text);
+    }
+
+    private function newScorecardForm() {
+        $text = array();
         $text []= '<form method="get" action="">';
         $text []= '<input type="hidden" name="page" value="'
                     . $_GET[page] . '"/>';
         $text []= '<input type="submit" name="edit-scorecard" value="New" />';
         $text []= '</form>';
-        $text []= '<hr/>';
+        return implode($text);
+    }
+
+    private function newArcherForm() {
+        $text = array();
         $text []= '<form method="post" action="">';
         $text []= '<input type="text" name="archer"/>';
         $text []= '<input type="submit" name="add-archer" value="Add Archer"/>';
         $text []= '</form>';
+        return implode($text);
+    }
+
+    private function deleteArcherForm() {
+        $text = array();
+        $text []= '<form method="post" action="">';
+        $text []= $this->archersAsSelect();
+        $text []= '<input type="submit" name="delete-archer" value="Delete Archer"/>';
+        $text []= '</form>';
+        return implode($text);
+    }
+
+    private function mergeArcherForm() {
+        $text = array();
+        $text []= '<form method="post" id="merge-archers" action="">';
+        $text []= '<label for="from-archer">From</label>';
+        $text []= $this->archersAsSelect("from-archer");
+        $text []= '<label for="to-archer">To</label>';
+        $text []= $this->archersAsSelect("to-archer");
+        $text []= '<input type="submit" name="merge-archers" value="Merge Archers"/>';
+        $text []= '</form>';
+        return implode($text);
+    }
+
+    public function homePageHTML() {
+        $text = array();
+        $text []= '<h1>Score Cards</h1>';
+        $text []= $this->searchForm();
+        $text []= '<hr/>';
+        $text []= $this->newScorecardForm();
+        $text []= '<hr/>';
+        $text []= $this->newArcherForm();
+        $text []= '<hr/>';
+        $text []= $this->deleteArcherForm();
+        $text []= '<hr/>';
+        $text []= $this->mergeArcherForm();
         $text []= '<hr/>';
         $text []= "<a href='" . $this->homeurl . 'scorecard.db' ."'>Download a backup</a> (click right and save as...)";
         return implode($text);
@@ -477,8 +548,15 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
-    public function archersAsSelect() {
-        $text = array('<select name="archer" id="archer">');
+    private function archers() {
+        if (!isset($this->archers)) {
+            $this->archers = $this->fetch('SELECT name FROM archer ORDER BY name');
+        }
+        return $this->archers;
+    }
+
+    public function archersAsSelect($id = 'archer') {
+        $text = array("<select name='$id' id='$id'>");
         $text []= "<option value=''>- - -</option>\n";
         $archers = RHAC_Scorecards::getInstance()->fetch(
                             'SELECT name FROM archer ORDER BY name');
