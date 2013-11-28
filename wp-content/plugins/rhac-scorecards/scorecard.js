@@ -684,6 +684,10 @@ function RHAC_Scorer() {
         return true;
     }
 
+    function confirm_delete() {
+        return confirm("Are you sure you want to delete this scorecard");
+    }
+
     function toggleHelp() {
         var help_text = jQuery('#help-text');
         if (help_text.css('display') == 'none') {
@@ -711,6 +715,7 @@ function RHAC_Scorer() {
         )
         addUp();
         jQuery('#edit-scorecard').submit(validate);
+        jQuery('#delete-scorecard').submit(confirm_delete);
     }
 
     setup();

@@ -86,6 +86,10 @@ class RHAC_Scorecards {
                 $this->insert();
             }
             $this->homePage();
+        } elseif (isset($_POST['delete-scorecard'])) { // delete requested
+            // echo '<p>topLevel() delete req</p>';
+            $this->delete_scorecard($_POST['scorecard-id']);
+            $this->homePage();
         } elseif (isset($_POST['add-archer'])) {
             $this->addArcher($_POST['archer']);
             $this->homePage();
@@ -98,6 +102,9 @@ class RHAC_Scorecards {
             }
         } elseif (isset($_GET['find-scorecard'])) { // search requested
             $this->find();
+        } elseif (isset($_POST['delete-archer'])) { // delete requested
+            $this->delete_archer($_POST['archer']);
+            $this->homePage();
         } else { // homePage
             // echo '<p>doing home page</p>';
             $this->homePage();
@@ -109,6 +116,18 @@ class RHAC_Scorecards {
             $this->exec("INSERT INTO archer(name) VALUES(?)", array($archer));
             echo "<p>Archer $archer added</p>";
         }
+    }
+
+    private function delete_scorecard($id) {
+        if ($id) {
+            $status1 = $this->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?", array($id));
+            $status2 = $this->exec("DELETE FROM scorecards WHERE scorecard_id = ?", array($id));
+            echo "<p>Scorecard #$id deleted.</p>";
+        }
+    }
+
+    private function delete_archer($archer) {
+        echo "<p>Delete Archer not yet implemented</p>";
     }
 
     private function dateToStoredFormat($date) {
@@ -284,14 +303,13 @@ class RHAC_Scorecards {
         }
         $query = "SELECT * FROM scorecards WHERE "
                . implode(' AND ', $criteria)
-               . " ORDER BY date";
+               . " ORDER BY date, archer";
         $search_results = $this->fetch($query, $params);
         print $this->searchResultsPage($search_results);
     }
 
     private function searchResultsPage($search_results) {
         $text = array();
-        $text []= '<h1>Search Results</h1>';
         $text []= '<table>';
         $text []= '<thead>';
         $text []= '<tr>';
@@ -309,7 +327,9 @@ class RHAC_Scorecards {
         $text []= '<tbody>';
         $odd = true;
         $prev_date = '';
+        $count = 0;
         foreach ($search_results as $result) {
+            ++$count;
             if ($result['date'] != $prev_date) {
                 $odd = !$odd;
                 $prev_date = $result['date'];
@@ -337,7 +357,7 @@ class RHAC_Scorecards {
             $text []= "</tr>\n";
         }
         $text []= '</tbody></table>';
-        return implode($text);
+        return "<h1>$count Search Results</h1>" . implode($text);
     }
 
     /**
@@ -691,13 +711,15 @@ class RHAC_Scorecards {
 
     private function deleteScorecardButton() {
         $text = array();
-        $text []= '<form method="post" action="" id="delete-scorecard">';
-        $text []= '<input type="hidden" name="scorecard-id" value="';
-        $text []= $this->scorecard_id;
-        $text []= '"/>';
-        $text []= '<input type="submit" name="delete-scorecard"';
-        $text []= ' value="Delete" />';
-        $text []= '</form>';
+        if ($this->scorecard_id) {
+            $text []= '<form method="post" action="" id="delete-scorecard">';
+            $text []= '<input type="hidden" name="scorecard-id" value="';
+            $text []= $this->scorecard_id;
+            $text []= '"/>';
+            $text []= '<input type="submit" name="delete-scorecard"';
+            $text []= ' value="Delete" />';
+            $text []= '</form>';
+        }
         return implode($text);
     }
 
@@ -741,6 +763,7 @@ class RHAC_Scorecards {
         }
         $text []= '</h1>';
         $text []= $this->helpBox();
+        $text []= $this->deleteScorecardButton();
         $text []= $this->cancelButton();
         $text []= $this->roundData();
         $text []= $this->scorecardForm();
