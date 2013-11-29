@@ -54,6 +54,33 @@ function RHAC_TenZoneMap() {
 RHAC_TenZoneMap.prototype = new RHAC_ZoneMap();
 RHAC_TenZoneMap.prototype.constructor = RHAC_TenZoneMap;
 
+function RHAC_MetricInnerTenMap() {
+    this.map = {
+        X: {score: 10, className: "gold", value: "10"},
+        10: {score: 10, className: "gold", value: "10"},
+        0: {score: 10, className: "gold", value: "10"},
+        9: {score: 9, className: "gold", value: "9"},
+        8: {score: 8, className: "red", value: "8"},
+        7: {score: 7, className: "red", value: "7"},
+        6: {score: 6, className: "blue", value: "6"},
+        5: {score: 5, className: "blue", value: "5"},
+        4: {score: 4, className: "black", value: "4"},
+        3: {score: 3, className: "black", value: "3"},
+        2: {score: 2, className: "white", value: "2"},
+        1: {score: 1, className: "white", value: "1"},
+        M: {score: 0, className: "miss", value: "M"},
+    };
+    this.getZoneCounts = function() {
+        return { tcbar_10: 0, tcbar_9: 0,
+                 tcbar_8: 0, tcbar_7: 0, tcbar_6: 0,
+                 tcbar_5: 0, tcbar_4: 0, tcbar_3: 0,
+                 tcbar_2: 0, tcbar_1: 0, tcbar_M: 0 };
+    };
+    this.bar_prefix = 'tcbar_';
+}
+RHAC_MetricInnerTenMap.prototype = new RHAC_ZoneMap();
+RHAC_MetricInnerTenMap.prototype.constructor = RHAC_MetricInnerTenMap;
+
 function RHAC_FiveZoneMap() {
     this.map = {
         X: {score: 9, className: "gold", value: "9"},
@@ -80,22 +107,133 @@ function RHAC_FiveZoneMap() {
 RHAC_FiveZoneMap.prototype = new RHAC_ZoneMap();
 RHAC_FiveZoneMap.prototype.constructor = RHAC_FiveZoneMap;
 
+function RHAC_VegasMap() {
+    this.map = {
+        X: {score: 10, className: "gold", value: "X"},
+        10: {score: 10, className: "gold", value: "10"},
+        0: {score: 10, className: "gold", value: "10"},
+        9: {score: 9, className: "gold", value: "9"},
+        8: {score: 8, className: "red", value: "8"},
+        7: {score: 7, className: "red", value: "7"},
+        6: {score: 6, className: "blue", value: "6"},
+        5: {score: 0, className: "miss", value: "M"},
+        4: {score: 0, className: "miss", value: "M"},
+        3: {score: 0, className: "miss", value: "M"},
+        2: {score: 0, className: "miss", value: "M"},
+        1: {score: 0, className: "miss", value: "M"},
+        M: {score: 0, className: "miss", value: "M"},
+    };
+    this.getZoneCounts = function() {
+        return { vbar_X: 0,
+                 vbar_10: 0,
+                 vbar_9: 0,
+                 vbar_8: 0,
+                 vbar_7: 0,
+                 vbar_6: 0,
+                 vbar_M: 0 };
+    };
+    this.bar_prefix = 'vbar_';
+}
+
+RHAC_VegasMap.prototype = new RHAC_ZoneMap();
+RHAC_VegasMap.prototype.constructor = RHAC_VegasMap;
+
+function RHAC_WorcesterMap() {
+    this.map = {
+        X: {score: 5, className: "white", value: "5"},
+        10: {score: 5, className: "white", value: "5"},
+        0: {score: 5, className: "white", value: "5"},
+        9: {score: 5, className: "white", value: "5"},
+        8: {score: 5, className: "white", value: "5"},
+        7: {score: 5, className: "white", value: "5"},
+        6: {score: 5, className: "white", value: "5"},
+        5: {score: 5, className: "white", value: "5"},
+        4: {score: 4, className: "black", value: "4"},
+        3: {score: 3, className: "black", value: "3"},
+        2: {score: 2, className: "black", value: "2"},
+        1: {score: 1, className: "black", value: "1"},
+        M: {score: 0, className: "miss", value: "M"},
+    };
+    this.getZoneCounts = function() {
+        return { wbar_5: 0,
+                 wbar_4: 0,
+                 wbar_3: 0,
+                 wbar_2: 0,
+                 wbar_1: 0,
+                 wbar_M: 0 };
+    };
+    this.bar_prefix = 'wbar_';
+}
+
+RHAC_WorcesterMap.prototype = new RHAC_ZoneMap();
+RHAC_WorcesterMap.prototype.constructor = RHAC_VegasMap;
+
+function RHAC_VegasInnerTenMap() {
+    this.map = {
+        X: {score: 10, className: "gold", value: "10"},
+        10: {score: 10, className: "gold", value: "10"},
+        0: {score: 10, className: "gold", value: "10"},
+        9: {score: 9, className: "gold", value: "9"},
+        8: {score: 8, className: "red", value: "8"},
+        7: {score: 7, className: "red", value: "7"},
+        6: {score: 6, className: "blue", value: "6"},
+        5: {score: 0, className: "miss", value: "M"},
+        4: {score: 0, className: "miss", value: "M"},
+        3: {score: 0, className: "miss", value: "M"},
+        2: {score: 0, className: "miss", value: "M"},
+        1: {score: 0, className: "miss", value: "M"},
+        M: {score: 0, className: "miss", value: "M"},
+    };
+    this.getZoneCounts = function() {
+        return { vtbar_10: 0,
+                 vtbar_9: 0,
+                 vtbar_8: 0,
+                 vtbar_7: 0,
+                 vtbar_6: 0,
+                 vtbar_M: 0 };
+    };
+    this.bar_prefix = 'vtbar_';
+}
+
+RHAC_VegasInnerTenMap.prototype = new RHAC_ZoneMap();
+RHAC_VegasInnerTenMap.prototype.constructor = RHAC_VegasInnerTenMap;
+
 function RHAC_Scorer() {
     var zoneMap = new RHAC_TenZoneMap();
 
     var focusables = jQuery(":focusable");
 
-    function setMeasure(measure) {
-        if (measure == "imperial") {
+    function hideCharts() {
+        jQuery('#TenZoneChart').css('display', 'none');
+        jQuery('#TenZoneCompoundChart').css('display', 'none');
+        jQuery('#FiveZoneChart').css('display', 'none');
+        jQuery('#VegasChart').css('display', 'none');
+        jQuery('#VegasInnerTenChart').css('display', 'none');
+        jQuery('#WorcesterChart').css('display', 'none');
+    }
+
+    function setScoring(scoring) {
+        hideCharts();
+        if (scoring == "five zone") {
             zoneMap = new RHAC_FiveZoneMap();
-            jQuery('#TenZoneChart').css('display', 'none');
             jQuery('#FiveZoneChart').css('display', 'inline');
-        } else if (measure == "metric") {
+        } else if (scoring == "ten zone") {
             zoneMap = new RHAC_TenZoneMap();
             jQuery('#TenZoneChart').css('display', 'inline');
-            jQuery('#FiveZoneChart').css('display', 'none');
+        } else if (scoring == "metric inner ten") {
+            zoneMap = new RHAC_MetricInnerTenMap();
+            jQuery('#TenZoneCompoundChart').css('display', 'inline');
+        } else if (scoring == "vegas") {
+            zoneMap = new RHAC_VegasMap();
+            jQuery('#VegasChart').css('display', 'inline');
+        } else if (scoring == "vegas inner ten") {
+            zoneMap = new RHAC_VegasInnerTenMap();
+            jQuery('#VegasInnerTenChart').css('display', 'inline');
+        } else if (scoring == "worcester") {
+            zoneMap = new RHAC_WorcesterMap();
+            jQuery('#WorcesterChart').css('display', 'inline');
         } else {
-            alert("unrecognised measure: " + measure);
+            alert("unrecognised scoring: " + scoring);
         }
     }
 
@@ -112,377 +250,6 @@ function RHAC_Scorer() {
                 }
             }
         }
-    }
-
-    function scorecardHTML(data) {
-        var html = '<div class="scorecard">';
-        html += '<span class="headers">';
-        html += '<span class="header"><b>Archer:</b> ';
-        html += data.archer;
-        html += ',</span>';
-        html += '<span class="header"><b>Bow:</b> ';
-        html += data.bow;
-        html += ',</span>';
-        html += '<span class="header"><b>Round:</b> ';
-        html += data.round;
-        html += ',</span>';
-        html += '<span class="header"><b>Date:</b> '
-        html += data.date;
-        html += '.</span>';
-        html += '.</span>';
-        html += '<table class="scorecard">';
-        html += '<thead>';
-        html += '<tr>';
-        html += '<th>dist</th>';
-        for (var lr = 0; lr < 2; ++lr) {
-            for (var arrow = 1; arrow < 7; ++arrow) {
-                html += '<th class="arrow">' + arrow + '</th>';
-            }
-            html += '<th class="totals">end</th>';
-            html += '<th class="pad"></th>';
-        }
-        html += '<th class="totals">hits</th>';
-        html += '<th class="totals">Xs</th>';
-        html += '<th class="totals">golds</th>';
-        html += '<th class="totals">doz</th>';
-        html += '<th class="totals">tot</th>';
-        html += '</tr>';
-        html += '</thead>';
-        html += '<tbody>';
-        var right = false;
-        var totals = {
-            end: 0,
-            hits: 0, total_hits: 0,
-            xs: 0, total_xs: 0,
-            golds: 0, total_golds: 0,
-            doz: 0, total: 0,
-            total_tens: 0,
-            total_nines: 0,
-            total_eights: 0,
-            total_sevens: 0,
-            total_sixes: 0,
-            total_fives: 0,
-            total_fours: 0,
-            total_threes: 0,
-            total_twos: 0,
-            total_ones: 0,
-            total_misses: 0,
-            total_arrows: 0
-        };
-        data.ends.each(function(index, end) {
-            totals.end = 0;
-            if (!right) {
-                html += '<tr>';
-                totals.hits = 0;
-                totals.xs = 0;
-                totals.golds = 0;
-                totals.doz = 0;
-            }
-            html += oneEnd(end, totals);
-            if (right) {
-                html += endTotal(totals);
-            }
-            right = !right;
-        });
-        if (right) {
-            html += emptyEnd();
-            html += endTotal(totals);
-        }
-        html += '</tbody>';
-        html += '<tfoot>';
-        html += '<tr>';
-        html += '<td class="totals" colspan="16">Totals:</td>';
-        html += '<td class="total-hits">' + totals.total_hits + '</td>';
-        html += '<td class="total-Xs">' + totals.total_xs + '</td>';
-        html += '<td class="total-golds">' + totals.total_golds + '</td>';
-        html += '<td class="total-doz"></td>';
-        html += '<td class="total-total">' + totals.total + '</td>';
-        html += '</tr>';
-        html += '</tfoot>';
-        html += '</table>';
-        if (totals.total_arrows > 0) {
-            if ('imperial' == data.measure) {
-                html += imperialBarchart(totals);
-            }
-            else {
-                html += metricBarchart(totals);
-            }
-            html += '<span><b>Average:</b> ' +
-                (totals.total / totals.total_arrows).toFixed(2) +
-                '</span>';
-        }
-        html += '</div>';
-        return html;
-    }
-
-    function metricBarChart(totals) {
-        var width = 30;
-        var height = 100;
-        var html = '';
-        html += '<table>';
-        html += '<tr class="bars">';
-        html += '<td class="bar"><img src="gold.png" height="' +
-            (height * totals.total_xs / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="gold.png" height="' +
-            (height * totals.total_tens / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="gold.png" height="' +
-            (height * totals.total_nines / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="red.png" height="' +
-            (height * totals.total_eights / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="red.png" height="' +
-            (height * totals.total_sevens / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="blue.png" height="' +
-            (height * totals.total_sixes / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="blue.png" height="' +
-            (height * totals.total_fives / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="black.png" height="' +
-            (height * totals.total_fours / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="black.png" height="' +
-            (height * totals.total_threes / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="white.png" height="' +
-            (height * totals.total_twos / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="white.png" height="' +
-            (height * totals.total_ones / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="green.png" height="' +
-            (height * totals.total_misses / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '</tr>';
-        html += '<tr class="values">';
-        html += '<td class="value">' + totals.total_xs + '</td>';
-        html += '<td class="value">' + totals.total_tens + '</td>';
-        html += '<td class="value">' + totals.total_nines + '</td>';
-        html += '<td class="value">' + totals.total_eights + '</td>';
-        html += '<td class="value">' + totals.total_sevens + '</td>';
-        html += '<td class="value">' + totals.total_sixes + '</td>';
-        html += '<td class="value">' + totals.total_fives + '</td>';
-        html += '<td class="value">' + totals.total_fours + '</td>';
-        html += '<td class="value">' + totals.total_threes + '</td>';
-        html += '<td class="value">' + totals.total_twos + '</td>';
-        html += '<td class="value">' + totals.total_ones + '</td>';
-        html += '<td class="value">' + totals.total_misses + '</td>';
-        html += '</tr>';
-        html += '<tr class="labels">';
-        html += '<th class="label">Xs</th>';
-        html += '<th class="label">10s</th>';
-        html += '<th class="label">9s</th>';
-        html += '<th class="label">8s</th>';
-        html += '<th class="label">7s</th>';
-        html += '<th class="label">6s</th>';
-        html += '<th class="label">5s</th>';
-        html += '<th class="label">4s</th>';
-        html += '<th class="label">3s</th>';
-        html += '<th class="label">2s</th>';
-        html += '<th class="label">1s</th>';
-        html += '<th class="label">Ms</th>';
-        html += '</tr>';
-        html += '</table>';
-        return html;
-    }
-
-    function imperialBarChart(totals) {
-        var width = 50;
-        var height = 100;
-        var html = '';
-        html += '<table>';
-        html += '<tr class="bars">';
-        html += '<td class="bar"><img src="gold.png" height="' +
-            (height * totals.total_nines / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="red.png" height="' +
-            (height * totals.total_sevens / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="blue.png" height="' +
-            (height * totals.total_fives / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="black.png" height="' +
-            (height * totals.total_threes / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="white.png" height="' +
-            (height * totals.total_ones / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '<td class="bar"><img src="green.png" height="' +
-            (height * totals.total_misses / totals.total_arrows).toFixed() +
-            '" width="' + width + '"/></td>';
-        html += '</tr>';
-        html += '<tr class="values">';
-        html += '<td class="value">' + totals.total_nines + '</td>';
-        html += '<td class="value">' + totals.total_sevens + '</td>';
-        html += '<td class="value">' + totals.total_fives + '</td>';
-        html += '<td class="value">' + totals.total_threes + '</td>';
-        html += '<td class="value">' + totals.total_ones + '</td>';
-        html += '<td class="value">' + totals.total_misses + '</td>';
-        html += '</tr>';
-        html += '<tr class="labels">';
-        html += '<th class="label">9s</th>';
-        html += '<th class="label">7s</th>';
-        html += '<th class="label">5s</th>';
-        html += '<th class="label">3s</th>';
-        html += '<th class="label">1s</th>';
-        html += '<th class="label">Ms</th>';
-        html += '</tr>';
-        html += '</table>';
-        return html;
-    }
-
-    function endTotal(totals) {
-        var html = '';
-        html += '<td class="hits">' + totals.hits + '</td>';
-        html += '<td class="Xs">' + totals.xs + '</td>';
-        html += '<td class="golds">' + totals.golds + '</td>';
-        html += '<td class="doz">' + totals.doz + '</td>';
-        html += '<td class="tot">' + totals.total + '</td>';
-        html += '</tr>';
-        return html;
-    }
-
-    function emptyEnd() {
-        var html = '';
-        for (var i = 0; i < 6; ++i) {
-            html += '<td class="empty"></td>';
-        }
-        html += '<td class="pad"></td>';
-        return html;
-    }
-
-    function oneEnd(end, totals) {
-        var html = '';
-        html += oneArrow(end.arrow_1, totals);
-        html += oneArrow(end.arrow_2, totals);
-        html += oneArrow(end.arrow_3, totals);
-        html += oneArrow(end.arrow_4, totals);
-        html += oneArrow(end.arrow_5, totals);
-        html += oneArrow(end.arrow_6, totals);
-        html += '<td class="pad"></td>';
-        return html;
-    }
-
-    function oneArrow(arrow, totals) {
-        var css_class = '';
-        totals.total_arrows++;
-        switch(arrow) {
-            case 'X':
-                totals.xs++;
-                totals.total_xs++;
-                totals.golds++;
-                totals.total_golds++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 10;
-                totals.doz += 10;
-                totals.total += 10;
-                css_class = 'gold';
-                break;
-            case 10:
-                totals.total_tens++;
-                totals.golds++;
-                totals.total_golds++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 10;
-                totals.doz += 10;
-                totals.total += 10;
-                css_class = 'gold';
-                break;
-            case 9:
-                totals.total_nines++;
-                totals.golds++;
-                totals.total_golds++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 9;
-                totals.doz += 9;
-                totals.total += 9;
-                css_class = 'gold';
-                break;
-            case 8:
-                totals.total_eights++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 8;
-                totals.doz += 8;
-                totals.total += 8;
-                css_class = 'red';
-                break;
-            case 7:
-                totals.total_sevens++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 7;
-                totals.doz += 7;
-                totals.total += 7;
-                css_class = 'red';
-                break;
-            case 6:
-                totals.total_sixes++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 6;
-                totals.doz += 6;
-                totals.total += 6;
-                css_class = 'blue';
-                break;
-            case 5:
-                totals.total_fives++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 5;
-                totals.doz += 5;
-                totals.total += 5;
-                css_class = 'blue';
-                break;
-            case 4:
-                totals.total_fours++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 4;
-                totals.doz += 4;
-                totals.total += 4;
-                css_class = 'black';
-                break;
-            case 3:
-                totals.total_threes++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 3;
-                totals.doz += 3;
-                totals.total += 3;
-                css_class = 'black';
-                break;
-            case 2:
-                totals.total_twos++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 2;
-                totals.doz += 2;
-                totals.total += 2;
-                css_class = 'white';
-                break;
-            case 1:
-                totals.total_ones++;
-                totals.hits++;
-                totals.total_hits++;
-                totals.end += 1;
-                totals.doz += 1;
-                totals.total += 1;
-                css_class = 'white';
-                break;
-            case 'M':
-                totals.total_misses++;
-                css_class = 'green';
-                break;
-        }
-        return '<td class="' + css_class + '">' + arrow + '</td>';
     }
 
     function changeScore(score) {
@@ -625,15 +392,41 @@ function RHAC_Scorer() {
     }
 
     function changeRound(round) {
-        setMeasure(
+        var scoring = 'scoring';
+        var bow = jQuery('#bow:checked');
+        if (bow.length > 0 && bow.val() == 'compound') {
+            scoring = 'compound-scoring'
+        }
+        setScoring(
             jQuery(
-                '#round-data span[name="' + round + '"] span.measure'
+                '#round-data span[name="' + round + '"] span.' + scoring
             ).text()
         );
     }
 
     function watchRound() {
         changeRound(jQuery(this).val());
+        everyArrow(changeScore);
+        addUp();
+    }
+
+    function changeBow(bow) {
+        var scoring = 'scoring';
+        if (bow == 'compound') {
+            scoring = 'compound-scoring'
+        }
+        var round = jQuery('#round').val();
+        if (round) {
+            setScoring(
+                jQuery(
+                    '#round-data span[name="' + round + '"] span.' + scoring
+                ).text()
+            );
+        }
+    }
+
+    function watchBow() {
+        changeBow(jQuery(this).val());
         everyArrow(changeScore);
         addUp();
     }
@@ -698,14 +491,20 @@ function RHAC_Scorer() {
     }
 
     function setup() {
-        jQuery('#TenZoneChart').css('display', 'none');
-        jQuery('#FiveZoneChart').css('display', 'none');
+        hideCharts();
         jQuery('#help-button').click(toggleHelp);
         var round = jQuery('#round');
         if (round.val()) {
             changeRound(round.val());
         }
         round.change(watchRound);
+
+        var bow = jQuery('#bow:checked');
+        if (bow.val()) {
+            changeBow(bow.val());
+        }
+        jQuery('input[name="bow"]').change(watchBow);
+
         everyArrow(
             function(score) {
                 changeScore(score);

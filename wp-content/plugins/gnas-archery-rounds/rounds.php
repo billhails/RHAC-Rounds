@@ -140,13 +140,22 @@ abstract class GNAS_Measure {
     abstract public function getName();
 
     public function getTableHeader() {
-        return '<thead><tr><th rowspan="2">&nbsp;</th><th colspan="'
+        return '<thead><tr><th rowspan="3" style="vertical-align: bottom;">Round</th><th colspan="'
             . $this->totalDistances()
             . '">Dozens at each distance</th></tr>'
             . '<tr>' . $this->getFaceHeaders() . '</tr>'
-            . '<tr><th>Round</th>'
+            . '<tr>'
             . $this->getDistanceHeaders()
             . '</tr></thead>';
+    }
+
+    public function getTableFooter() {
+        return '<tfoot>'
+            . '<tr><td rowspan="2">Round</td>'
+            . $this->getDistanceHeaders('td')
+            . '</tr>'
+            . '<tr>' . $this->getFaceHeaders('td') . '</tr>'
+            . '</tfoot>';
     }
 
     public function makeTableDistances(GNAS_Distances $distance) {
@@ -167,19 +176,19 @@ abstract class GNAS_Measure {
         return $total;
     }
 
-    private function getFaceHeaders() {
+    private function getFaceHeaders($type='th') {
         $result = '';
         foreach($this->getAllDistances() as $face => $distances) {
-            $result .= '<th colspan="'
+            $result .= "<$type colspan='"
                     . count($distances)
-                    . '">'
+                    . "'>"
                     . $face
-                    . '</th>';
+                    . "</$type>";
         }
         return $result;
     }
 
-    private function getDistanceHeaders() {
+    private function getDistanceHeaders($type='th') {
         $units = $this->getUnits();
         $headers = array();
         foreach ($this->getAllDistances() as $distances) {
@@ -187,20 +196,16 @@ abstract class GNAS_Measure {
                 $headers []= $distance . $units;
             }
         }
-        return '<th>' . implode('</th><th>', $headers) . '</th>';
+        return "<$type>" . implode("</$type><$type>", $headers) . "</$type>";
     }
 
 }
 
-#################################################
-class GNAS_ImperialMeasure extends GNAS_Measure {
+#########################################################
+abstract class GNAS_ImperialMeasure extends GNAS_Measure {
 
     public function getUnits() {
         return 'y';
-    }
-
-    public function getAllDistances() {
-        return array('122cm' => array(100, 80, 60, 50, 40, 30, 20, 10));
     }
 
     public function getName() {
@@ -209,20 +214,57 @@ class GNAS_ImperialMeasure extends GNAS_Measure {
 
 }
 
-###############################################
-class GNAS_MetricMeasure extends GNAS_Measure {
+################################################################
+class GNAS_OutdoorImperialMeasure extends GNAS_ImperialMeasure {
+
+    public function getAllDistances() {
+        return array('122cm' => array(100, 80, 60, 50, 40, 30, 20, 10));
+    }
+
+}
+
+###############################################################
+class GNAS_IndoorImperialMeasure extends GNAS_ImperialMeasure {
+
+    public function getAllDistances() {
+        return array('80cm' => array(30),
+                     '60cm' => array(25, 20),
+                     '40cm' => array(25, 20),
+                     '16in special' => array(20));
+    }
+
+}
+
+########################################################
+abstract class GNAS_MetricMeasure extends GNAS_Measure {
 
     public function getUnits() {
         return 'm';
     }
 
-    public function getAllDistances() {
-        return array('122cm' => array(90, 70, 60, 50, 40, 30, 20),
-                     '80cm' => array(50, 40, 30, 20, 15, 10));
-    }
-
     public function getName() {
         return 'metric';
+    }
+
+}
+
+############################################################
+class GNAS_OutdoorMetricMeasure extends GNAS_MetricMeasure {
+
+    public function getAllDistances() {
+        return array('122cm' => array(90, 70, 60, 50, 40, 30, 20),
+                     '80cm'  => array(50, 40, 30, 20, 15, 10));
+    }
+
+}
+
+###########################################################
+class GNAS_IndoorMetricMeasure extends GNAS_MetricMeasure {
+
+    public function getAllDistances() {
+        return array('80cm' => array(30),
+                     '60cm' => array(25, 18),
+                     '40cm' => array(18));
     }
 
 }
@@ -288,7 +330,7 @@ class GNAS_FITASixZoneScoring extends GNAS_Scoring {
 class GNAS_NoScoring extends GNAS_Scoring {
     public function getName() { return 'none'; }
     public function getMultiplier() { return 0; }
-    public function isPresent() { return true; }
+    public function isPresent() { return false; }
 }
 
 #############################
@@ -610,11 +652,8 @@ class GNAS_UnrecognisedRoundFamily
 ########################################################
 class GNAS_RoundFamily implements GNAS_FamilyInterface {
     private $name;
-    private $sample_scoring;
     private $scoring;
-    private $triple_scoring;
     private $compound_scoring;
-    private $compound_triple_scoring;
     private $venue;
     private $measure;
     private $rounds = null;
@@ -656,14 +695,19 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
     }
 
     private function getTable() {
-        return '<table>'
+        return '<table class="rounds">'
                . $this->getTableHeader()
+               . $this->getTableFooter()
                . $this->getTableBody()
                . '</table>';
     }
 
     public function getTableHeader() {
         return $this->measure->getTableHeader();
+    }
+
+    public function getTableFooter() {
+        return $this->measure->getTableFooter();
     }
 
     public function getArrowCounts() {
@@ -692,6 +736,10 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         return $this->scoring;
     }
 
+    public function getCompoundScoring() {
+        return $this->compound_scoring;
+    }
+
     private function populate() {
         if (isset($this->rounds)) return;
         $this->rounds = array();
@@ -706,47 +754,38 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         }
     }
 
-    private function __construct($name, $venue, $measure, $scoring, $triple_scoring, $compound_scoring, $compound_triple_scoring) {
+    private function __construct($name, $venue, $measure, $scoring, $compound_scoring) {
         $this->name = $name;
         $this->scoring = self::calcScoring($scoring);
-        $this->sample_scoring = $this->scoring;
-        $this->triple_scoring = self::calcScoring($triple_scoring);
-        if (!$this->sample_scoring->isPresent())
-            $this->sample_scoring = $this->triple_scoring;
         $this->compound_scoring = self::calcScoring($compound_scoring);
-        if (!$this->sample_scoring->isPresent())
-            $this->sample_scoring = $this->compound_scoring;
-        $this->compound_triple_scoring = self::calcScoring($compound_triple_scoring);
-        if (!$this->sample_scoring->isPresent())
-            $this->sample_scoring = $this->compound_triple_scoring;
         $this->venue = $venue;
         $this->measure = $measure == 'imperial'
-                         ? new GNAS_ImperialMeasure()
-                         : new GNAS_MetricMeasure();
+                       ? ($venue == 'outdoor'
+                                   ? new GNAS_OutdoorImperialMeasure()
+                                   : new GNAS_IndoorImperialMeasure())
+                       : ($venue == 'outdoor'
+                                   ? new GNAS_OutdoorMetricMeasure()
+                                   : new GNAS_IndoorMetricMeasure());
     }
 
     private static function calcScoring($scoring) {
-        if (isset($scoring)) {
-            switch ($scoring) {
-                case 'ten zone':
-                    return new GNAS_TenZoneScoring();
-                case 'five zone':
-                    return new GNAS_FiveZoneScoring();
-                case 'metric inner ten':
-                    return new GNAS_MetricInnerTenScoring();
-                case 'vegas':
-                    return new GNAS_VegasScoring();
-                case 'vegas inner ten':
-                    return new GNAS_VegasInnerTenScoring();
-                case 'worcester':
-                    return new GNAS_WorcesterScoring();
-                case 'fita six zone':
-                    return new GNAS_FITASixZoneScoring();
-                default:
-                    wp_die('Error!: unrecognised scoring system: ' .$scoring);
-            }
-        } else {
-            return new GNAS_NoScoring();
+        switch ($scoring) {
+            case 'ten zone':
+                return new GNAS_TenZoneScoring();
+            case 'five zone':
+                return new GNAS_FiveZoneScoring();
+            case 'metric inner ten':
+                return new GNAS_MetricInnerTenScoring();
+            case 'vegas':
+                return new GNAS_VegasScoring();
+            case 'vegas inner ten':
+                return new GNAS_VegasInnerTenScoring();
+            case 'worcester':
+                return new GNAS_WorcesterScoring();
+            case 'fita six zone':
+                return new GNAS_FITASixZoneScoring();
+            default:
+                wp_die('Error!: unrecognised scoring system: ' .$scoring);
         }
     }
 
@@ -763,9 +802,7 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
                                                    $family['venue'],
                                                    $family['measure'],
                                                    $family['scoring'],
-                                                   $family['triple_scoring'],
-                                                   $family['compound_scoring'],
-                                                   $family['compound_triple_scoring']);
+                                                   $family['compound_scoring']);
             else
                 self::$instances[$name] =
                     new GNAS_UnrecognisedRoundFamily($name);
@@ -873,6 +910,10 @@ EOJS;
         return $this->getFamily()->getTableHeader();
     }
 
+    public function getTableFooter() {
+        return $this->getFamily()->getTableFooter();
+    }
+
     public function getTableRow() {
         return '<tr><td>'
              . $this->getLink()
@@ -880,7 +921,8 @@ EOJS;
              . $this->getFamily()
                     ->getMeasure()
                     ->makeTableDistances($this->getDistances())
-             . '</tr>';
+             . '</tr>'
+             . "\n";
     }
 
     private function getLink() {
@@ -907,6 +949,14 @@ EOJS;
 
     public function getMeasure() {
         return $this->getFamily()->getMeasure();
+    }
+
+    public function getScoring() {
+        return $this->getFamily()->getScoring();
+    }
+
+    public function getCompoundScoring() {
+        return $this->getFamily()->getCompoundScoring();
     }
 
     private function __construct($name, $familyName, $display_order) {
@@ -1207,23 +1257,32 @@ abstract class GNAS_AllRounds {
 
     public static function asText() {
         $text = '';
-        $rounds = new GNAS_ImperialRounds();
+        $rounds = new GNAS_OutdoorImperialRounds();
         $text .= $rounds->roundsAsText();
-        $rounds = new GNAS_MetricRounds();
+        $rounds = new GNAS_OutdoorMetricRounds();
+        $text .= $rounds->roundsAsText();
+        $rounds = new GNAS_IndoorImperialRounds();
+        $text .= $rounds->roundsAsText();
+        $rounds = new GNAS_IndoorMetricRounds();
         $text .= $rounds->roundsAsText();
         return $text;
     }
 
     public static function asData() {
-        $rounds = new GNAS_ImperialRounds();
+        $rounds = new GNAS_OutdoorImperialRounds();
         $data = $rounds->getAllRounds();
-        $rounds = new GNAS_MetricRounds();
+        $rounds = new GNAS_OutdoorMetricRounds();
+        $data = array_merge($data, $rounds->getAllRounds());
+        $rounds = new GNAS_IndoorImperialRounds();
+        $data = array_merge($data, $rounds->getAllRounds());
+        $rounds = new GNAS_IndoorMetricRounds();
         $data = array_merge($data, $rounds->getAllRounds());
         return $data;
     }
 
     public abstract function getTitle();
     public abstract function getMeasure();
+    public abstract function getVenue();
 
     public function roundsAsText() {
         return $this->getTitle()
@@ -1232,8 +1291,9 @@ abstract class GNAS_AllRounds {
 
     public function getTable() {
         $rounds = $this->getAllRounds();
-        $table = array('<table>');
+        $table = array('<table class="rounds">');
         $table []= $rounds[0]->getTableHeader();
+        $table []= $rounds[0]->getTableFooter();
         $table []= '<tbody>';
         foreach ($rounds as $round) {
             $table []= $round->getTableRow();
@@ -1248,7 +1308,7 @@ abstract class GNAS_AllRounds {
                . ' AND round_family.measure = ?'
                . ' AND round_family.venue = ?'
                . ' ORDER BY round.family_name, round.display_order';
-        $params = array($this->getMeasure(), 'outdoor');
+        $params = array($this->getMeasure(), $this->getVenue());
         $rows = GNAS_PDO::SELECT($query, $params);
         $rounds = array();
         foreach ($rows as $row) {
@@ -1261,27 +1321,69 @@ abstract class GNAS_AllRounds {
 }
 
 ##################################################
-class GNAS_ImperialRounds extends GNAS_AllRounds {
+class GNAS_OutdoorImperialRounds extends GNAS_AllRounds {
 
     public function getTitle() {
-        return '<h1>Imperial Rounds, Five Zone Scoring</h1>';
+        return '<h1>Outdoor Imperial Rounds, Five Zone Scoring</h1>';
     }
 
     public function getMeasure() {
         return 'imperial';
     }
 
+    public function getVenue() {
+        return 'outdoor';
+    }
+
 }
 
 ################################################
-class GNAS_MetricRounds extends GNAS_AllRounds {
+class GNAS_OutdoorMetricRounds extends GNAS_AllRounds {
 
     public function getTitle() {
-        return '<h1>Metric Rounds, Ten Zone Scoring</h1>';
+        return '<h1>Outdoor Metric Rounds, Ten Zone Scoring</h1>';
     }
 
     public function getMeasure() {
         return 'metric';
+    }
+
+    public function getVenue() {
+        return 'outdoor';
+    }
+
+}
+
+################################################
+class GNAS_IndoorMetricRounds extends GNAS_AllRounds {
+
+    public function getTitle() {
+        return '<h1>Indoor Metric Rounds, Ten Zone Scoring</h1>';
+    }
+
+    public function getMeasure() {
+        return 'metric';
+    }
+
+    public function getVenue() {
+        return 'indoor';
+    }
+
+}
+
+################################################
+class GNAS_IndoorImperialRounds extends GNAS_AllRounds {
+
+    public function getTitle() {
+        return '<h1>Indoor Imperial Rounds, Ten Zone Scoring</h1>';
+    }
+
+    public function getMeasure() {
+        return 'imperial';
+    }
+
+    public function getVenue() {
+        return 'indoor';
     }
 
 }

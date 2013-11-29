@@ -399,6 +399,12 @@ class RHAC_Scorecards {
             $text .= '<span class="measure">'
                    . $round->getMeasure()->getName()
                    . '</span>';
+            $text .= '<span class="scoring">'
+                   . $round->getScoring()->getName()
+                   . '</span>';
+            $text .= '<span class="compound-scoring">'
+                   . $round->getCompoundScoring()->getName()
+                   . '</span>';
             foreach ($round->getDistances()->rawData() as $distance) {
                 $text .= '<span class="count">'
                        . $distance->getNumArrows()
@@ -626,43 +632,113 @@ class RHAC_Scorecards {
 
     private function tenZoneData() {
         return array(
-            array('label' => 'X', 'png' => 'gold'),
-            array('label' => '10', 'png' => 'gold'),
-            array('label' => '9', 'png' => 'gold'),
-            array('label' => '8', 'png' => 'red'),
-            array('label' => '7', 'png' => 'red'),
-            array('label' => '6', 'png' => 'blue'),
-            array('label' => '5', 'png' => 'blue'),
-            array('label' => '4', 'png' => 'black'),
-            array('label' => '3', 'png' => 'black'),
-            array('label' => '2', 'png' => 'white'),
-            array('label' => '1', 'png' => 'white'),
-            array('label' => 'M', 'png' => 'green')
+            array('label' => 'X', 'png' => 'gold', 'width' => 15),
+            array('label' => '10', 'png' => 'gold', 'width' => 15),
+            array('label' => '9', 'png' => 'gold', 'width' => 30),
+            array('label' => '8', 'png' => 'red', 'width' => 30),
+            array('label' => '7', 'png' => 'red', 'width' => 30),
+            array('label' => '6', 'png' => 'blue', 'width' => 30),
+            array('label' => '5', 'png' => 'blue', 'width' => 30),
+            array('label' => '4', 'png' => 'black', 'width' => 30),
+            array('label' => '3', 'png' => 'black', 'width' => 30),
+            array('label' => '2', 'png' => 'white', 'width' => 30),
+            array('label' => '1', 'png' => 'white', 'width' => 30),
+            array('label' => 'M', 'png' => 'green', 'width' => 30)
         );
     }
 
     private function tenZoneChart() {
         return $this->zoneChart($this->tenZoneData(),
-                                'TenZoneChart', 'tbar_', 30);
+                                'TenZoneChart', 'tbar_');
+    }
+
+    private function tenZoneCompoundData() {
+        return array(
+            array('label' => '10', 'png' => 'gold', 'width' => 15),
+            array('label' => '9', 'png' => 'gold', 'width' => 45),
+            array('label' => '8', 'png' => 'red', 'width' => 30),
+            array('label' => '7', 'png' => 'red', 'width' => 30),
+            array('label' => '6', 'png' => 'blue', 'width' => 30),
+            array('label' => '5', 'png' => 'blue', 'width' => 30),
+            array('label' => '4', 'png' => 'black', 'width' => 30),
+            array('label' => '3', 'png' => 'black', 'width' => 30),
+            array('label' => '2', 'png' => 'white', 'width' => 30),
+            array('label' => '1', 'png' => 'white', 'width' => 30),
+            array('label' => 'M', 'png' => 'green', 'width' => 30)
+        );
+    }
+
+    private function tenZoneCompoundChart() {
+        return $this->zoneChart($this->tenZoneCompoundData(),
+                                'TenZoneCompoundChart', 'tcbar_');
     }
 
     private function fiveZoneData() {
         return array(
-            array('label' => '9', 'png' => 'gold'),
-            array('label' => '7', 'png' => 'red'),
-            array('label' => '5', 'png' => 'blue'),
-            array('label' => '3', 'png' => 'black'),
-            array('label' => '1', 'png' => 'white'),
-            array('label' => 'M', 'png' => 'green')
+            array('label' => '9', 'png' => 'gold', 'width' => 50),
+            array('label' => '7', 'png' => 'red', 'width' => 50),
+            array('label' => '5', 'png' => 'blue', 'width' => 50),
+            array('label' => '3', 'png' => 'black', 'width' => 50),
+            array('label' => '1', 'png' => 'white', 'width' => 50),
+            array('label' => 'M', 'png' => 'green', 'width' => 50)
         );
     }
 
     private function fiveZoneChart() {
         return $this->zoneChart($this->fiveZoneData(),
-                                'FiveZoneChart', 'fbar_', 50);
+                                'FiveZoneChart', 'fbar_');
     }
 
-    private function zoneChart($zoneData, $tableId, $idPrefix, $width) {
+    private function vegasData() {
+        return array(
+            array('label' => 'X', 'png' => 'gold', 'width' => 25),
+            array('label' => '10', 'png' => 'gold', 'width' => 25),
+            array('label' => '9', 'png' => 'gold', 'width' => 50),
+            array('label' => '8', 'png' => 'red', 'width' => 50),
+            array('label' => '7', 'png' => 'red', 'width' => 50),
+            array('label' => '6', 'png' => 'blue', 'width' => 50),
+            array('label' => 'M', 'png' => 'green', 'width' => 50)
+        );
+    }
+
+    private function vegasChart() {
+        return $this->zoneChart($this->vegasData(),
+                                'VegasChart', 'vbar_');
+    }
+
+    private function worcesterData() {
+        return array(
+            array('label' => '5', 'png' => 'white', 'width' => 50),
+            array('label' => '4', 'png' => 'black', 'width' => 50),
+            array('label' => '3', 'png' => 'black', 'width' => 50),
+            array('label' => '2', 'png' => 'black', 'width' => 50),
+            array('label' => '1', 'png' => 'black', 'width' => 50),
+            array('label' => 'M', 'png' => 'green', 'width' => 50)
+        );
+    }
+
+    private function worcesterChart() {
+        return $this->zoneChart($this->worcesterData(),
+                                'WorcesterChart', 'wbar_');
+    }
+
+    private function vegasInnerTenData() {
+        return array(
+            array('label' => '10', 'png' => 'gold', 'width' => 25),
+            array('label' => '9', 'png' => 'gold', 'width' => 75),
+            array('label' => '8', 'png' => 'red', 'width' => 50),
+            array('label' => '7', 'png' => 'red', 'width' => 50),
+            array('label' => '6', 'png' => 'blue', 'width' => 50),
+            array('label' => 'M', 'png' => 'green', 'width' => 50)
+        );
+    }
+
+    private function vegasInnerTenChart() {
+        return $this->zoneChart($this->vegasInnerTenData(),
+                                'VegasInnerTenChart', 'vtbar_');
+    }
+
+    private function zoneChart($zoneData, $tableId, $idPrefix) {
         $text = array();
         $text []= '<table id="' . $tableId . '"><tr>';
         foreach ($zoneData as $zone) {
@@ -672,7 +748,7 @@ class RHAC_Scorecards {
                     . $zone['label']
                     . '" src="'
                     . $this->png($zone['png'])
-                    . '" height="425" width="' . $width . '"/>';
+                    . '" height="425" width="' . $zone['width'] . '"/>';
             $text []= '</td>';
         }
         $text []= '</tr></table>';
@@ -686,7 +762,11 @@ class RHAC_Scorecards {
     private function zoneCharts() {
         $text = array();
         $text []= $this->tenZoneChart();
+        $text []= $this->tenZoneCompoundChart();
         $text []= $this->fiveZoneChart();
+        $text []= $this->vegasChart();
+        $text []= $this->vegasInnerTenChart();
+        $text []= $this->worcesterChart();
         $text []= '<p><b>Average:</b> <span id="average">-</span></p>';
         return implode($text);
     }
