@@ -82,6 +82,7 @@ INSERT INTO "round_family" VALUES('Warwicks',           'outdoor','imperial','fi
 INSERT INTO "round_family" VALUES('Westerns',           'outdoor','imperial','five zone','five zone');
 INSERT INTO "round_family" VALUES('Windsors',           'outdoor','imperial','five zone','five zone');
 INSERT INTO "round_family" VALUES('Yorks',              'outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('252',                'outdoor','imperial','five zone','five zone');
 
 INSERT INTO "round_family" VALUES('Brays',              'indoor', 'imperial','ten zone', 'metric inner ten');
 INSERT INTO "round_family" VALUES('Combined FITA',      'indoor', 'metric',  'ten zone', 'metric inner ten');
@@ -174,6 +175,13 @@ INSERT INTO "round" VALUES('FITA Olympic Round','FITA Olympic Round',0);
 INSERT INTO "round" VALUES('Frostbite','Frostbite',0);
 INSERT INTO "round" VALUES('Double Frostbite','Double Frostbite',0);
 INSERT INTO "round" VALUES('Outdoor Portsmouth','Outdoor Portsmouth',0);
+INSERT INTO "round" VALUES('White 252','252',7);
+INSERT INTO "round" VALUES('Black 252','252',6);
+INSERT INTO "round" VALUES('Blue 252','252',5);
+INSERT INTO "round" VALUES('Red 252','252',4);
+INSERT INTO "round" VALUES('Bronze 252','252',3);
+INSERT INTO "round" VALUES('Silver 252','252',2);
+INSERT INTO "round" VALUES('Gold 252','252',1);
 INSERT INTO "round" VALUES('Bray I','Brays',1);
 INSERT INTO "round" VALUES('Bray II','Brays',2);
 INSERT INTO "round" VALUES('Stafford','Stafford',0);
@@ -247,6 +255,7 @@ INSERT INTO "arrow_count" VALUES('Short Metrics',1,36,'80cm');
 INSERT INTO "arrow_count" VALUES('Short Metrics',2,36,'80cm');
 INSERT INTO "arrow_count" VALUES('FITA Standard Round',1,36,'122cm');
 INSERT INTO "arrow_count" VALUES('FITA Standard Round',2,36,'122cm');
+INSERT INTO "arrow_count" VALUES('252',1,36,'122cm');
 
 INSERT INTO "arrow_count" VALUES('Brays',1,30,'40cm');
 INSERT INTO "arrow_count" VALUES('Stafford',1,72,'80cm');
@@ -451,6 +460,14 @@ INSERT INTO "distance" VALUES('Double Frostbite','1',30);
 INSERT INTO "distance" VALUES('Outdoor Portsmouth','1',20);
 INSERT INTO "distance" VALUES('FITA Standard Round','1',50);
 INSERT INTO "distance" VALUES('FITA Standard Round','2',30);
+
+INSERT INTO "distance" VALUES('White 252','1',20);
+INSERT INTO "distance" VALUES('Black 252','1',30);
+INSERT INTO "distance" VALUES('Blue 252','1',40);
+INSERT INTO "distance" VALUES('Red 252','1',50);
+INSERT INTO "distance" VALUES('Bronze 252','1',60);
+INSERT INTO "distance" VALUES('Silver 252','1',80);
+INSERT INTO "distance" VALUES('Gold 252','1',100);
 
 INSERT INTO "distance" VALUES('Bray I','1',20);
 INSERT INTO "distance" VALUES('Bray II','1',25);
