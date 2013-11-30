@@ -732,6 +732,10 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         return $this->measure;
     }
 
+    public function getVenue() {
+        return $this->venue;
+    }
+
     public function getScoring() {
         return $this->scoring;
     }
@@ -888,6 +892,10 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $this->getFamily()->getScoring()->getName();
     }
 
+    public function getVenue() {
+        return $this->getFamily()->getVenue();
+    }
+
     private function getHandicapText() {
         $name = $this->getName();
         return <<<EOJS
@@ -901,7 +909,11 @@ EOJS;
 
     private function getClassifications() {
         if (!isset($this->classifications)) {
-            $this->classifications = new GNAS_Classifications($this->name);
+            if ($this->getVenue() == 'outdoor') {
+                $this->classifications = new GNAS_Classifications($this->name);
+            } else {
+                $this->classifications = new GNAS_IndoorClassifications($this->name);
+            }
         }
         return $this->classifications;
     }
@@ -1124,6 +1136,39 @@ class GNAS_Classifications {
         $this->gender_map = array('M' => 'Gents', 'F' => 'Ladies');
     }
 
+    public function getClassificationHeaders() {
+        return array('3rd', '2nd', '1st', 'BM', 'MBM', 'GMBM');
+    }
+
+    public function getClassificationFields() {
+        return array('third', 'second', 'first', 'bm', 'mbm', 'gmbm');
+    }
+
+    public function processAgeGroup(&$subtitle, &$conditions, &$parameters,
+                                    &$headers, &$fields, &$num_params) {
+        if (array_key_exists('age_group', $_GET)) {
+            $subtitle []= $_GET['age_group'];
+            $conditions []= 'outdoor_classifications.age_group = ?';
+            $parameters []= $_GET['age_group'];
+            ++$num_params;
+        }
+        else {
+            $headers []= 'Age';
+            $fields []= 'outdoor_classifications.age_group AS age_group';
+        }
+    }
+
+    public function generateQuery($fields, $conditions) {
+        return implode(', ', $fields)
+                . ' FROM outdoor_classifications'
+                . ' JOIN age_groups'
+                . ' ON outdoor_classifications.age_group'
+                . ' = age_groups.age_group'
+                . ' WHERE '
+                . implode(' AND ', $conditions)
+                . ' ORDER BY gender, age_groups.display_order, bow';
+    }
+
     function getTable() {
 
         $subtitle = array();
@@ -1144,16 +1189,7 @@ class GNAS_Classifications {
             $fields []= 'gender';
         }
 
-        if (array_key_exists('age_group', $_GET)) {
-            $subtitle []= $_GET['age_group'];
-            $conditions []= 'outdoor_classifications.age_group = ?';
-            $parameters []= $_GET['age_group'];
-            ++$num_params;
-        }
-        else {
-            $headers []= 'Age';
-            $fields []= 'outdoor_classifications.age_group AS age_group';
-        }
+        $this->processAgeGroup($subtitle, $conditions, $parameters, $headers, $fields, $num_params);
 
         if (array_key_exists('bow', $_GET)) {
             $subtitle []= $_GET['bow'];
@@ -1177,28 +1213,10 @@ class GNAS_Classifications {
                        . ' your view.</p>';
         }
 
-        $headers []= '3rd';
-        $headers []= '2nd';
-        $headers []= '1st';
-        $headers []= 'BM';
-        $headers []= 'MBM';
-        $headers []= 'GMBM';
+        $headers = array_merge($headers, $this->getClassificationHeaders());
+        $fields = array_merge($fields, $this->getClassificationFields());
 
-        $fields []= 'third';
-        $fields []= 'second';
-        $fields []= 'first';
-        $fields []= 'bm';
-        $fields []= 'mbm';
-        $fields []= 'gmbm';
-
-        $query = implode(', ', $fields)
-                . ' FROM outdoor_classifications'
-                . ' JOIN age_groups'
-                . ' ON outdoor_classifications.age_group'
-                . ' = age_groups.age_group'
-                . ' WHERE '
-                . implode(' AND ', $conditions)
-                . ' ORDER BY gender, age_groups.display_order, bow';
+        $query = $this->generateQuery($fields, $conditions);
 
         $table []= '<table><thead><tr><th>'
                    . implode('</th><th>', $headers)
@@ -1248,6 +1266,31 @@ class GNAS_Classifications {
         else {
             return ($row[$key]);
         }
+    }
+
+}
+
+###############################################################
+class GNAS_IndoorClassifications extends GNAS_Classifications {
+
+    public function getClassificationHeaders() {
+        return array('H', 'G', 'F', 'E', 'D', 'C', 'B', 'A');
+    }
+
+    public function getClassificationFields() {
+        return array('H', 'G', 'F', 'E', 'D', 'C', 'B', 'A');
+    }
+
+    public function processAgeGroup(&$subtitle, &$conditions, &$parameters,
+                                    &$headers, &$fields, &$num_params) {
+    }
+
+    public function generateQuery($fields, $conditions) {
+        return implode(', ', $fields)
+                . ' FROM indoor_classifications'
+                . ' WHERE '
+                . implode(' AND ', $conditions)
+                . ' ORDER BY gender, bow';
     }
 
 }
@@ -1320,7 +1363,7 @@ abstract class GNAS_AllRounds {
 
 }
 
-##################################################
+#########################################################
 class GNAS_OutdoorImperialRounds extends GNAS_AllRounds {
 
     public function getTitle() {
@@ -1337,7 +1380,7 @@ class GNAS_OutdoorImperialRounds extends GNAS_AllRounds {
 
 }
 
-################################################
+#######################################################
 class GNAS_OutdoorMetricRounds extends GNAS_AllRounds {
 
     public function getTitle() {
@@ -1354,11 +1397,11 @@ class GNAS_OutdoorMetricRounds extends GNAS_AllRounds {
 
 }
 
-################################################
+######################################################
 class GNAS_IndoorMetricRounds extends GNAS_AllRounds {
 
     public function getTitle() {
-        return '<h1>Indoor Metric Rounds, Ten Zone Scoring</h1>';
+        return '<h1>Indoor Metric Rounds, Various Scorings</h1>';
     }
 
     public function getMeasure() {
@@ -1371,11 +1414,11 @@ class GNAS_IndoorMetricRounds extends GNAS_AllRounds {
 
 }
 
-################################################
+########################################################
 class GNAS_IndoorImperialRounds extends GNAS_AllRounds {
 
     public function getTitle() {
-        return '<h1>Indoor Imperial Rounds, Ten Zone Scoring</h1>';
+        return '<h1>Indoor Imperial Rounds, Various Scorings</h1>';
     }
 
     public function getMeasure() {
@@ -1721,6 +1764,7 @@ EOCSS;
 
 }
 
+##################################################
 class GNAS_IndoorTable extends GNAS_OutdoorTable {
 
     private $agb_outdoor_table_columns;
@@ -1745,8 +1789,8 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
                 continue;
             }
             array_shift($exploded_post_name);
-            list($bow, $gender, $standard, $triple) =
-                array_splice($exploded_post_name, 0, 4);
+            list($bow, $gender, $standard) =
+                array_splice($exploded_post_name, 0, 3);
             $valid = false;
             foreach (self::$STANDARDS as $valid_standard) {
                 if ($standard == $valid_standard) {
@@ -1761,7 +1805,6 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
             $this->collectFromPOST($standard,
                                    $bow,
                                    $gender,
-                                   $triple,
                                    $round,
                                    $score);
         }
@@ -1771,15 +1814,13 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
     private function collectFromPOST($standard,
                                      $bow,
                                      $gender,
-                                     $triple,
                                      $round,
                                      $score) {
-        $key = "$gender $triple $bow $round";
+        $key = "$gender $bow $round";
         // print "<p>GNAS_IndoorTable::collectFromPOST $key</p>";
         if (!isset($this->collected_posts[$key])) {
             $this->collected_posts[$key] = array(
                 'gender' => $gender,
-                'triple' => $triple,
                 'bow' => $bow,
                 'round' => $round,
             );
@@ -1799,8 +1840,8 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
         // print "<p>GNAS_IndoorTable::updateFromPOSTs</p>";
         $query = 'INSERT OR REPLACE INTO indoor_classifications'
                . ' (A, B, C, D, E, F, G, H,'
-               . ' round, bow, gender, triple) VALUES'
-               . ' (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+               . ' round, bow, gender) VALUES'
+               . ' (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         $stmt = GNAS_PDO::get()->prepare($query);
         foreach ($this->collected_posts as $collected_post) {
             $arguments = array(
@@ -1814,8 +1855,7 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
                 $collected_post['H'],
                 $collected_post['round'],
                 $collected_post['bow'],
-                $collected_post['gender'],
-                $collected_post['triple']
+                $collected_post['gender']
             );
             // print "<pre>\n";
             // print "$query\n";
@@ -1881,7 +1921,6 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
                                                 $bow,
                                                 $gender,
                                                 $standard,
-                                                $header['triple'],
                                                 $header['round'])
                            . '</td>';
             }
@@ -1905,17 +1944,15 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
                                  $bow,
                                  $gender,
                                  $standard,
-                                 $triple,
                                  $round) {
         // print "<p>GNAS_IndoorTable::makeEditBox</p>";
-        $value = $body["$gender $triple"][$standard][$round];
+        $value = $body[$gender][$standard][$round];
         return '<input type="text" name="'
             . implode('_',
                       array($this->value_prefix,
                             $bow,
                             $gender,
                             $standard,
-                            $triple,
                             implode('_', explode(' ', $round))))
             . '" size="4" value="' . $value . '"/>';
     }
@@ -1939,7 +1976,7 @@ class GNAS_IndoorTable extends GNAS_OutdoorTable {
             $arguments []= $table['bow'];
             $rows = GNAS_PDO::SELECT($query, $arguments);
             foreach ($rows as $row) {
-                $key = $row['gender'] . ' ' . $row['triple'];
+                $key = $row['gender'];
                 $round = $row['round'];
                 if (!isset($this->classifications[$key])) {
                     $this->classifications[$key] = array();

@@ -381,7 +381,8 @@ function RHAC_Scorer() {
         addUp();
     }
 
-    function totalArrowsForRound(round) {
+    function totalArrowsForRound() {
+        var round = jQuery('#round').val();
         var total = 0;
         jQuery( '#round-data span[name="' + round + '"] span.count' ).each(
             function() {
@@ -466,7 +467,7 @@ function RHAC_Scorer() {
             return missing("Date");
         }
         var seenArrows = countArrows();
-        var expectedArrows = totalArrowsForRound(jQuery('#round').val());
+        var expectedArrows = totalArrowsForRound();
         if (seenArrows != expectedArrows) {
             alert("Expected "
                 + expectedArrows
