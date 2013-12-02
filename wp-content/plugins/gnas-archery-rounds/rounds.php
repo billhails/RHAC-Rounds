@@ -744,6 +744,14 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         return $this->compound_scoring;
     }
 
+    public function getScoringByBow($bow) {
+        if ($bow == 'compound') {
+            return $this->getCompoundScoring();
+        } else {
+            return $this->getScoring();
+        }
+    }
+
     private function populate() {
         if (isset($this->rounds)) return;
         $this->rounds = array();
@@ -869,13 +877,15 @@ class GNAS_Round implements GNAS_RoundInterface {
     private function getDescription() {
         return $this->getDistances()
                     ->getDescription($this->getFamily()->getScoring(),
-                                     $this->getFamily()->getMeasure());
+                                     $this->getMeasure());
     }
 
-    public function getJavaScript() {
+    private function getJavaScript() {
         $javascript = '<script>';
-        $javascript .= 'rhac_scoring="' . $this->getScoringName() . '";';
+        $javascript .= 'rhac_scoring="' . $this->getScoringNameByBow('recurve') . '";';
+        $javascript .= 'rhac_compound_scoring="' . $this->getScoringNameByBow('compound') . '";';
         $javascript .= 'rhac_distances=' . $this->getJSON() . ';';
+        $javascript .= 'rhac_units="' . $this->getMeasureName() . '";';
         $javascript .= '</script>';
         return $javascript;
     }
@@ -892,16 +902,24 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $this->getFamily()->getScoring()->getName();
     }
 
+    public function getScoringNameByBow($bow) {
+        return $this->getFamily()->getScoringByBow($bow)->getName();
+    }
+
     public function getVenue() {
         return $this->getFamily()->getVenue();
     }
 
     private function getHandicapText() {
         $name = $this->getName();
+        $compound = '';
+        if ($this->getVenue() == "indoor") {
+            $compound = " <input type='checkbox' id='compound_scoring'>Compound</input>";
+        }
         return <<<EOJS
 <h3>Beat Your Handicap</h3>
 <p>Enter your current handicap:
-<input type="number" name="handicap" id="handicap" min="0" max="100" value="100"/></p>
+<input type="number" name="handicap" id="handicap" min="0" max="100" value="100"/>$compound</p>
 <p>Your predicted score for a $name with a handicap of
 <span id="handicap-copy">100</span> is <span id="prediction">0</span>.</p>
 EOJS;
@@ -1014,7 +1032,9 @@ class GNAS_Requirements {
 
     public function finder() {
         $ret = $this->form();
-        if (   $_GET['classification']
+        if (   $_GET['outdoor_classification']
+            && $_GET['indoor_classification']
+            && $_GET['venue']
             && $_GET['age_group']
             && $_GET['bow']
             && $_GET['gender']) {
@@ -1029,14 +1049,41 @@ class GNAS_Requirements {
             $result .= "<input type='hidden' name='page_id' value='$_GET[page_id]'/>\n";
         }
         $result .= "<table>\n";
-        $result .= $this->option('Desired Classification', 'classification',
+        $result .= $this->multiOption(
+            'Desired Classification',
             array(
-            'third' => 'Third Class',
-            'second' => 'Second Class',
-            'first' => 'First Class',
-            'bm' => 'Bowman',
-            'mbm' => 'Master Bowman',
-            'gmbm' => 'Grand Master Bowman'));
+                array(
+                    'radio_label' => 'Outdoor',
+                    'radio_name' => 'venue',
+                    'radio_value' => 'outdoor',
+                    'select_name' => 'outdoor_classification',
+                    'select_options' => array(
+                        'third' => 'Third Class',
+                        'second' => 'Second Class',
+                        'first' => 'First Class',
+                        'bm' => 'Bowman',
+                        'mbm' => 'Master Bowman',
+                        'gmbm' => 'Grand Master Bowman'
+                    )
+                ),
+                array(
+                    'radio_label' => 'Indoor',
+                    'radio_name' => 'venue',
+                    'radio_value' => 'indoor',
+                    'select_name' => 'indoor_classification',
+                    'select_options' => array(
+                        'H' => 'H',
+                        'G' => 'G',
+                        'F' => 'F',
+                        'E' => 'E',
+                        'D' => 'D',
+                        'C' => 'C',
+                        'B' => 'B',
+                        'A' => 'A'
+                    )
+                )
+            )
+        );
         $result .= $this->option('Age Group', 'age_group', array(
             'adult' => 'Adult',
             'U18' => 'Under Eighteen',
@@ -1073,6 +1120,38 @@ class GNAS_Requirements {
         return $result;
     }
 
+    private function multiOption($title, $components) {
+        $first = true;
+        $result = "<tr><th>$title</th><td><table>";
+        foreach ($components as $component) {
+            $result .= "<tr>";
+            $result .= "<td><input type='radio' name='$component[radio_name]'";
+            $result .= " value='$component[radio_value]'";
+            if ($_GET[$component['radio_name']]) {
+                if ($_GET[$component['radio_name']] == $component['radio_value']) {
+                    $result .= " checked='checked'";
+                }
+            } elseif ($first) {
+                $result .= " checked='checked'";
+                $first = false;
+            }
+            $result .= ">$component[radio_label]</input></td>";
+
+            $id = $component['select_name'];
+            $result .= "<td><select name='$id' id='$id'>\n";
+            foreach ($component['select_options'] as $value => $label) {
+                $result .= "<option value='$value'";
+                if ($_GET[$id] == $value) {
+                    $result .= " selected='selected'";
+                }
+                $result .= ">$label</option>\n";
+            }
+            $result .= "</select></td></tr>\n";
+        }
+        $result .= '</table></td></tr>';
+        return $result;
+    }
+
     private function number($title, $id, $min, $max) {
         if (isset($_GET[$id])) {
             $value = $_GET[$id];
@@ -1088,7 +1167,15 @@ class GNAS_Requirements {
 
     private function results() {
         $result = '';
-        $class = $_GET['classification'];
+        if ($_GET['venue'] == 'outdoor') {
+            return $this->outdoorResults();
+        } else {
+            return $this->indoorResults();
+        }
+    }
+
+    private function outdoorResults() {
+        $class = $_GET['outdoor_classification'];
         if (   $class != 'third'
             && $class != 'second'
             && $class != 'first'
@@ -1097,7 +1184,6 @@ class GNAS_Requirements {
             && $class != 'gmbm') {
             return "<p>Please don't hack me!</p>\n";
         }
-
         $rows = GNAS_PDO::SELECT("round, $class as score"
                                . " from outdoor_classifications"
                                . " where $class > 0"
@@ -1108,7 +1194,40 @@ class GNAS_Requirements {
                                array($_GET['age_group'],
                                      $_GET['bow'],
                                      $_GET['gender']));
-        $result = "<table id='predictions'><thead><tr><th>Round</th><th>Required Score</th><th>Predicted Score</th></tr></thead>\n";
+        return $this->formatResults($rows);
+    }
+
+    private function indoorResults() {
+        $class = $_GET['indoor_classification'];
+        if (   $class != 'A'
+            && $class != 'B'
+            && $class != 'C'
+            && $class != 'C'
+            && $class != 'D'
+            && $class != 'E'
+            && $class != 'F'
+            && $class != 'G'
+            && $class != 'H') {
+            return "<p>Please don't hack me!</p>\n";
+        }
+        $rows = GNAS_PDO::SELECT("round, $class as score"
+                               . " from indoor_classifications"
+                               . " where $class > 0"
+                               . " and bow = ?"
+                               . " and gender = ?"
+                               . " order by round",
+                               array($_GET['bow'],
+                                     $_GET['gender']));
+        return $this->formatResults($rows);
+    }
+
+    private function formatResults($rows) {
+        $result = "<table id='predictions'><thead><tr>"
+                    . "<th>Round</th>"
+                    . "<th>Required Score</th>"
+                    . "<th>Predicted Score</th>"
+                    // . "<th>Debug</th>"
+                    . "</tr></thead>\n";
         $result .= "<tbody>\n";
         foreach ($rows as $row) {
             $printname = $roundname = $row['round'];
@@ -1116,13 +1235,20 @@ class GNAS_Requirements {
                 $printname = ':National';
             }
             $round = GNAS_Round::getInstanceByName($roundname);
-            $scoring = $round->getScoringName();
+            $scoring = $round->getScoringNameByBow($_GET['bow']);
+            $units = $round->getMeasureName();
             $json = $round->getJSON();
-            $result .= "<tr data-scoring='$scoring' data-distances='$json'><td>$printname</td><td class='score'>$row[score]</td><td class='prediction'>0</td></tr>\n";
+            $result .= "<tr data-scoring='$scoring' data-units='$units' data-distances='$json'>"
+                    . "<td>$printname</td>"
+                    . "<td class='score'>$row[score]</td>"
+                    . "<td class='prediction'>0</td>"
+                    // . "<td>$scoring <br/> $units <br/> $json</td>"
+                    . "</tr>\n";
         }
         $result .= "<tbody></table>\n";
         return $result;
     }
+
 }
 
 ############################

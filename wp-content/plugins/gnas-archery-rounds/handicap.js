@@ -1,4 +1,4 @@
-function rhac_score(H, fn, distances) {
+function rhac_score(H, fn, units, distances) {
 
     function square(x) {
         return x * x;
@@ -124,29 +124,24 @@ function rhac_score(H, fn, distances) {
         "ten zone": metric,
         "five zone": imperial,
         "metric inner ten": metric_inner_ten,
-        vegas: vegas,
+        "vegas": vegas,
         "vegas inner ten": vegas_inner_ten,
-        worcester: worcester,
+        "worcester": worcester,
         "fita six zone": fita_six_zone
     };
 
     var y2m = 0.9144;
 
     var conversions = {
-        "ten zone": 1.0,
-        "five zone": y2m,
-        "metric inner ten": 1.0,
-        vegas: 1.0,
-        "vegas inner ten": 1.0,
-        worcester: y2m,
-        "fita six zone":  1.0
+        "metric": 1.0,
+        "imperial": y2m,
     };
 
     var total = 0;
     for (var i = 0; i < distances.length; i++) {
         total += distances[i].N *
             functions[fn](distances[i].D,
-                          distances[i].R * conversions[fn],
+                          distances[i].R * conversions[units],
                           H);
     }
     return Math.round(total);
@@ -154,6 +149,8 @@ function rhac_score(H, fn, distances) {
 
 var rhac_distances = new Array(); // in-line script will assign to this
 var rhac_scoring = ''; //ditto
+var rhac_compound_scoring = ''; //ditto
+var rhac_units = ''; //ditto
 
 jQuery(
     function() {
@@ -165,29 +162,47 @@ jQuery(
                     jQuery('#predictions tbody tr').each(
                         function () {
                             var jqthis = jQuery(this);
-                            var measure = jqthis.attr('data-scoring');
+                            var scoring = jqthis.attr('data-scoring');
+                            var units = jqthis.attr('data-units');
                             var distances = jQuery.parseJSON(jqthis.attr('data-distances'));
                             jqthis.find('td.prediction').text(
                                 String(rhac_score(
                                     Number(val),
-                                    measure,
+                                    scoring,
+                                    units,
                                     distances)));
                         }
                     );
-                }
+                };
+                /*
+                var set_outdoors = function() {
+                    jQuery('input[name="venue"][value="outdoor"]').prop('checked', true);
+                };
+                var set_indoors = function() {
+                    jQuery('input[name="venue"][value="indoor"]').prop('checked', true);
+                };
+                jQuery('#outdoor_classification').change(set_outdoors);
+                jQuery('#indoor_classification').change(set_indoors);
+                */
             } else if (jQuery('#handicap-copy').text()) {
                 handicap_calc = function() {
                     var val = jQuery('#handicap').val();
+                    var scoring = rhac_scoring;
+                    if (jQuery('#compound_scoring').attr('checked')) {
+                        scoring = rhac_compound_scoring;
+                    }
                     jQuery('#handicap-copy').text(val);
                     jQuery('#prediction').text(
                         String(rhac_score(
                             Number(val),
-                            rhac_scoring,
+                            scoring,
+                            rhac_units,
                             rhac_distances)))
                 }
             }
             handicap_calc();
             jQuery('#handicap').change(handicap_calc);
+            jQuery('#compound_scoring').change(handicap_calc);
         }
     }
 );

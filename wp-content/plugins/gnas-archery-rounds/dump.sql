@@ -84,7 +84,8 @@ INSERT INTO "round_family" VALUES('Windsors',           'outdoor','imperial','fi
 INSERT INTO "round_family" VALUES('Yorks',              'outdoor','imperial','five zone','five zone');
 INSERT INTO "round_family" VALUES('252',                'outdoor','imperial','five zone','five zone');
 
-INSERT INTO "round_family" VALUES('Brays',              'indoor', 'imperial','ten zone', 'metric inner ten');
+INSERT INTO "round_family" VALUES('Bray I',              'indoor', 'imperial','ten zone', 'metric inner ten');
+INSERT INTO "round_family" VALUES('Bray II',              'indoor', 'imperial','ten zone', 'metric inner ten');
 INSERT INTO "round_family" VALUES('Combined FITA',      'indoor', 'metric',  'ten zone', 'metric inner ten');
 INSERT INTO "round_family" VALUES('Combined FITA (triple)',      'indoor', 'metric',  'vegas','vegas inner ten');
 INSERT INTO "round_family" VALUES('FITA 18',            'indoor', 'metric',  'ten zone', 'metric inner ten');
@@ -182,8 +183,8 @@ INSERT INTO "round" VALUES('Red 252','252',4);
 INSERT INTO "round" VALUES('Bronze 252','252',3);
 INSERT INTO "round" VALUES('Silver 252','252',2);
 INSERT INTO "round" VALUES('Gold 252','252',1);
-INSERT INTO "round" VALUES('Bray I','Brays',1);
-INSERT INTO "round" VALUES('Bray II','Brays',2);
+INSERT INTO "round" VALUES('Bray I','Bray I',1);
+INSERT INTO "round" VALUES('Bray II','Bray II',2);
 INSERT INTO "round" VALUES('Stafford','Stafford',0);
 INSERT INTO "round" VALUES('Portsmouth','Portsmouth',0);
 INSERT INTO "round" VALUES('Portsmouth (triple)','Portsmouth (triple)',0);
@@ -257,7 +258,8 @@ INSERT INTO "arrow_count" VALUES('FITA Standard Round',1,36,'122cm');
 INSERT INTO "arrow_count" VALUES('FITA Standard Round',2,36,'122cm');
 INSERT INTO "arrow_count" VALUES('252',1,36,'122cm');
 
-INSERT INTO "arrow_count" VALUES('Brays',1,30,'40cm');
+INSERT INTO "arrow_count" VALUES('Bray I',1,30,'40cm');
+INSERT INTO "arrow_count" VALUES('Bray II',1,30,'60cm');
 INSERT INTO "arrow_count" VALUES('Stafford',1,72,'80cm');
 INSERT INTO "arrow_count" VALUES('Portsmouth',1,60,'60cm');
 INSERT INTO "arrow_count" VALUES('Portsmouth (triple)',1,60,'60cm');
