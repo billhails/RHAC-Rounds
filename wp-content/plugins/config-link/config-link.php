@@ -9,6 +9,8 @@ License: GPL
 */
 
 $billhails_shortcode_link_base = '';
+$billhails_shortcode_link_target = '';
+define('BILLHAILS_SRC_HTML', plugins_url('config-link.html', __FILE__));
 
 // either:
 // [link base="https://dl.dropbox.com/u/109796457/"]
@@ -18,19 +20,27 @@ $billhails_shortcode_link_base = '';
 
 function billhails_shortcode_link($atts) {
     global $billhails_shortcode_link_base;
+    global $billhails_shortcode_link_target;
     extract( shortcode_atts( array(
         'base' => '',
         'file' => '',
         'label' => '',
+        'target' => ''
     ), $atts ) );
     if ($base != '') {
         $billhails_shortcode_link_base = $base;
     }
-    if ($file != '' && $label != '' && $billhails_shortcode_link_base != '') {
+    if ($target != '') {
+        $billhails_shortcode_link_target = $target;
+    }
+    if (   $file != ''
+        && $label != ''
+        && $billhails_shortcode_link_base != ''
+        && $billhails_shortcode_link_target != '') {
         return '<a href="'
              . $billhails_shortcode_link_base
              . rawurlencode($file)
-             . '" target="_blank">'
+             . '" target="' . $billhails_shortcode_link_target . '">'
              . $label
              . '</a>';
     }
@@ -39,4 +49,15 @@ function billhails_shortcode_link($atts) {
     }
 }
 
+function billhails_shortcode_link_iframe() {
+    global $billhails_shortcode_link_target;
+    if ($billhails_shortcode_link_target != '') {
+        return "<iframe id='$billhails_shortcode_link_target' class='gr-report' src='"
+                . BILLHAILS_SRC_HTML . "'></iframe>\n";
+    } else {
+        return '';
+    }
+}
+
 add_shortcode('link', 'billhails_shortcode_link');
+add_shortcode('link_iframe', 'billhails_shortcode_link_iframe');
