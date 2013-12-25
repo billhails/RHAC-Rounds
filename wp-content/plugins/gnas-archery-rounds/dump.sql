@@ -176,6 +176,7 @@ INSERT INTO "round" VALUES('FITA Olympic Round','FITA Olympic Round',0);
 INSERT INTO "round" VALUES('Frostbite','Frostbite',0);
 INSERT INTO "round" VALUES('Double Frostbite','Double Frostbite',0);
 INSERT INTO "round" VALUES('Outdoor Portsmouth','Outdoor Portsmouth',0);
+INSERT INTO "round" VALUES('Green 252','252',8);
 INSERT INTO "round" VALUES('White 252','252',7);
 INSERT INTO "round" VALUES('Black 252','252',6);
 INSERT INTO "round" VALUES('Blue 252','252',5);
@@ -463,6 +464,7 @@ INSERT INTO "distance" VALUES('Outdoor Portsmouth','1',20);
 INSERT INTO "distance" VALUES('FITA Standard Round','1',50);
 INSERT INTO "distance" VALUES('FITA Standard Round','2',30);
 
+INSERT INTO "distance" VALUES('Green 252','1',10);
 INSERT INTO "distance" VALUES('White 252','1',20);
 INSERT INTO "distance" VALUES('Black 252','1',30);
 INSERT INTO "distance" VALUES('Blue 252','1',40);
