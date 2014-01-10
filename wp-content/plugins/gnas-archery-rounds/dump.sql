@@ -59,46 +59,45 @@ CREATE TABLE round_family (
     FOREIGN KEY (scoring) REFERENCES scorings,
     FOREIGN KEY (compound_scoring) REFERENCES scorings
 );
---                                name                  venue     measure    scoring     compound_scoring
-INSERT INTO "round_family" VALUES('American',           'outdoor','imperial','five zone','five zone');
-INSERT INTO "round_family" VALUES('Double Frostbite',   'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('FITA 50',            'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('FITA 60',            'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('FITA 70',            'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('FITA 900',           'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('FITA Olympic Round', 'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('FITA Standard Round','outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('FITAs',              'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('Frostbite',          'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('Half FITAs',         'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('Half Metrics',       'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('Long Metrics',       'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('Metrics',            'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('Nationals',          'outdoor','imperial','five zone','five zone');
-INSERT INTO "round_family" VALUES('Outdoor Portsmouth', 'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('Short Metrics',      'outdoor','metric',  'ten zone', 'ten zone');
-INSERT INTO "round_family" VALUES('St Nicholas',        'outdoor','imperial','five zone','five zone');
-INSERT INTO "round_family" VALUES('Warwicks',           'outdoor','imperial','five zone','five zone');
-INSERT INTO "round_family" VALUES('Westerns',           'outdoor','imperial','five zone','five zone');
-INSERT INTO "round_family" VALUES('Windsors',           'outdoor','imperial','five zone','five zone');
-INSERT INTO "round_family" VALUES('Yorks',              'outdoor','imperial','five zone','five zone');
-INSERT INTO "round_family" VALUES('252',                'outdoor','imperial','five zone','five zone');
-
-INSERT INTO "round_family" VALUES('Bray I',              'indoor', 'imperial','ten zone', 'metric inner ten');
-INSERT INTO "round_family" VALUES('Bray II',              'indoor', 'imperial','ten zone', 'metric inner ten');
-INSERT INTO "round_family" VALUES('Combined FITA',      'indoor', 'metric',  'ten zone', 'metric inner ten');
-INSERT INTO "round_family" VALUES('Combined FITA (triple)',      'indoor', 'metric',  'vegas','vegas inner ten');
-INSERT INTO "round_family" VALUES('FITA 18',            'indoor', 'metric',  'ten zone', 'metric inner ten');
-INSERT INTO "round_family" VALUES('FITA 18 (triple)',            'indoor', 'metric',  'vegas','vegas inner ten');
-INSERT INTO "round_family" VALUES('FITA 25',            'indoor', 'metric',  'ten zone', 'metric inner ten');
-INSERT INTO "round_family" VALUES('FITA 25 (triple)',            'indoor', 'metric',  'vegas','vegas inner ten');
-INSERT INTO "round_family" VALUES('Match Round',        'indoor', 'metric',  'ten zone', 'metric inner ten');
-INSERT INTO "round_family" VALUES('Portsmouth',         'indoor', 'imperial','ten zone',  'metric inner ten');
-INSERT INTO "round_family" VALUES('Portsmouth (triple)',         'indoor', 'imperial','vegas', 'vegas inner ten');
-INSERT INTO "round_family" VALUES('Stafford',           'indoor', 'metric',  'ten zone', 'metric inner ten');
-INSERT INTO "round_family" VALUES('Vegas',              'indoor', 'metric',   'vegas','vegas inner ten');
-INSERT INTO "round_family" VALUES('Worcester',          'indoor', 'imperial','worcester','worcester');
-
+INSERT INTO "round_family" VALUES('American','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('Double Frostbite','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('FITA 50','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('FITA 60','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('FITA 70','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('FITA 900','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('FITA Olympic Round','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('FITA Standard Round','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('FITAs','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('Frostbite','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('Half FITAs','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('Half Metrics','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('Long Metrics','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('Metrics','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('Nationals','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('Outdoor Portsmouth','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('Short Metrics','outdoor','metric','ten zone','ten zone');
+INSERT INTO "round_family" VALUES('St Nicholas','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('Warwicks','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('Westerns','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('Windsors','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('Yorks','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('252','outdoor','imperial','five zone','five zone');
+INSERT INTO "round_family" VALUES('Bray I','indoor','imperial','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('Bray II','indoor','imperial','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('Combined FITA','indoor','metric','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('Combined FITA (triple)','indoor','metric','vegas','vegas inner ten');
+INSERT INTO "round_family" VALUES('FITA 18','indoor','metric','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('FITA 18 (triple)','indoor','metric','vegas','vegas inner ten');
+INSERT INTO "round_family" VALUES('FITA 25','indoor','metric','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('FITA 25 (triple)','indoor','metric','vegas','vegas inner ten');
+INSERT INTO "round_family" VALUES('Match Round','indoor','metric','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('Portsmouth','indoor','imperial','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('Portsmouth (triple)','indoor','imperial','vegas','vegas inner ten');
+INSERT INTO "round_family" VALUES('Plymouth','indoor','imperial','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('Plymouth (triple)','indoor','imperial','vegas','vegas inner ten');
+INSERT INTO "round_family" VALUES('Stafford','indoor','metric','ten zone','metric inner ten');
+INSERT INTO "round_family" VALUES('Vegas','indoor','metric','vegas','vegas inner ten');
+INSERT INTO "round_family" VALUES('Worcester','indoor','imperial','worcester','worcester');
 CREATE TABLE round (
     name TEXT NOT NULL,
     family_name TEXT NOT NULL,
@@ -189,6 +188,8 @@ INSERT INTO "round" VALUES('Bray II','Bray II',2);
 INSERT INTO "round" VALUES('Stafford','Stafford',0);
 INSERT INTO "round" VALUES('Portsmouth','Portsmouth',0);
 INSERT INTO "round" VALUES('Portsmouth (triple)','Portsmouth (triple)',0);
+INSERT INTO "round" VALUES('Plymouth','Plymouth',0);
+INSERT INTO "round" VALUES('Plymouth (triple)','Plymouth (triple)',0);
 INSERT INTO "round" VALUES('Worcester','Worcester',0);
 INSERT INTO "round" VALUES('Vegas','Vegas',0);
 INSERT INTO "round" VALUES('FITA 18','FITA 18',0);
@@ -258,12 +259,13 @@ INSERT INTO "arrow_count" VALUES('Short Metrics',2,36,'80cm');
 INSERT INTO "arrow_count" VALUES('FITA Standard Round',1,36,'122cm');
 INSERT INTO "arrow_count" VALUES('FITA Standard Round',2,36,'122cm');
 INSERT INTO "arrow_count" VALUES('252',1,36,'122cm');
-
 INSERT INTO "arrow_count" VALUES('Bray I',1,30,'40cm');
 INSERT INTO "arrow_count" VALUES('Bray II',1,30,'60cm');
 INSERT INTO "arrow_count" VALUES('Stafford',1,72,'80cm');
 INSERT INTO "arrow_count" VALUES('Portsmouth',1,60,'60cm');
 INSERT INTO "arrow_count" VALUES('Portsmouth (triple)',1,60,'60cm');
+INSERT INTO "arrow_count" VALUES('Plymouth',1,60,'40cm');
+INSERT INTO "arrow_count" VALUES('Plymouth (triple)',1,60,'40cm');
 INSERT INTO "arrow_count" VALUES('Worcester',1,60,'16in special');
 INSERT INTO "arrow_count" VALUES('Vegas',1,60,'40cm');
 INSERT INTO "arrow_count" VALUES('FITA 18',1,60,'40cm');
@@ -463,7 +465,6 @@ INSERT INTO "distance" VALUES('Double Frostbite','1',30);
 INSERT INTO "distance" VALUES('Outdoor Portsmouth','1',20);
 INSERT INTO "distance" VALUES('FITA Standard Round','1',50);
 INSERT INTO "distance" VALUES('FITA Standard Round','2',30);
-
 INSERT INTO "distance" VALUES('Green 252','1',10);
 INSERT INTO "distance" VALUES('White 252','1',20);
 INSERT INTO "distance" VALUES('Black 252','1',30);
@@ -472,15 +473,15 @@ INSERT INTO "distance" VALUES('Red 252','1',50);
 INSERT INTO "distance" VALUES('Bronze 252','1',60);
 INSERT INTO "distance" VALUES('Silver 252','1',80);
 INSERT INTO "distance" VALUES('Gold 252','1',100);
-
 INSERT INTO "distance" VALUES('Bray I','1',20);
 INSERT INTO "distance" VALUES('Bray II','1',25);
 INSERT INTO "distance" VALUES('Stafford','1',30);
 INSERT INTO "distance" VALUES('Portsmouth','1',20);
 INSERT INTO "distance" VALUES('Portsmouth (triple)','1',20);
+INSERT INTO "distance" VALUES('Plymouth','1',15);
+INSERT INTO "distance" VALUES('Plymouth (triple)','1',15);
 INSERT INTO "distance" VALUES('Vegas','1',18);
 INSERT INTO "distance" VALUES('Worcester','1',20);
-
 INSERT INTO "distance" VALUES('Combined FITA','1',25);
 INSERT INTO "distance" VALUES('Combined FITA','2',18);
 INSERT INTO "distance" VALUES('Combined FITA (triple)','1',25);
@@ -490,7 +491,6 @@ INSERT INTO "distance" VALUES('FITA 18 (triple)','1',18);
 INSERT INTO "distance" VALUES('FITA 25','1',25);
 INSERT INTO "distance" VALUES('FITA 25 (triple)','1',25);
 INSERT INTO "distance" VALUES('Match Round','1',18);
-
 CREATE TABLE outdoor_classifications(
     round TEXT NOT NULL,
     gender TEXT NOT NULL,
@@ -3129,7 +3129,6 @@ INSERT INTO "indoor_classifications" VALUES('Worcester','F','compound',299,296,2
 INSERT INTO "indoor_classifications" VALUES('Worcester','F','recurve',293,285,259,218,150,85,41,27);
 INSERT INTO "indoor_classifications" VALUES('Worcester','M','compound',300,299,289,264,226,162,96,65);
 INSERT INTO "indoor_classifications" VALUES('Worcester','M','recurve',298,293,273,237,184,114,61,41);
-
 CREATE TABLE agb_outdoor_table_header(
     header_number INTEGER NOT NULL PRIMARY KEY
 );
@@ -3214,7 +3213,6 @@ INSERT INTO "agb_outdoor_table_column" VALUES(6,8,'Long Metric Ladies',1);
 INSERT INTO "agb_outdoor_table_column" VALUES(6,9,'Half FITA Gents',0);
 INSERT INTO "agb_outdoor_table_column" VALUES(6,10,'Half FITA Ladies',1);
 INSERT INTO "agb_outdoor_table_column" VALUES(6,11,'FITA Standard Round',1);
-
 INSERT INTO "agb_outdoor_table_column" VALUES(7,1,'Bray I',0);
 INSERT INTO "agb_outdoor_table_column" VALUES(7,2,'Bray II',1);
 INSERT INTO "agb_outdoor_table_column" VALUES(7,3,'Portsmouth',1);
@@ -3226,7 +3224,6 @@ INSERT INTO "agb_outdoor_table_column" VALUES(7,8,'Combined FITA',1);
 INSERT INTO "agb_outdoor_table_column" VALUES(7,9,'FITA 18 (triple)',0);
 INSERT INTO "agb_outdoor_table_column" VALUES(7,10,'FITA 25 (triple)',0);
 INSERT INTO "agb_outdoor_table_column" VALUES(7,11,'Combined FITA (triple)',1);
-
 INSERT INTO "agb_outdoor_table_column" VALUES(8,1,'Bray I',0);
 INSERT INTO "agb_outdoor_table_column" VALUES(8,2,'Bray II',1);
 INSERT INTO "agb_outdoor_table_column" VALUES(8,3,'Portsmouth (triple)',1);
@@ -3238,7 +3235,6 @@ INSERT INTO "agb_outdoor_table_column" VALUES(8,8,'Combined FITA',1);
 INSERT INTO "agb_outdoor_table_column" VALUES(8,9,'FITA 18 (triple)',0);
 INSERT INTO "agb_outdoor_table_column" VALUES(8,10,'FITA 25 (triple)',0);
 INSERT INTO "agb_outdoor_table_column" VALUES(8,11,'Combined FITA (triple)',1);
-
 CREATE TABLE agb_outdoor_table(
     table_number TEXT NOT NULL,
     title TEXT NOT NULL,

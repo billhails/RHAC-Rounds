@@ -12,9 +12,25 @@ define('GNAS_ARCHERY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
 require GNAS_ARCHERY_PLUGIN_DIR . 'rounds.php';
 
-wp_enqueue_script('rhac_handicaps', plugins_url('handicap.js', __FILE__), array('jquery'));
+
+// Register style sheet.
+add_action( 'wp_enqueue_scripts', 'register_gnas_rounds_plugin_styles' );
+
+/**
+ * Register style sheet.
+ */
+function register_gnas_rounds_plugin_styles() {
+    wp_register_style('rhac_datatables_style',  plugins_url('demo_table.css',__FILE__), array());
+    wp_enqueue_style( 'rhac_datatables_style' );
+    wp_register_style('rhac_roundtables_style',  plugins_url('rounds.css',__FILE__), array('rhac_datatables_style'));
+    wp_enqueue_style( 'rhac_roundtables_style' );
+    wp_enqueue_script('rhac_handicaps', plugins_url('handicap.js', __FILE__), array('jquery'));
+}
 
 function gnas_archery_rounds_display() {
+    wp_enqueue_script('rhac_datatables', plugins_url('jquery.dataTables.min.js', __FILE__), array('jquery'));
+    wp_enqueue_script('rhac_fixedcolumns', plugins_url('FixedColumns.min.js', __FILE__), array('rhac_datatables'));
+    wp_enqueue_script('rhac_datatables_hook', plugins_url('datatables_hook.js', __FILE__), array('rhac_datatables'));
     return GNAS_Page::asText();
 }
 

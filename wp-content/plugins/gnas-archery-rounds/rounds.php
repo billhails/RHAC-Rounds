@@ -140,7 +140,8 @@ abstract class GNAS_Measure {
     abstract public function getName();
 
     public function getTableHeader() {
-        return '<thead><tr><th rowspan="3" style="vertical-align: bottom;">Round</th><th colspan="'
+        return '<col class="round-first-col">'
+            . '<thead><tr><th rowspan="3" style="vertical-align: bottom; width: 15%;">Round</th><th colspan="'
             . $this->totalDistances()
             . '">Dozens at each distance</th></tr>'
             . '<tr>' . $this->getFaceHeaders() . '</tr>'
@@ -695,7 +696,7 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
     }
 
     private function getTable() {
-        return '<table class="rounds">'
+        return '<table class="display rounds" width="100%">'
                . $this->getTableHeader()
                . $this->getTableFooter()
                . $this->getTableBody()
@@ -1344,7 +1345,7 @@ class GNAS_Classifications {
 
         $query = $this->generateQuery($fields, $conditions);
 
-        $table []= '<table><thead><tr><th>'
+        $table []= '<table class="classifications"><thead><tr><th>'
                    . implode('</th><th>', $headers)
                    . '</th></tr></thead><tbody>';
 
@@ -1460,7 +1461,7 @@ abstract class GNAS_AllRounds {
 
     public function getTable() {
         $rounds = $this->getAllRounds();
-        $table = array('<table class="rounds">');
+        $table = array('<table class="display rounds" width="100%">');
         $table []= $rounds[0]->getTableHeader();
         $table []= $rounds[0]->getTableFooter();
         $table []= '<tbody>';

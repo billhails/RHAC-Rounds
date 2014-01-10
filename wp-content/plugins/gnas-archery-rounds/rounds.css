@@ -1,0 +1,9 @@
+td.distance-populated {
+	background-color: #9ad0ed;
+	padding-left: 1em;
+	padding-right: 0;
+}
+
+col.round-first-col {
+    width: 15%;
+}

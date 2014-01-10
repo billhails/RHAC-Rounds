@@ -32,6 +32,7 @@ function billhails_shortcode_link($atts) {
     }
     if ($target != '') {
         $billhails_shortcode_link_target = $target;
+        $billhails_shortcode_link_target = '_blank';
     }
     if (   $file != ''
         && $label != ''
@@ -51,9 +52,10 @@ function billhails_shortcode_link($atts) {
 
 function billhails_shortcode_link_iframe() {
     global $billhails_shortcode_link_target;
-    if ($billhails_shortcode_link_target != '') {
-        return "<iframe id='$billhails_shortcode_link_target' class='gr-report' src='"
-                . BILLHAILS_SRC_HTML . "'></iframe>\n";
+    if (false && $billhails_shortcode_link_target != '') {
+        return '<div class="gr-report">' 
+                . "<iframe id='$billhails_shortcode_link_target' scrolling='no' class='gr-report' src='"
+                . BILLHAILS_SRC_HTML . "'></iframe></div>\n";
     } else {
         return '';
     }
