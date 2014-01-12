@@ -174,16 +174,6 @@ jQuery(
                         }
                     );
                 };
-                /*
-                var set_outdoors = function() {
-                    jQuery('input[name="venue"][value="outdoor"]').prop('checked', true);
-                };
-                var set_indoors = function() {
-                    jQuery('input[name="venue"][value="indoor"]').prop('checked', true);
-                };
-                jQuery('#outdoor_classification').change(set_outdoors);
-                jQuery('#indoor_classification').change(set_indoors);
-                */
             } else if (jQuery('#handicap-copy').text()) {
                 handicap_calc = function() {
                     var val = jQuery('#handicap').val();

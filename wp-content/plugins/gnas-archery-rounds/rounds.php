@@ -228,9 +228,8 @@ class GNAS_OutdoorImperialMeasure extends GNAS_ImperialMeasure {
 class GNAS_IndoorImperialMeasure extends GNAS_ImperialMeasure {
 
     public function getAllDistances() {
-        return array('80cm' => array(30),
-                     '60cm' => array(25, 20),
-                     '40cm' => array(25, 20),
+        return array('60cm' => array(25, 20),
+                     '40cm' => array(20, 15),
                      '16in special' => array(20));
     }
 
@@ -264,7 +263,7 @@ class GNAS_IndoorMetricMeasure extends GNAS_MetricMeasure {
 
     public function getAllDistances() {
         return array('80cm' => array(30),
-                     '60cm' => array(25, 18),
+                     '60cm' => array(25),
                      '40cm' => array(18));
     }
 
