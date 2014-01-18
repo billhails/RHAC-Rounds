@@ -1,4 +1,4 @@
-function rhac_score(H, fn, units, distances) {
+function rhac_score(H, fn, units, distances, radius) {
 
     function square(x) {
         return x * x;
@@ -44,10 +44,10 @@ function rhac_score(H, fn, units, distances) {
         return (
             9 - 2 * Sigma(1, 4,
                 function(n) {
-                    return exp(-square(n * D / 10 + r) / sr2)
+                    return exp(-square(n * D / 10 + radius) / sr2)
                 }
             )
-            - exp(-square(D / 2 + r) / sr2)
+            - exp(-square(D / 2 + radius) / sr2)
         );
     }
 
@@ -56,7 +56,7 @@ function rhac_score(H, fn, units, distances) {
         return (
             10 - Sigma(1, 10,
                 function(n) {
-                    return exp(-square(n * D / 20 + r) / sr2)
+                    return exp(-square(n * D / 20 + radius) / sr2)
                 }
             )
         );
@@ -65,10 +65,10 @@ function rhac_score(H, fn, units, distances) {
     function metric_inner_ten(D, R, H) {
         var sr2 = sigma_r_2(R, H);
         return(
-            10 - exp(-square(D / 40 + r) / sr2)
+            10 - exp(-square(D / 40 + radius) / sr2)
             - Sigma(2, 10,
                 function(n) {
-                    return exp(-square(n * D / 20 + r) / sr2)
+                    return exp(-square(n * D / 20 + radius) / sr2)
                 }
             )
         );
@@ -79,23 +79,23 @@ function rhac_score(H, fn, units, distances) {
         return (
             10 - Sigma(1, 4,
                 function(n) {
-                    return exp(-square(n * D / 20 + r) / sr2)
+                    return exp(-square(n * D / 20 + radius) / sr2)
                 }
             )
-            - 6 * exp(-square(5 * D / 20 + r) / sr2)
+            - 6 * exp(-square(5 * D / 20 + radius) / sr2)
         );
     }
 
     function vegas_inner_ten(D, R, H) {
         var sr2 = sigma_r_2(R, H);
         return (
-            10 - exp(-square(D / 40 + r) / sr2)
+            10 - exp(-square(D / 40 + radius) / sr2)
             - Sigma(2, 4,
                 function(n) {
-                    return exp(-square(n * D / 20 + r) / sr2)
+                    return exp(-square(n * D / 20 + radius) / sr2)
                 }
             )
-            - 6 * exp(-square(5 * D / 20 + r) / sr2)
+            - 6 * exp(-square(5 * D / 20 + radius) / sr2)
         );
     }
 
@@ -104,7 +104,7 @@ function rhac_score(H, fn, units, distances) {
         return (
             5 - Sigma(1, 5,
                 function(n) {
-                    return exp(-square(n * D / 10 + r) / sr2)
+                    return exp(-square(n * D / 10 + radius) / sr2)
                 }
             )
         );
@@ -114,9 +114,9 @@ function rhac_score(H, fn, units, distances) {
         var sr2 = sigma_r_2(R, H);
         return (
             10 - Sigma(1, 5,
-                exp(-square(n * D / 20 + r) / sr2)
+                exp(-square(n * D / 20 + radius) / sr2)
             )
-            - 5 * exp(-square(6 * D / 20 + r) / sr2)
+            - 5 * exp(-square(6 * D / 20 + radius) / sr2)
         );
     }
 
@@ -159,6 +159,13 @@ jQuery(
             if (jQuery('#predictions').text()) {
                 handicap_calc = function() {
                     var val = jQuery('#handicap').val();
+                    var arrow_diameter;
+                    // if (jQuery('input[type=radio]:checked').val().equals('indoor')) {
+                        arrow_diameter = Number(jQuery('#arrow_diameter').val());
+                    // } else {
+                        // arrow_diameter = 18;
+                    // }
+                    var radius = (arrow_diameter / 64.0) * 2.54 / 2;
                     jQuery('#predictions tbody tr').each(
                         function () {
                             var jqthis = jQuery(this);
@@ -170,7 +177,8 @@ jQuery(
                                     Number(val),
                                     scoring,
                                     units,
-                                    distances)));
+                                    distances,
+                                    radius)));
                         }
                     );
                 };
@@ -182,17 +190,20 @@ jQuery(
                         scoring = rhac_compound_scoring;
                     }
                     jQuery('#handicap-copy').text(val);
+                    var radius = (18 / 64) * 2.54 / 2;
                     jQuery('#prediction').text(
                         String(rhac_score(
                             Number(val),
                             scoring,
                             rhac_units,
-                            rhac_distances)))
+                            rhac_distances,
+                            radius)))
                 }
             }
             handicap_calc();
             jQuery('#handicap').change(handicap_calc);
             jQuery('#compound_scoring').change(handicap_calc);
+            jQuery('#arrow_diameter').change(handicap_calc);
         }
     }
 );

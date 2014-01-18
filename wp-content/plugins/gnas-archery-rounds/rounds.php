@@ -1037,7 +1037,8 @@ class GNAS_Requirements {
             && $_GET['venue']
             && $_GET['age_group']
             && $_GET['bow']
-            && $_GET['gender']) {
+            && $_GET['gender']
+            && $_GET['arrow_diameter']) {
             $ret .= $this->results();
         }
         return $ret;
@@ -1099,6 +1100,22 @@ class GNAS_Requirements {
             'M' => 'Gent',
             'F' => 'Lady'));
         $result .= $this->number('Handicap', 'handicap', 0, 100);
+        if (!isset($_GET['arrow_diameter'])) {
+            $_GET['arrow_diameter'] = '18';
+        }
+        $result .= $this->option('Arrow Diameter', 'arrow_diameter', array(
+            '12' => '12/64&Prime;',
+            '13' => '13/64&Prime;',
+            '14' => '14/64&Prime;',
+            '15' => '15/64&Prime;',
+            '16' => '16/64&Prime;',
+            '17' => '17/64&Prime;',
+            '18' => '18/64&Prime;',
+            '19' => '19/64&Prime;',
+            '20' => '20/64&Prime;',
+            '21' => '21/64&Prime;',
+            '22' => '22/64&Prime;',
+            '23' => '23/64&Prime;'));
         $result .= "<tr><th>&nbsp;</th>
 <td><input type='submit' value='Search'/></td></tr>
 </table>
