@@ -4,6 +4,7 @@ include_once plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
 
 class RHAC_Archer252 {
     private static $instances;
+    private static $scores;
     private static $requirements = array(
         'Green 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 164, 'barebow' => 189),
         'White 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 164, 'barebow' => 189),
@@ -14,86 +15,68 @@ class RHAC_Archer252 {
         'Silver 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 126, 'barebow' => 164),
         'Gold 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 101, 'barebow' => 139)
     );
-    private $archer;
-    private $bow;
-    private $scores;
 
     public static function init() {
         self::$instances = array();
+        self::$scores = array();
     }
 
-    private function __construct($archer, $bow) {
-        $this->archer = $archer;
-        $this->bow = $bow;
-        $this->scores = array();
-    }
-
+    // assumes the data is sorted by date, archer, round, bow
     public static function addRow($row) {
-        if (!isset(self::$instances[$row['archer']])) {
-            self::$instances[$row['archer']] = array();
+        if (self::below_required_score($row['bow'], $row['round'], $row['score'])) {
+            return;
         }
-        if (!isset(self::$instances[$row['archer']][$row['bow']])) {
-            self::$instances[$row['archer']][$row['bow']] = 
-                new self($row['archer'], $row['bow']);
-        }
-        self::$instances[$row['archer']][$row['bow']]->addScore($row['round'], $row['date'], $row['score']);
+        $row['previous'] = self::previous($row['archer'], $row['bow'], $row['round'], $row['score']);
+        self::$instances []= $row;
     }
 
-    private function addScore($round, $date, $score) {
-        if (isset($this->scores[$date][$round])) {
-            if ($this->scores[$date][$round] > $score) {
-                $this->scores[$date][$round] = $score;
-            }
+    private static function previous($archer, $bow, $round, $score) {
+        if (!isset(self::$scores[$archer])) {
+            self::$scores[$archer] = array();
         }
-        else {
-            $this->scores[$date][$round] = $score;
+        if (!isset(self::$scores[$archer][$bow])) {
+            self::$scores[$archer][$bow] = array();
         }
+        $previous = '&nbsp;';
+        if (isset(self::$scores[$archer][$bow][$round])) {
+            $previous = self::$scores[$archer][$bow][$round];
+        }
+        self::$scores[$archer][$bow][$round] = $score;
+        return $previous;
     }
 
-    private function prepare() {
-        ksort($this->scores);
-        $dates = array_keys($this->scores);
-        foreach ($dates as $date) {
-            $rounds = array_keys($this->scores[$date]);
-            foreach ($rounds as $round) {
-                if ($this->below_required_score($round, $this->scores[$date][$round])) {
-                    unset($this->scores[$date][$round]);
-                }
-            }
-            if (count($this->scores[$date]) == 0) {
-                unset($this->scores[$date]);
-            }
-        }
-    }
-
-    private function below_required_score($round, $score) {
-        return self::$requirements[$round][$this->bow] > $score;
-    }
-
-    private function report() {
-        $this->prepare();
-        $result = '<ul>';
-        foreach ($this->scores as $date => $rounds) {
-            foreach ($rounds as $round => $score) {
-                $result .= '<li>' . $date . ' ' . $round . ' <strong>' . $score . "</strong></li>\n";
-            }
-        }
-        $result .= '</ul>';
-        return $result;
+    private static function below_required_score($bow, $round, $score) {
+        return self::$requirements[$round][$bow] > $score;
     }
 
     public static function getResultsHTML() {
-        $result = '<h1>252 Results So Far</h1><dl>';
-        foreach (self::$instances as $archer => $bows) {
-            $result .= '<dt>' . $archer . '</dt>' . '<dd>' . '<dl>';
-            foreach ($bows as $bow => $instance) {
-                $result .= '<dt>' . $bow . '</dt>' . '<dd>';
-                $result .= $instance->report();
-                $result .= '</dd>';
+        $result = '<h1>252 Results So Far</h1>';
+        $result .= '<table>';
+        $result .= '<thead>';
+        $result .= '<tr>';
+        $result .= '<th>Date</th><th>Archer</th><th>Round</th><th>Bow</th><th>Prev</th><th>Current</th>';
+        $result .= '</tr><thead>';
+        $result .= '<tbody>';
+        $classes = array('even', 'odd');
+        $date = '';
+        $count = 0;
+        foreach (self::$instances as $row) {
+            if ($date != $row['date']) {
+                $date = $row['date'];
+                $class = $classes[$count];
+                $count++;
+                $count = $count % 2;
             }
-            $result .= '</dl></dd>';
+            $result .= "<tr class='$class'>";
+            $result .= "<td>$row[date]</td>";
+            $result .= "<td>$row[archer]</td>";
+            $result .= "<td>$row[round]</td>";
+            $result .= "<td>$row[bow]</td>";
+            $result .= "<td>$row[previous]</td>";
+            $result .= "<td>$row[score]</td>";
+            $result .= '</tr>';
         }
-        $result .= '</dl>';
+        $result .= '</tbody></table>';
         return $result;
     }
 }
@@ -662,7 +645,13 @@ class RHAC_Scorecards {
 
     private function two_five_two() {
         RHAC_Archer252::init();
-        $rows = $this->fetch("select * from scorecards where round in ('Green 252', 'White 252', 'Black 252', 'Blue 252', 'Red 252', 'Bronze 252', 'Silver 252', 'Gold 252')");
+        $rows = $this->fetch(<<<EOT
+select * from scorecards
+where round in ('Green 252', 'White 252', 'Black 252', 'Blue 252', 'Red 252',
+                'Bronze 252', 'Silver 252', 'Gold 252')
+order by date, archer, round, bow
+EOT
+);
         foreach ($rows as $row) {
             RHAC_Archer252::addRow($row);
         }
