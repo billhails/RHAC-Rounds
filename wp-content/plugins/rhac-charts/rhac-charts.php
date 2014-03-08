@@ -19,7 +19,7 @@ function register_rhac_charts() {
 $rhac_datasets = array();
 $rhac_labels = array();
 
-function rhac_chart($atts, $content = null) {
+function rhac_graph($atts, $content = null) {
     extract( shortcode_atts( array(
 		'width' => '640',
 		'height' => '400',
@@ -91,6 +91,6 @@ function rhac_dataset($atts) {
     }
 }
 
-add_shortcode('graph', 'rhac_chart');
+add_shortcode('graph', 'rhac_graph');
 add_shortcode('labels', 'rhac_labels');
 add_shortcode('dataset', 'rhac_dataset');

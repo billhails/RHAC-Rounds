@@ -54,7 +54,7 @@ class RHAC_Archer252 {
         $result .= '<table>';
         $result .= '<thead>';
         $result .= '<tr>';
-        $result .= '<th>Date</th><th>Archer</th><th>Round</th><th>Bow</th><th>Prev</th><th>Current</th>';
+        $result .= '<th>Date</th><th>Archer</th><th>Round</th><th>Bow</th><th>Prev</th><th>This</th>';
         $result .= '</tr><thead>';
         $result .= '<tbody>';
         $classes = array('even', 'odd');
