@@ -1,0 +1,84 @@
+td.arrow-gold {
+    background-color: yellow;
+}
+
+td.arrow-red {
+    background-color: red;
+    color: white;
+}
+
+td.arrow-blue {
+    background-color: blue;
+    color: white;
+}
+
+td.arrow-black {
+    background-color: black;
+    color: white;
+}
+
+td.arrow-white {
+    background-color: white;
+    color: black;
+}
+
+td.arrow-green {
+    background-color: green;
+    color: white;
+}
+
+div.scorecard td.arrow {
+    text-align: center;
+    padding: 0;
+    width: 2.3em;
+}
+
+div.scorecard {
+    border: 2px solid black;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+div.scorecard td.end-total {
+    border: 1px solid black;
+    text-align: center;
+    padding: 0;
+}
+
+div.scorecard td.scorecard-hits,
+div.scorecard td.scorecard-xs,
+div.scorecard td.scorecard-golds {
+    background: #dddddd;
+    text-align: center;
+    padding: 0;
+}
+
+div.scorecard td.scorecard-doz,
+div.scorecard td.scorecard-total {
+    text-align: center;
+    border: 1px solid black;
+    padding: 0;
+}
+
+div.scorecard td.scorecard-total-hits,
+div.scorecard td.scorecard-total-xs,
+div.scorecard td.scorecard-total-golds {
+    background: #dddddd;
+    text-align: center;
+    padding: 0;
+    border: 1px solid black;
+}
+
+div.scorecard td.scorecard-total-total {
+    font-weight: bold;
+    text-align: center;
+    padding: 0;
+    border: 1px solid black;
+}
+
+div.scorecard td.scorecard-totals-label {
+    text-align: right;
+    font-weight: bold;
+    padding: 0;
+    padding-right: 4px;
+}
