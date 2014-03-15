@@ -2,14 +2,14 @@ function RHAC_ScoreViewer() {
 
     function makePopulateScorecard(id) {
         return function(result) {
-            jQuery('#scorecard-' + id).html(result);
+            jQuery('#scorecard-' + id).html(result.html);
         };
     }
 
     function doReveal() {
         id =  jQuery(this).data('id');
         round =  jQuery(this).data('round');
-        jQuery('#scorecard-' + id).html("<p>please wait...</p>");
+        jQuery('#scorecard-' + id).html("<p class='scorecard-wait'>please wait...</p>");
         jQuery.ajax(
             {
                 url: rhacScorecardData.ajaxurl,
@@ -29,6 +29,7 @@ function RHAC_ScoreViewer() {
     }
 
     function doSearch() {
+        jQuery('#results').html('<tr><td colspan="9"><p class="scorecard-wait">please wait...</p></td></tr>');
         jQuery.ajax(
             {
                 url: rhacScorecardData.ajaxurl,

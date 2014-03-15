@@ -1,5 +1,6 @@
 td.arrow-gold {
     background-color: yellow;
+    color: black;
 }
 
 td.arrow-red {
@@ -18,13 +19,41 @@ td.arrow-black {
 }
 
 td.arrow-white {
-    background-color: white;
+    background-color: #dddddd;
     color: black;
 }
 
 td.arrow-green {
     background-color: green;
     color: white;
+}
+
+div.arrow-gold {
+    background-color: yellow;
+}
+
+div.arrow-red {
+    background-color: red;
+}
+
+div.arrow-blue {
+    background-color: blue;
+}
+
+div.arrow-black {
+    background-color: black;
+}
+
+div.arrow-white {
+    background-color: #dddddd;
+}
+
+div.arrow-miss {
+    background-color: green;
+}
+
+td.bar {
+    vertical-align: bottom;
 }
 
 div.scorecard td.arrow {
@@ -39,6 +68,10 @@ div.scorecard {
     padding: 4px;
 }
 
+div.scorecard th {
+    text-align: center;
+}
+
 div.scorecard td.end-total {
     border: 1px solid black;
     text-align: center;
@@ -51,6 +84,7 @@ div.scorecard td.scorecard-golds {
     background: #dddddd;
     text-align: center;
     padding: 0;
+    border 1px solid white;
 }
 
 div.scorecard td.scorecard-doz,

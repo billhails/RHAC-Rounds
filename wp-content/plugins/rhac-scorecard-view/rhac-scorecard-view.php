@@ -17,6 +17,471 @@ include_once RHAC_ROUNDS_DIR . 'rounds.php';
 
 #######################################################################################
 
+class RHACScorecardCounter {
+    private $doz_hits;
+    private $doz_xs;
+    private $doz_golds;
+    private $doz_score;
+
+    private $end_score;
+
+    private $total_hits;
+    private $total_xs;
+    private $total_golds;
+    private $total_score;
+
+    private $spread;
+
+    private $count;
+
+    public function __construct() {
+        $this->count = 0;
+        $this->spread = array();
+    }
+
+    public function debug() {
+        return '<pre>' . print_r($this->spread, true) . '</pre>';
+    }
+
+    public function dozHits() { return $this->doz_hits; }
+    public function dozXs() { return $this->doz_xs; }
+    public function dozGolds() { return $this->doz_golds; }
+    public function dozScore() { return $this->doz_score; }
+    public function endScore() { return $this->end_score; }
+    public function totalHits() { return $this->total_hits; }
+    public function totalXs() { return $this->total_xs; }
+    public function totalGolds() { return $this->total_golds; }
+    public function totalScore() { return $this->total_score; }
+
+    public function isRight() {
+        return ($this->count % 2) == 0;
+    }
+
+    public function isLeft() {
+        return !$this->isRight();
+    }
+
+    private function newDoz() {
+        $this->doz_hits = 0;
+        $this->doz_xs = 0;
+        $this->doz_golds = 0;
+        $this->doz_score = 0;
+    }
+
+    public function newEnd() {
+        $this->end_score = 0;
+        $this->count++;
+        if ($this->isLeft()) {
+            $this->newDoz();
+        }
+    }
+
+    public function getCount($arrow) {
+        if (isset($this->spread[$arrow])) {
+            return $this->spread[$arrow];
+        }
+        else {
+            return 0;
+        }
+    }
+
+    public function add($arrow) {
+        $score = $this->arrowScore($arrow);
+        $this->end_score += $score;
+        $this->doz_score += $score;
+        $this->total_score += $score;
+
+        $hit = $this->arrowHit($arrow);
+        $this->doz_hits += $hit;
+        $this->total_hits += $hit;
+
+        $x += $this->arrowX($arrow);
+        $this->doz_xs += $x;
+        $this->total_xs += $x;
+
+        $gold = $this->arrowGold($arrow);
+        $this->doz_golds += $gold;
+        $this->total_golds += $gold;
+
+        if (!isset($this->spread[$arrow])) {
+            $this->spread[$arrow] = 0;
+        }
+
+        $this->spread[$arrow]++;
+    }
+
+    private function arrowScore($arrow) {
+        if ($arrow == 'X') {
+            return 10;
+        } elseif ($arrow == 'M') {
+            return 0;
+        } else {
+            return $arrow;
+        }
+    }
+
+    private function arrowHit($arrow) {
+        return $arrow == 'M' ? 0 : 1;
+    }
+
+    private function arrowX($arrow) {
+        return $arrow == 'X' ? 1 : 0;
+    }
+
+    private function arrowGold($arrow) {
+        return $arrow == 'X' ? 1 : $arrow == 10 ? 1 : $arrow == 9 ? 1 : 0;
+    }
+}
+
+#######################################################################################
+
+abstract class RHAC_Charter {
+
+    public static function getCharter($scoring_name) {
+        switch ($scoring_name) {
+            case "five zone":
+                return new RHAC_FiveZoneCharter();
+            case "ten zone":
+                return new RHAC_TenZoneCharter();
+            case "metric inner ten":
+                return new RHAC_InnerTenZoneCharter();
+            case "vegas":
+                return new RHAC_VegasCharter();
+            case "vegas inner ten":
+                return new RHAC_VegasInnerTenCharter();
+            case "worcester":
+                return new RHAC_WorcesterCharter();
+            default:
+                return new RHAC_UnknownCharter($scoring_name);
+        }
+    }
+
+    public function makeBarchart($counter) {
+        $array = $this->makeArray();
+        $max_height = 1;
+        $total_width = 0;
+        foreach ($array as &$bar) {
+            $bar['height'] = $counter->getCount($bar['arrow']);
+            if ($max_height < $bar['height']) {
+                $max_height = $bar['height'];
+            }
+            $total_width += $bar['width'];
+        }
+        unset($bar);
+        $html = array();
+        $html []= '<table style="width: ' . 100 * $total_width / 11 . '%"><tr>';
+        foreach ($array as $bar) {
+            $height = 150 * $bar['height'] / $max_height;
+            $width = 100 * $bar['width'] / $total_width;
+            $html []= '<td class="bar" width="' . $width . '%">'
+                        . '<div class="bar ' . $bar['class'] . '" style="height: ' . $height . 'px;">'
+                        . '&nbsp;</div></td>';
+        }
+        $html []= "</tr></table>\n";
+        return implode('', $html);
+    }
+
+    protected abstract function makeArray();
+}
+
+class RHAC_FiveZoneCharter extends RHAC_Charter {
+    protected function makeArray() {
+        return array(
+            array(
+                "arrow" => '9',
+                "width" => 1,
+                "class" => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '7',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '5',
+                'width' => 1,
+                'class' => 'arrow-blue'
+            ),
+            array(
+                'arrow' => '3',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '1',
+                'width' => 1,
+                'class' => 'arrow-white'
+            ),
+            array(
+                'arrow' => 'M',
+                'width' => 1,
+                'class' => 'arrow-miss'
+            )
+        );
+    }
+}
+
+class RHAC_TenZoneCharter extends RHAC_Charter {
+    protected function makeArray() {
+        return array(
+            array(
+                'arrow' => 'X',
+                'width' => 0.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '10',
+                'width' => 0.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '9',
+                'width' => 1,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '8',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '7',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '6',
+                'width' => 1,
+                'class' => 'arrow-blue'
+            ),
+            array(
+                'arrow' => '5',
+                'width' => 1,
+                'class' => 'arrow-blue'
+            ),
+            array(
+                'arrow' => '4',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '3',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '2',
+                'width' => 1,
+                'class' => 'arrow-white'
+            ),
+            array(
+                'arrow' => '1',
+                'width' => 1,
+                'class' => 'arrow-white'
+            ),
+            array(
+                'arrow' => 'M',
+                'width' => 1,
+                'class' => 'arrow-miss'
+            ),
+        );
+    }
+}
+
+class RHAC_InnerTenZoneCharter extends RHAC_Charter {
+    protected function makeArray() {
+        return array(
+            array(
+                'arrow' => '10',
+                'width' => 0.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '9',
+                'width' => 1.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '8',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '7',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '6',
+                'width' => 1,
+                'class' => 'arrow-blue'
+            ),
+            array(
+                'arrow' => '5',
+                'width' => 1,
+                'class' => 'arrow-blue'
+            ),
+            array(
+                'arrow' => '4',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '3',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '2',
+                'width' => 1,
+                'class' => 'arrow-white'
+            ),
+            array(
+                'arrow' => '1',
+                'width' => 1,
+                'class' => 'arrow-white'
+            ),
+            array(
+                'arrow' => 'M',
+                'width' => 1,
+                'class' => 'arrow-miss'
+            ),
+        );
+    }
+}
+
+class RHAC_VegasCharter extends RHAC_Charter {
+    protected function makeArray() {
+        return array(
+            array(
+                'arrow' => 'X',
+                'width' => 0.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '10',
+                'width' => 0.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '9',
+                'width' => 1,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '8',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '7',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '6',
+                'width' => 1,
+                'class' => 'arrow-blue'
+            ),
+            array(
+                'arrow' => 'M',
+                'width' => 1,
+                'class' => 'arrow-miss'
+            ),
+        );
+    }
+}
+
+class RHAC_VegasInnerTenCharter extends RHAC_Charter {
+    protected function makeArray() {
+        return array(
+            array(
+                'arrow' => '10',
+                'width' => 0.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '9',
+                'width' => 1.5,
+                'class' => 'arrow-gold'
+            ),
+            array(
+                'arrow' => '8',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '7',
+                'width' => 1,
+                'class' => 'arrow-red'
+            ),
+            array(
+                'arrow' => '6',
+                'width' => 1,
+                'class' => 'arrow-blue'
+            ),
+            array(
+                'arrow' => 'M',
+                'width' => 1,
+                'class' => 'arrow-miss'
+            ),
+        );
+    }
+}
+
+class RHAC_WorcesterCharter extends RHAC_Charter {
+    protected function makeArray() {
+        return array(
+            array(
+                'arrow' => '5',
+                'width' => 1,
+                'class' => 'arrow-white'
+            ),
+            array(
+                'arrow' => '4',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '3',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '2',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => '1',
+                'width' => 1,
+                'class' => 'arrow-black'
+            ),
+            array(
+                'arrow' => 'M',
+                'width' => 1,
+                'class' => 'arrow-miss'
+            ),
+        );
+    }
+}
+
+class RHAC_UnknownCharter extends RHAC_Charter {
+    private $name;
+
+    protected function makeArray() {}
+
+    public function __construct($name) {
+        $this->name = $name;
+    }
+
+    public function makeBarchart($counter) {
+        return "<p class='error'>Unrecognised scoring: [" . $this->name . "]</p>";
+    }
+}
+
+#######################################################################################
+
 class RHACScorecardViewer {
     private $pdo;
     private static $instance;
@@ -76,7 +541,7 @@ class RHACScorecardViewer {
                            . ' ORDER BY date', $params);
     }
 
-    public function getOneScorecard($id) {
+    private function getScorecardEnds($id) {
         return $this->select("*"
                       . " FROM scorecard_end"
                       . " WHERE scorecard_id = ?"
@@ -84,111 +549,83 @@ class RHACScorecardViewer {
                       array($id));
     }
 
-    public function getOneScorecardAsTable($id, $round) {
-        $scorecard = $this->getOneScorecard($id);
-        $ends = array();
-        $count = 0;
-        foreach ($scorecard as $end_data) {
-            $end_html = array();
-            $end_total = 0;
-            $end_hits = 0;
-            $end_xs = 0;
-            $end_golds = 0;
-            for ($arrow = 1; $arrow < 7; ++$arrow) {
-                $key = 'arrow_' . $arrow;
-                $arrow_text = $end_data[$key];
-                $end_total += $this->arrowValue($arrow_text);
-                $end_hits += $this->arrowHit($arrow_text);
-                $end_xs += $this->arrowX($arrow_text);
-                $end_golds += $this->arrowGold($arrow_text);
-                $arrow_class = $this->arrowClass($arrow_text);
-                $end_html []= "<td class='arrow $arrow_class'>$arrow_text</td>";
-            }
-            $end_html []= "<td class='end-total'>$end_total</td>";
-            $ends []= array('end_html' => implode('', $end_html),
-                            'end_total' => $end_total,
-                            'even' => ($count % 2 == 0),
-                            'hits' => $end_hits,
-                            'xs' => $end_xs,
-                            'golds' => $end_golds);
-            $count++;
-        }
+    private function getMainScorecard($id) {
+        $rows = $this->select("*"
+                      . " FROM scorecards"
+                      . " WHERE scorecard_id = ?",
+                      array($id));
+        return $rows[0];
+    }
+
+    private function scorecardAsTable($ends, $counter) {
         $table = array();
-        $table []= <<<EOHTML
-<div class='scorecard'>
-<table>
-<thead>
-<tr>
-<th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>end</th>
-<th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>end</th>
-<th>hits</th><th>Xs</th><th>golds</th><th>doz</th><th>tot</th>
-</tr>
-</thead>
-<tbody>
-EOHTML;
-        $total = 0;
-        foreach ($ends as $end) {
-            if ($end['even']) {
+        $arrow_keys = array('arrow_1', 'arrow_2', 'arrow_3', 'arrow_4', 'arrow_5', 'arrow_6');
+        $table []= "<table>\n";
+        $table []= "<thead>\n";
+        $table []= "<tr>";
+        for ($i = 0; $i < 2; ++$i) {
+            foreach (array(1, 2, 3, 4, 5, 6, 'END') as $th) {
+                $table []= "<th>$th</th>";
+            }
+        }
+        foreach (array('HITS', 'XS', 'GOLDS', 'DOZ', 'TOT') as $th) {
+            $table []= "<th>$th</th>";
+        }
+        $table []= "</tr>\n</thead>\n<tbody>";
+
+        foreach ($ends as $end_data) {
+            $counter->newEnd();
+            if ($counter->isLeft()) {
                 $table []= '<tr>';
-                $hits = 0;
-                $xs = 0;
-                $golds = 0;
-                $doz = 0;
             }
-            $table []= $end['end_html'];
-            $doz += $end['end_total'];
-            $total += $end['end_total'];
-            $hits += $end['hits'];
-            $total_hits += $end['hits'];
-            $xs += $end['xs'];
-            $total_xs += $end['xs'];
-            $golds += $end['golds'];
-            $total_golds += $end['golds'];
-            if (!$end['even']) {
-                $table []= "<td class='scorecard-hits'>$hits</td>"
-                . "<td class='scorecard-xs'>$xs</td>"
-                . "<td class='scorecard-golds'>$golds</td>"
-                . "<td class='scorecard-doz'>$doz</td>"
-                . "<td class='scorecard-total'>$total</td></tr>";
+            foreach ($arrow_keys as $key) {
+                $arrow = $end_data[$key];
+                $counter->add($arrow);
+                $table []= '<td class="arrow ' . $this->arrowClass($arrow) . '">' . $arrow . '</td>';
+            }
+            $table []= '<td class="end-total">' . $counter->endScore() . '</td>';
+            if ($counter->isRight()) {
+                $table []= '<td class="scorecard-hits">' . $counter->dozHits() . '</td>';
+                $table []= '<td class="scorecard-xs">' . $counter->dozXs() . '</td>';
+                $table []= '<td class="scorecard-golds">' . $counter->dozGolds() . '</td>';
+                $table []= '<td class="scorecard-doz">' . $counter->dozScore() . '</td>';
+                $table []= '<td class="scorecard-total">' . $counter->totalScore() . '</td>';
+                $table []= "</tr>\n";
             }
         }
-        $table []= <<<EOHTML
-<tr>
-<td colspan="14" class='scorecard-totals-label'>Totals:</td>
-<td class='scorecard-total-hits'>$total_hits</td>
-<td class='scorecard-total-xs'>$total_xs</td>
-<td class='scorecard-total-golds'>$total_golds</td>
-<td></td>
-<td class='scorecard-total-total'>$total</td>
-</tr>
-</tbody>
-</table>
-</div>
 
-EOHTML;
-        return implode("\n", $table);
+        $table []= '<tr>';
+        $table []= '<td colspan="14" class="scorecard-totals-label">Totals:</td>';
+        $table []= '<td class="scorecard-total-hits">' . $counter->totalHits() . '</td>';
+        $table []= '<td class="scorecard-total-xs">' . $counter->totalXs() . '</td>';
+        $table []= '<td class="scorecard-total-golds">' . $counter->totalGolds() . '</td>';
+        $table []= '<td></td>';
+        $table []= '<td class="scorecard-total-total">' . $counter->totalScore() . '</td>';
+        $table []= "</tr>\n";
+        $table []= "</tbody>\n";
+        $table []= "</table>\n";
+
+        return implode('', $table);
     }
 
-    private function arrowValue($arrow) {
-        if ($arrow == 'X') {
-            return 10;
-        } elseif ($arrow == 'M') {
-            return 0;
-        } else {
-            return $arrow;
-        }
+    private function scorecardAsBarchart($counter, $scorecard) {
+        $round = GNAS_Round::getInstanceByName($scorecard['round']);
+        $scoring_name = $round->getScoringNameByBow($scorecard['bow']);
+        $charter = RHAC_Charter::getCharter($scoring_name);
+        return $charter->makeBarchart($counter);
     }
 
-    private function arrowHit($arrow) {
-        return $arrow == 'M' ? 0 : 1;
-    }
-
-    private function arrowX($arrow) {
-        return $arrow == 'X' ? 1 : 0;
-    }
-
-    private function arrowGold($arrow) {
-        return $arrow == 'X' ? 1 : $arrow == 10 ? 1 : $arrow == 9 ? 1 : 0;
+    public function getOneScorecardAsDiv($id, $round) {
+        $scorecard = $this->getMainScorecard($id);
+        $ends = $this->getScorecardEnds($id);
+        $counter = new RHACScorecardCounter();
+        return array("html" => '<div class="scorecard">'
+                             . $this->scorecardAsTable($ends, $counter)
+                             . '<div class="scorecard-graph">'
+                             . $this->scorecardAsBarchart($counter, $scorecard)
+                             . '</div>'
+                             . '</div>',
+                     "scorecard_data" => $ends);
     }
 
     private function arrowClass($arrow) {
@@ -237,6 +674,15 @@ EOHTML;
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
         return $rows;
+    }
+
+    public function makeRoundData($round) {
+        $roundData = array();
+        $roundData['recurve'] = $round->getScoringNameByBow('recurve');
+        $roundData['compound'] = $round->getScoringNameByBow('compound');
+        $roundData['barebow'] = $round->getScoringNameByBow('barebow');
+        $roundData['longbow'] = $round->getScoringNameByBow('longbow');
+        return $roundData;
     }
 }
 
@@ -290,8 +736,9 @@ function rhac_ajax_get_one_scorecard() {
     $id = $_POST['scorecard_id'];
     $round = $_POST['round'];
     $viewer = RHACScorecardViewer::getInstance();
-    echo $viewer->getOneScorecardAsTable($id, $round);
-    die();
+    header("Content-Type: application/json");
+    echo json_encode($viewer->getOneScorecardAsDiv($id, $round));
+    exit;
 }
 
 function rhac_scorecard_viewer() {
@@ -303,14 +750,17 @@ function rhac_scorecard_viewer() {
     }
     $archers = implode("\n", $archers);
     $rounds = array();
+    $roundObjects = array();
     $rounds []= "<option value='all'>all</option>";
     foreach ($viewer->getRounds() as $round) {
         $name = $round->getName();
+        $roundObjects[$name] = $viewer->makeRoundData($round);
         $rounds []= "<option value='$name'>$name</option>";
     }
     $rounds = implode("\n", $rounds);
+    $roundJSON = json_encode($roundObjects);
     return <<<EOHTML
-<div id="rhac-scorecard-viewer">
+<div id="rhac-scorecard-viewer" data-rounds='$roundJSON'>
 <h1>Score Cards</h1>
 <form action="">
 <label for="archer">Archer</label>
