@@ -734,10 +734,15 @@ add_action('wp_ajax_nopriv_rhac_get_one_scorecard', 'rhac_ajax_get_one_scorecard
 
 function rhac_ajax_get_one_scorecard() {
     $id = $_POST['scorecard_id'];
-    $round = $_POST['round'];
-    $viewer = RHACScorecardViewer::getInstance();
-    header("Content-Type: application/json");
-    echo json_encode($viewer->getOneScorecardAsDiv($id, $round));
+    $result = wp_cache_get($id, 'scorecard_id');
+    if (!$result) {
+        $round = $_POST['round'];
+        $viewer = RHACScorecardViewer::getInstance();
+        header("Content-Type: application/json");
+        $result = json_encode($viewer->getOneScorecardAsDiv($id, $round));
+        wp_cache_set($id, $result, 'scorecard_id');
+    }
+    echo $result;
     exit;
 }
 
