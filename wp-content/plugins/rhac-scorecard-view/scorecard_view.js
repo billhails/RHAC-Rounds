@@ -39,6 +39,16 @@ function RHAC_ScoreViewer() {
 
     function populateResults(results) {
         jQuery('#results').html(results);
+        if (jQuery('#first-scorecard').length && jQuery('#first-scorecard').data('best')) {
+            jQuery('#display-average').html(
+                '<dl><dt>Average score</dt><dd>' +
+                jQuery('#first-scorecard').data('average') +
+                '</dd><dt>Best score</dt><dd>' +
+                jQuery('#first-scorecard').data('best') +
+                '</dd></dl>');
+        } else {
+            jQuery('#display-average').html('');
+        }
         jQuery('button.reveal').click(doReveal);
     }
 
@@ -51,7 +61,8 @@ function RHAC_ScoreViewer() {
                 data: {
                     action: 'rhac_get_scorecards',
                     archer: jQuery('#archer').val(),
-                    round: jQuery('#round').val()
+                    round: jQuery('#round').val(),
+                    bow: jQuery('#bow').val()
                 }
             }
         ).done(populateResults);
