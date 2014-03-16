@@ -713,7 +713,7 @@ function rhac_ajax_get_scorecards() {
     $rows = array();
     foreach ($scorecards as $scorecard) {
         $rows []= '<tr class="scorecard-header">'
-                . "<td><button type='button' class='reveal' data-id='$scorecard[scorecard_id]' data-round='$scorecard[round]'/></td>"
+                . "<td><button type='button' class='reveal' id='reveal-$scorecard[scorecard_id]' data-id='$scorecard[scorecard_id]' data-round='$scorecard[round]'/></td>"
                 . "<td>$scorecard[date]</td>"
                 . "<td>$scorecard[archer]</td>"
                 . "<td>$scorecard[round]</td>"

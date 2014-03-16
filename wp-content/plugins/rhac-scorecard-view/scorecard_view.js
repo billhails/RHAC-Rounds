@@ -1,8 +1,22 @@
 function RHAC_ScoreViewer() {
 
+    function makeToggleVisibility(key) {
+        var scorecard = jQuery(key);
+        var visible = scorecard.css('display');
+        return function() {
+            if (scorecard.css('display') == 'none') {
+                scorecard.css('display', visible);
+            } else {
+                scorecard.css('display', 'none');
+            }
+        }
+    }
+
     function makePopulateScorecard(id) {
         return function(result) {
             jQuery('#scorecard-' + id).html(result.html);
+            jQuery('#reveal-' + id).unbind('click');
+            jQuery('#reveal-' + id).click(makeToggleVisibility('#scorecard-' + id));
         };
     }
 
