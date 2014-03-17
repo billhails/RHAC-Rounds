@@ -9,13 +9,14 @@ License: GPL
 */
 
 define('RHAC_SCORECARD_VIEW_DIR', plugin_dir_path(__FILE__));
-define('RHAC_PLUGINS_ROOT', preg_replace('/[^\/]+\/$/', '', RHAC_SCORECARD_VIEW_DIR));
+define('RHAC_PLUGINS_ROOT',
+       preg_replace('/[^\/]+\/$/', '', RHAC_SCORECARD_VIEW_DIR));
 define('RHAC_SCORECARD_DIR', RHAC_PLUGINS_ROOT . 'rhac-scorecards/');
 define('RHAC_ROUNDS_DIR', RHAC_PLUGINS_ROOT . 'gnas-archery-rounds/');
 
 include_once RHAC_ROUNDS_DIR . 'rounds.php';
 
-#######################################################################################
+###############################################################################
 
 class RHACScorecardCounter {
     private $doz_hits;
@@ -133,7 +134,7 @@ class RHACScorecardCounter {
     }
 }
 
-#######################################################################################
+###############################################################################
 
 abstract class RHAC_Charter {
 
@@ -169,12 +170,16 @@ abstract class RHAC_Charter {
         }
         unset($bar);
         $html = array();
-        $html []= '<table style="width: ' . 100 * $total_width / 11 . '%"><tr>';
+        $html []= '<table style="width: '
+                 . 100 * $total_width / 11
+                 . '%"><tr>';
         foreach ($array as $bar) {
             $height = 150 * $bar['height'] / $max_height;
             $width = 100 * $bar['width'] / $total_width;
             $html []= '<td class="bar" width="' . $width . '%">'
-                        . '<div class="bar ' . $bar['class'] . '" style="height: ' . $height . 'px;">'
+                        . '<div class="bar '
+                        . $bar['class']
+                        . '" style="height: ' . $height . 'px;">'
                         . '&nbsp;</div></td>';
         }
         $html []= "</tr></table>\n";
@@ -284,11 +289,13 @@ class RHAC_UnknownCharter extends RHAC_Charter {
     }
 
     public function makeBarchart($counter) {
-        return "<p class='error'>Unrecognised scoring: [" . $this->name . "]</p>";
+        return "<p class='error'>Unrecognised scoring: ["
+               . $this->name
+               . "]</p>";
     }
 }
 
-#######################################################################################
+###############################################################################
 
 class RHACScorecardViewer {
     private $pdo;
@@ -371,7 +378,8 @@ class RHACScorecardViewer {
 
     private function scorecardAsTable($ends, $counter) {
         $table = array();
-        $arrow_keys = array('arrow_1', 'arrow_2', 'arrow_3', 'arrow_4', 'arrow_5', 'arrow_6');
+        $arrow_keys = array('arrow_1', 'arrow_2', 'arrow_3',
+                            'arrow_4', 'arrow_5', 'arrow_6');
         $table []= "<table>\n";
         $table []= "<thead>\n";
         $table []= "<tr>";
@@ -393,26 +401,40 @@ class RHACScorecardViewer {
             foreach ($arrow_keys as $key) {
                 $arrow = $end_data[$key];
                 $counter->add($arrow);
-                $table []= '<td class="arrow ' . $this->arrowClass($arrow) . '">' . $arrow . '</td>';
+                $table []= '<td class="arrow '
+                         . $this->arrowClass($arrow) . '">'
+                         . $arrow . '</td>';
             }
-            $table []= '<td class="end-total">' . $counter->endScore() . '</td>';
+            $table []= '<td class="end-total">'
+                     . $counter->endScore()
+                     . '</td>';
             if ($counter->isRight()) {
-                $table []= '<td class="scorecard-hits">' . $counter->dozHits() . '</td>';
-                $table []= '<td class="scorecard-xs">' . $counter->dozXs() . '</td>';
-                $table []= '<td class="scorecard-golds">' . $counter->dozGolds() . '</td>';
-                $table []= '<td class="scorecard-doz">' . $counter->dozScore() . '</td>';
-                $table []= '<td class="scorecard-total">' . $counter->totalScore() . '</td>';
+                $table []= '<td class="scorecard-hits">'
+                         . $counter->dozHits() . '</td>';
+                $table []= '<td class="scorecard-xs">'
+                         . $counter->dozXs() . '</td>';
+                $table []= '<td class="scorecard-golds">'
+                         . $counter->dozGolds() . '</td>';
+                $table []= '<td class="scorecard-doz">'
+                         . $counter->dozScore() . '</td>';
+                $table []= '<td class="scorecard-total">'
+                         . $counter->totalScore() . '</td>';
                 $table []= "</tr>\n";
             }
         }
 
         $table []= '<tr>';
-        $table []= '<td colspan="14" class="scorecard-totals-label">Totals:</td>';
-        $table []= '<td class="scorecard-total-hits">' . $counter->totalHits() . '</td>';
-        $table []= '<td class="scorecard-total-xs">' . $counter->totalXs() . '</td>';
-        $table []= '<td class="scorecard-total-golds">' . $counter->totalGolds() . '</td>';
+        $table []= '<td colspan="14" class="scorecard-totals-label">'
+                 . 'Totals:</td>';
+        $table []= '<td class="scorecard-total-hits">'
+                 . $counter->totalHits() . '</td>';
+        $table []= '<td class="scorecard-total-xs">'
+                 . $counter->totalXs() . '</td>';
+        $table []= '<td class="scorecard-total-golds">'
+                 . $counter->totalGolds() . '</td>';
         $table []= '<td></td>';
-        $table []= '<td class="scorecard-total-total">' . $counter->totalScore() . '</td>';
+        $table []= '<td class="scorecard-total-total">'
+                 . $counter->totalScore() . '</td>';
         $table []= "</tr>\n";
         $table []= "</tbody>\n";
         $table []= "</table>\n";
@@ -427,14 +449,15 @@ class RHACScorecardViewer {
         return $charter->makeBarchart($counter);
     }
 
-    public function getOneScorecardAsDiv($id, $round) {
+    public function getOneScorecardAsDiv($id) {
         $scorecard = $this->getMainScorecard($id);
         $ends = $this->getScorecardEnds($id);
         $counter = new RHACScorecardCounter();
         return array("html" => '<div class="scorecard">'
                              . $this->scorecardAsTable($ends, $counter)
                              . '<div class="scorecard-graph">'
-                             . $this->scorecardAsBarchart($counter, $scorecard)
+                             . $this->scorecardAsBarchart($counter,
+                                                          $scorecard)
                              . '</div>'
                              . '</div>',
                      "scorecard_data" => $ends);
@@ -498,15 +521,17 @@ class RHACScorecardViewer {
     }
 }
 
-#######################################################################################
+###############################################################################
 
 wp_enqueue_script('rhac_scorecard_view',
                   plugins_url('scorecard_view.js', __FILE__),
                   array('jquery'));
 
-wp_localize_script('rhac_scorecard_view', 'rhacScorecardData', rhac_get_scorecard_data());
+wp_localize_script('rhac_scorecard_view', 'rhacScorecardData',
+                   rhac_get_scorecard_data());
 
-wp_enqueue_style('scorecard_view', plugins_url('scorecard_view.css', __FILE__));
+wp_enqueue_style('scorecard_view',
+                 plugins_url('scorecard_view.css', __FILE__));
 
 function rhac_get_scorecard_data() {
     $data = array();
@@ -525,7 +550,9 @@ function rhac_ajax_get_scorecards() {
     $scorecards = $viewer->getScorecards($archer, $round, $bow);
     list($average, $best) = rhac_average_score($scorecards);
     $rows = array();
-    $extra_attributes = " id='first-scorecard' data-average='$average' data-best='$best'";
+    $extra_attributes = " id='first-scorecard'"
+                      . " data-average='$average'"
+                      . " data-best='$best'";
     foreach ($scorecards as $scorecard) {
         $rows []= "<tr class='scorecard-header'$extra_attributes>"
                 . "<td><button type='button'"
@@ -542,7 +569,10 @@ function rhac_ajax_get_scorecards() {
                 . "<td>$scorecard[golds]</td>"
                 . "<td>$scorecard[score]</td>"
                 . '</tr>'
-                . "\n<tr><td colspan='9' id='scorecard-$scorecard[scorecard_id]'></td></tr>";
+                . "\n<tr>"
+                . "<td colspan='9'"
+                . " id='scorecard-$scorecard[scorecard_id]'>"
+                . "</td></tr>";
         $extra_attributes = "";
     }
     echo implode("\n", $rows);
@@ -582,16 +612,16 @@ function rhac_average_score($scorecards) {
 }
 
 add_action('wp_ajax_rhac_get_one_scorecard', 'rhac_ajax_get_one_scorecard');
-add_action('wp_ajax_nopriv_rhac_get_one_scorecard', 'rhac_ajax_get_one_scorecard');
+add_action('wp_ajax_nopriv_rhac_get_one_scorecard',
+           'rhac_ajax_get_one_scorecard');
 
 function rhac_ajax_get_one_scorecard() {
-    $id = $_POST['scorecard_id'];
+    header("Content-Type: application/json");
+    $id = $_GET['scorecard_id'];
     $result = wp_cache_get($id, 'scorecard_id');
     if (!$result) {
-        $round = $_POST['round'];
         $viewer = RHACScorecardViewer::getInstance();
-        header("Content-Type: application/json");
-        $result = json_encode($viewer->getOneScorecardAsDiv($id, $round));
+        $result = json_encode($viewer->getOneScorecardAsDiv($id));
         wp_cache_set($id, $result, 'scorecard_id');
     }
     echo $result;
@@ -619,7 +649,8 @@ function rhac_scorecard_viewer() {
         $roundNames []= $roundObject->getName();
     }
     $rounds = rhac_make_select('round', $roundNames);
-    $bows = rhac_make_select('bow', array('recurve', 'compound', 'longbow', 'barebow'));
+    $bows = rhac_make_select('bow', array('recurve', 'compound',
+                                          'longbow', 'barebow'));
     return <<<EOHTML
 <div id="rhac-scorecard-viewer" data-rounds='$roundJSON'>
 <h1>Score Cards</h1>
@@ -632,8 +663,15 @@ $bows
 </form>
 <table class="rhac-scorecard-viewer">
 <thead>
-<tr>
-<th></th><th>Date</th><th>Archer</th><th>Round</th><th>Bow</th><th>Hits</th><th>Xs</th><th>Golds</th><th>Score</th></tr>
+<tr><th></th>
+<th>Date</th>
+<th>Archer</th>
+<th>Round</th>
+<th>Bow</th>
+<th>Hits</th>
+<th>Xs</th>
+<th>Golds</th>
+<th>Score</th></tr>
 </thead>
 <tbody id="results">
 </tbody>
