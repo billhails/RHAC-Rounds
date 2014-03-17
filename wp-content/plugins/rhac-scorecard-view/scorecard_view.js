@@ -16,12 +16,41 @@ function RHAC_ScoreViewer() {
         }
     }
 
+    function makeCycleVisibility(key) {
+        var scorecard = jQuery(key);
+        var table = jQuery(key + " div.scorecard-table");
+        var graph = jQuery(key + " div.scorecard-graph");
+        var state = 'both';
+        return function() {
+            switch (state) {
+                case "both":
+                    state = 'graph';
+                    table.css('display', 'none');
+                    graph.css('display', 'block');
+                    break;
+                case "graph":
+                    state = 'table';
+                    table.css('display', 'block');
+                    graph.css('display', 'none');
+                    break;
+                case "table":
+                    state = 'both';
+                    table.css('display', 'block');
+                    graph.css('display', 'block');
+                    break;
+            }
+        }
+    }
+
     function makePopulateScorecard(id) {
         return function(result) {
             jQuery('#scorecard-' + id).html(result.html);
             jQuery('#reveal-' + id).unbind('click');
             jQuery('#reveal-' + id).click(
                 makeToggleVisibility('#scorecard-' + id));
+            jQuery('#scorecard-' + id).unbind('click');
+            jQuery('#scorecard-' + id).click(
+                makeCycleVisibility('#scorecard-' + id));
         };
     }
 
@@ -32,7 +61,7 @@ function RHAC_ScoreViewer() {
             {
                 url: rhacScorecardData.ajaxurl,
                 type: 'GET',
-                timeout: 20000,
+                timeout: 100000,
                 data: {
                     action: 'rhac_get_one_scorecard',
                     scorecard_id: id
@@ -69,7 +98,7 @@ function RHAC_ScoreViewer() {
             {
                 url: rhacScorecardData.ajaxurl,
                 type: 'POST',
-                timeout: 20000,
+                timeout: 100000,
                 data: {
                     action: 'rhac_get_scorecards',
                     archer: jQuery('#archer').val(),

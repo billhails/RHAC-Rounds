@@ -380,6 +380,7 @@ class RHACScorecardViewer {
         $table = array();
         $arrow_keys = array('arrow_1', 'arrow_2', 'arrow_3',
                             'arrow_4', 'arrow_5', 'arrow_6');
+        $table []= "<div class='scorecard-table'>\n";
         $table []= "<table>\n";
         $table []= "<thead>\n";
         $table []= "<tr>";
@@ -438,6 +439,7 @@ class RHACScorecardViewer {
         $table []= "</tr>\n";
         $table []= "</tbody>\n";
         $table []= "</table>\n";
+        $table []= "</div>\n";
 
         return implode('', $table);
     }
