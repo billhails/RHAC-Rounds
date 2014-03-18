@@ -4,36 +4,24 @@ function RHAC_ScoreViewer() {
         return "<p class='scorecard-wait'>please wait...</p>";
     }
 
-    function makeToggleVisibility(key) {
-        var scorecard = jQuery(key);
-        var visible = scorecard.css('display');
-        return function() {
-            if (scorecard.css('display') == 'none') {
-                scorecard.css('display', visible);
-            } else {
-                scorecard.css('display', 'none');
-            }
-        }
-    }
-
-    function makeCycleVisibility(key) {
-        var scorecard = jQuery(key);
-        var table = jQuery(key + " div.scorecard-table");
-        var graph = jQuery(key + " div.scorecard-graph");
+    // TODO animate
+    function makeCycleVisibility(scorecard) {
+        var table = scorecard.find("div.scorecard-table");
+        var graph = scorecard.find("div.scorecard-graph");
         var state = 'both';
         return function() {
             switch (state) {
-                case "both":
+                case 'both':
                     state = 'graph';
                     table.css('display', 'none');
                     graph.css('display', 'block');
                     break;
-                case "graph":
+                case 'graph':
                     state = 'table';
                     table.css('display', 'block');
                     graph.css('display', 'none');
                     break;
-                case "table":
+                case 'table':
                     state = 'both';
                     table.css('display', 'block');
                     graph.css('display', 'block');
@@ -44,19 +32,18 @@ function RHAC_ScoreViewer() {
 
     function makePopulateScorecard(id) {
         return function(result) {
-            jQuery('#scorecard-' + id).html(result.html);
-            jQuery('#reveal-' + id).unbind('click');
-            jQuery('#reveal-' + id).click(
-                makeToggleVisibility('#scorecard-' + id));
-            jQuery('#scorecard-' + id).unbind('click');
-            jQuery('#scorecard-' + id).click(
-                makeCycleVisibility('#scorecard-' + id));
+            scorecard = jQuery('#scorecard-' + id);
+            scorecard.html(result.html).slideDown('fast');
+            reveal = jQuery('#reveal-' + id);
+            scorecard.unbind('click');
+            reveal.unbind('click');
+            reveal.click(function() {scorecard.slideToggle()});
+            scorecard.click(makeCycleVisibility(scorecard);
         };
     }
 
     function doReveal() {
         id =  jQuery(this).data('id');
-        jQuery('#scorecard-' + id).html(pleaseWait());
         jQuery.ajax(
             {
                 url: rhacScorecardData.ajaxurl,
@@ -68,6 +55,7 @@ function RHAC_ScoreViewer() {
                 }
             }
         ).done(makePopulateScorecard(id));
+        jQuery('#scorecard-' + id).html(pleaseWait()).slideDown('slow');
     }
 
     function averageAndBest() {
@@ -84,20 +72,16 @@ function RHAC_ScoreViewer() {
     }
 
     function populateResults(results) {
-        // alert("DEBUG\ngot response with length " + String(results.length));
         jQuery('#results').html(results);
-        jQuery('#display-average').html(averageAndBest());
+        jQuery('#display-average').html(averageAndBest()).slideDown('slow');
         jQuery('button.reveal').click(doReveal);
     }
 
     function doSearch() {
-        jQuery('#results').html('<tr><td colspan="9">' +
-                                pleaseWait() +
-                                '</td></tr>');
         jQuery.ajax(
             {
                 url: rhacScorecardData.ajaxurl,
-                type: 'POST',
+                type: 'GET',
                 timeout: 100000,
                 data: {
                     action: 'rhac_get_scorecards',
@@ -107,6 +91,9 @@ function RHAC_ScoreViewer() {
                 }
             }
         ).done(populateResults);
+        jQuery('#results').html('<tr><td colspan="9">' +
+                                pleaseWait() +
+                                '</td></tr>').slideDown('slow');
     }
 
     function setUp() {

@@ -545,9 +545,9 @@ add_action('wp_ajax_rhac_get_scorecards', 'rhac_ajax_get_scorecards');
 add_action('wp_ajax_nopriv_rhac_get_scorecards', 'rhac_ajax_get_scorecards');
 
 function rhac_ajax_get_scorecards() {
-    $archer = $_POST['archer'];
-    $round = $_POST['round'];
-    $bow = $_POST['bow'];
+    $archer = $_GET['archer'];
+    $round = $_GET['round'];
+    $bow = $_GET['bow'];
     $viewer = RHACScorecardViewer::getInstance();
     $scorecards = $viewer->getScorecards($archer, $round, $bow);
     list($average, $best) = rhac_average_score($scorecards);
