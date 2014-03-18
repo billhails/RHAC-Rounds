@@ -84,7 +84,7 @@ div.scorecard td.scorecard-golds {
     background: #dddddd;
     text-align: center;
     padding: 0;
-    border 1px solid white;
+    border: 1px solid white;
 }
 
 div.scorecard td.scorecard-doz,

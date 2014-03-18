@@ -1,5 +1,11 @@
 function RHAC_ScoreViewer() {
 
+    function debug(msg) {
+        if (window.console && window.console.log) {
+            console.log(msg);
+        }
+    }
+
     function pleaseWait() {
         return "<p class='scorecard-wait'>please wait...</p>";
     }
@@ -13,32 +19,36 @@ function RHAC_ScoreViewer() {
             switch (state) {
                 case 'both':
                     state = 'graph';
-                    table.css('display', 'none');
-                    graph.css('display', 'block');
+                    table.hide(400);
                     break;
                 case 'graph':
                     state = 'table';
-                    table.css('display', 'block');
-                    graph.css('display', 'none');
+                    table.slideDown();
+                    graph.hide(400);
                     break;
                 case 'table':
                     state = 'both';
-                    table.css('display', 'block');
-                    graph.css('display', 'block');
+                    graph.slideDown();
                     break;
             }
         }
     }
 
+    function makeSlideToggle(scorecard) {
+        return function() {
+            scorecard.slideToggle();
+        }
+    }
+
     function makePopulateScorecard(id) {
+        scorecard = jQuery('#scorecard-' + id);
+        button = jQuery('#reveal-' + id);
         return function(result) {
-            scorecard = jQuery('#scorecard-' + id);
-            scorecard.html(result.html).slideDown('fast');
-            reveal = jQuery('#reveal-' + id);
+            scorecard.html(result.html);
             scorecard.unbind('click');
-            reveal.unbind('click');
-            reveal.click(function() {scorecard.slideToggle()});
-            scorecard.click(makeCycleVisibility(scorecard);
+            button.unbind('click');
+            button.click(makeSlideToggle(scorecard));
+            scorecard.click(makeCycleVisibility(scorecard));
         };
     }
 
@@ -55,7 +65,7 @@ function RHAC_ScoreViewer() {
                 }
             }
         ).done(makePopulateScorecard(id));
-        jQuery('#scorecard-' + id).html(pleaseWait()).slideDown('slow');
+        jQuery('#scorecard-' + id).css('display', 'none').html(pleaseWait()).slideDown(1000);
     }
 
     function averageAndBest() {
@@ -73,7 +83,7 @@ function RHAC_ScoreViewer() {
 
     function populateResults(results) {
         jQuery('#results').html(results);
-        jQuery('#display-average').html(averageAndBest()).slideDown('slow');
+        jQuery('#display-average').css('display', 'none').html(averageAndBest()).slideDown('slow');
         jQuery('button.reveal').click(doReveal);
     }
 
@@ -93,7 +103,7 @@ function RHAC_ScoreViewer() {
         ).done(populateResults);
         jQuery('#results').html('<tr><td colspan="9">' +
                                 pleaseWait() +
-                                '</td></tr>').slideDown('slow');
+                                '</td></tr>');
     }
 
     function setUp() {
