@@ -2,6 +2,11 @@ function RHAC_ScoreViewer() {
 
     "use strict";
 
+    var fast = 200,
+        medium = 400,
+        slow = 600,
+        verySlow = 1000;
+
     function debug(msg) {
         if (window.console && window.console.log) {
             console.log(msg);
@@ -16,20 +21,21 @@ function RHAC_ScoreViewer() {
         var table = scorecard.find("div.scorecard-table"),
             graph = scorecard.find("div.scorecard-graph"),
             state = 'both';
-        return function () {
+        return function (e) {
+            e.stopImmediatePropagation();
             switch (state) {
             case 'both':
                 state = 'graph';
-                table.slideUp(400);
+                table.slideUp(medium);
                 break;
             case 'graph':
                 state = 'table';
-                table.slideDown(400);
-                graph.slideUp(400);
+                table.slideDown(medium);
+                graph.slideUp(medium);
                 break;
             case 'table':
                 state = 'both';
-                graph.slideDown(400);
+                graph.slideDown(medium);
                 break;
             }
         };
@@ -43,8 +49,8 @@ function RHAC_ScoreViewer() {
             button.unbind('click');
             scorecard.hide();
             scorecard.html(result.html);
-            scorecard.show(400);
-            button.click(function () { scorecard.toggle(400); });
+            scorecard.show(slow);
+            button.click(function () { scorecard.toggle(slow); });
             scorecard.click(makeCycleVisibility(scorecard));
         };
     }
@@ -52,7 +58,7 @@ function RHAC_ScoreViewer() {
     function doReveal() {
         var id =  jQuery(this).data('id');
         jQuery('#scorecard-' + id).hide().html(pleaseWait());
-        jQuery('#scorecard-' + id).slideDown(400);
+        jQuery('#scorecard-' + id).slideDown(slow);
         jQuery.ajax(
             {
                 url: rhacScorecardData.ajaxurl,
