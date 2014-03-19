@@ -10,7 +10,6 @@ function RHAC_ScoreViewer() {
         return "<p class='scorecard-wait'>please wait...</p>";
     }
 
-    // TODO animate
     function makeCycleVisibility(scorecard) {
         var table = scorecard.find("div.scorecard-table");
         var graph = scorecard.find("div.scorecard-graph");
@@ -19,41 +18,39 @@ function RHAC_ScoreViewer() {
             switch (state) {
                 case 'both':
                     state = 'graph';
-                    table.hide(400);
+                    table.slideUp(400);
                     break;
                 case 'graph':
                     state = 'table';
-                    table.slideDown();
-                    graph.hide(400);
+                    table.slideDown(400);
+                    graph.slideUp(400);
                     break;
                 case 'table':
                     state = 'both';
-                    graph.slideDown();
+                    graph.slideDown(400);
                     break;
             }
         }
     }
 
-    function makeSlideToggle(scorecard) {
-        return function() {
-            scorecard.slideToggle();
-        }
-    }
-
     function makePopulateScorecard(id) {
-        scorecard = jQuery('#scorecard-' + id);
-        button = jQuery('#reveal-' + id);
+        var scorecard = jQuery('#scorecard-' + id);
+        var button = jQuery('#reveal-' + id);
         return function(result) {
-            scorecard.html(result.html);
             scorecard.unbind('click');
             button.unbind('click');
-            button.click(makeSlideToggle(scorecard));
+            scorecard.hide();
+            scorecard.html(result.html);
+            scorecard.show(400);
+            button.click(function () { scorecard.toggle(400) });
             scorecard.click(makeCycleVisibility(scorecard));
         };
     }
 
     function doReveal() {
-        id =  jQuery(this).data('id');
+        var id =  jQuery(this).data('id');
+        jQuery('#scorecard-' + id).hide().html(pleaseWait());
+        jQuery('#scorecard-' + id).slideDown(400);
         jQuery.ajax(
             {
                 url: rhacScorecardData.ajaxurl,
@@ -65,7 +62,6 @@ function RHAC_ScoreViewer() {
                 }
             }
         ).done(makePopulateScorecard(id));
-        jQuery('#scorecard-' + id).css('display', 'none').html(pleaseWait()).slideDown(1000);
     }
 
     function averageAndBest() {
@@ -88,6 +84,11 @@ function RHAC_ScoreViewer() {
     }
 
     function doSearch() {
+        jQuery('#display-average').slideUp();
+        jQuery('#display-average').html('');
+        jQuery('#results').html('<tr><td colspan="9">' +
+                                pleaseWait() +
+                                '</td></tr>');
         jQuery.ajax(
             {
                 url: rhacScorecardData.ajaxurl,
@@ -101,9 +102,6 @@ function RHAC_ScoreViewer() {
                 }
             }
         ).done(populateResults);
-        jQuery('#results').html('<tr><td colspan="9">' +
-                                pleaseWait() +
-                                '</td></tr>');
     }
 
     function setUp() {
