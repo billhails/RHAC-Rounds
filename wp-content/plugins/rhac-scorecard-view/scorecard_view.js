@@ -74,9 +74,8 @@ function RHAC_ScoreViewer() {
                    '</dd><dt>Best score</dt><dd>' +
                    jQuery('#first-scorecard').data('best') +
                    '</dd></dl>';
-        } else {
-            return '';
         }
+        return '';
     }
 
     function populateResults(results) {
