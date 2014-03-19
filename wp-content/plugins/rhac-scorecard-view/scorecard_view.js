@@ -1,5 +1,7 @@
 function RHAC_ScoreViewer() {
 
+    "use strict";
+
     function debug(msg) {
         if (window.console && window.console.log) {
             console.log(msg);
@@ -11,38 +13,38 @@ function RHAC_ScoreViewer() {
     }
 
     function makeCycleVisibility(scorecard) {
-        var table = scorecard.find("div.scorecard-table");
-        var graph = scorecard.find("div.scorecard-graph");
-        var state = 'both';
-        return function() {
+        var table = scorecard.find("div.scorecard-table"),
+            graph = scorecard.find("div.scorecard-graph"),
+            state = 'both';
+        return function () {
             switch (state) {
-                case 'both':
-                    state = 'graph';
-                    table.slideUp(400);
-                    break;
-                case 'graph':
-                    state = 'table';
-                    table.slideDown(400);
-                    graph.slideUp(400);
-                    break;
-                case 'table':
-                    state = 'both';
-                    graph.slideDown(400);
-                    break;
+            case 'both':
+                state = 'graph';
+                table.slideUp(400);
+                break;
+            case 'graph':
+                state = 'table';
+                table.slideDown(400);
+                graph.slideUp(400);
+                break;
+            case 'table':
+                state = 'both';
+                graph.slideDown(400);
+                break;
             }
-        }
+        };
     }
 
     function makePopulateScorecard(id) {
-        var scorecard = jQuery('#scorecard-' + id);
-        var button = jQuery('#reveal-' + id);
-        return function(result) {
+        var scorecard = jQuery('#scorecard-' + id),
+            button = jQuery('#reveal-' + id);
+        return function (result) {
             scorecard.unbind('click');
             button.unbind('click');
             scorecard.hide();
             scorecard.html(result.html);
             scorecard.show(400);
-            button.click(function () { scorecard.toggle(400) });
+            button.click(function () { scorecard.toggle(400); });
             scorecard.click(makeCycleVisibility(scorecard));
         };
     }
@@ -66,7 +68,7 @@ function RHAC_ScoreViewer() {
 
     function averageAndBest() {
         if (jQuery('#first-scorecard').length &&
-            jQuery('#first-scorecard').data('best')) {
+                jQuery('#first-scorecard').data('best')) {
             return '<dl><dt>Average score</dt><dd>' +
                    jQuery('#first-scorecard').data('average') +
                    '</dd><dt>Best score</dt><dd>' +
@@ -112,7 +114,7 @@ function RHAC_ScoreViewer() {
 }
 
 jQuery(
-    function() {
+    function () {
         if (jQuery('#rhac-scorecard-viewer')) {
             new RHAC_ScoreViewer();
         }
