@@ -569,7 +569,7 @@ function rhac_ajax_get_scorecards() {
                 . "<td>$scorecard[hits]</td>"
                 . "<td>$scorecard[xs]</td>"
                 . "<td>$scorecard[golds]</td>"
-                . "<td>$scorecard[score]</td>"
+                . "<td><b>$scorecard[score]</b></td>"
                 . '</tr>'
                 . "\n<tr>"
                 . "<td colspan='9'"
