@@ -7,6 +7,18 @@ function RHAC_ScoreViewer() {
         slow = 600,
         verySlow = 1000;
 
+    function averageAndBest() {
+        if (jQuery('#first-scorecard').length &&
+                jQuery('#first-scorecard').data('best')) {
+            return '<dl><dt>Average score</dt><dd>' +
+                   jQuery('#first-scorecard').data('average') +
+                   '</dd><dt>Best score</dt><dd>' +
+                   jQuery('#first-scorecard').data('best') +
+                   '</dd></dl>';
+        }
+        return '';
+    }
+
     function debug(msg) {
         if (window.console && window.console.log) {
             console.log(msg);
@@ -16,6 +28,7 @@ function RHAC_ScoreViewer() {
     function pleaseWait() {
         return "<p class='scorecard-wait'>please wait...</p>";
     }
+
 
     function makeCycleVisibility(scorecard) {
         var table = scorecard.find("div.scorecard-table"),
@@ -72,21 +85,9 @@ function RHAC_ScoreViewer() {
         ).done(makePopulateScorecard(id));
     }
 
-    function averageAndBest() {
-        if (jQuery('#first-scorecard').length &&
-                jQuery('#first-scorecard').data('best')) {
-            return '<dl><dt>Average score</dt><dd>' +
-                   jQuery('#first-scorecard').data('average') +
-                   '</dd><dt>Best score</dt><dd>' +
-                   jQuery('#first-scorecard').data('best') +
-                   '</dd></dl>';
-        }
-        return '';
-    }
-
     function populateResults(results) {
         jQuery('#results').html(results);
-        jQuery('#display-average').css('display', 'none').html(averageAndBest()).slideDown('slow');
+        jQuery('#display-average').hide().html(averageAndBest()).slideDown('slow');
         jQuery('button.reveal').click(doReveal);
     }
 
