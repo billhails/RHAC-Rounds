@@ -28,7 +28,7 @@ td.arrow-green {
     color: white;
 }
 
-div.arrow-gold {
+div.arrow-gold, div.arrow-ten, div.arrow-x {
     background-color: yellow;
 }
 
