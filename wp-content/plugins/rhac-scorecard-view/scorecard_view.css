@@ -28,8 +28,12 @@ td.arrow-green {
     color: white;
 }
 
-div.arrow-gold {
+div.arrow-gold, div.arrow-x, div.arrow-ten {
     background-color: yellow;
+}
+
+div.arrow-ten {
+    border-top: 1px solid white;
 }
 
 div.arrow-red {

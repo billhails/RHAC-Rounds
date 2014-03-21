@@ -19,20 +19,17 @@ include_once RHAC_ROUNDS_DIR . 'rounds.php';
 ###############################################################################
 
 class RHACScorecardCounter {
+
     private $doz_hits;
     private $doz_xs;
     private $doz_golds;
     private $doz_score;
-
     private $end_score;
-
     private $total_hits;
     private $total_xs;
     private $total_golds;
     private $total_score;
-
     private $spread;
-
     private $count;
 
     public function __construct() {
@@ -132,154 +129,293 @@ class RHACScorecardCounter {
     private function arrowGold($arrow) {
         return $arrow == 'X' ? 1 : $arrow == 10 ? 1 : $arrow == 9 ? 1 : 0;
     }
+
 }
 
 ###############################################################################
 
-abstract class RHAC_Charter {
+class RHAC_Bar {
 
-    public static function getCharter($scoring_name) {
+    private $arrow;
+    private $class;
+    private $height;
+    private $accumulator;
+
+    public function getHeightMultiplier() {
+        return 150;
+    }
+
+    protected function __construct($arrow, $class) {
+        $this->arrow = $arrow;
+        $this->class = $class;
+    }
+
+    public function getWidth() {
+        return 1;
+    }
+
+    public function getHeight() {
+        return $this->height;
+    }
+
+    public function getClass() {
+        return $this->class;
+    }
+
+    public function setAccumulator($accumulator) {
+        $this->accumulator = $accumulator;
+    }
+
+    public function acceptScore($counter) {
+        $this->height = $counter->getCount($this->arrow);
+        $this->accumulator->acceptHeight($this->height);
+        $this->accumulator->acceptWidth($this->getWidth());
+    }
+
+    public function asTD() {
+        $height = $this->getHeightMultiplier()
+                * $this->getHeight()
+                / $this->accumulator->getMaxHeight();
+        $width = 100
+               * $this->getWidth()
+               / $this->accumulator->getTotalWidth();
+        $class = $self->getClass();
+        return <<<EOTD
+<td class="bar" width="$width%">
+<div class="bar $class" style="height: ${height}px;">
+&nbsp;</div></td>
+EOTD;
+    }
+
+}
+
+class RHAC_Bar_InnerTen extends RHAC_Bar {
+
+    public function __construct() {
+    }
+
+    public function getWidth() {
+        return 0.5;
+    }
+
+    public function getClass() {
+        return 'arrow-gold';
+    }
+
+}
+
+class RHAC_Bar_WideNine extends RHAC_Bar_InnerTen {
+
+    public function getWidth() {
+        return 1.5;
+    }
+
+}
+
+class RHAC_Bar_XTen extends RHAC_Bar {
+
+    private $ten_height;
+    private $x_height;
+
+    public function __construct() {
+    }
+
+    public function getHeight() {
+        return $this->x_height + $this->ten_height;
+    }
+
+    public function acceptScore($counter) {
+        $this->ten_height = $counter->getCount('10');
+        $this->x_height = $counter->getCount('X');
+        $this->accumulator->acceptHeight($this->getHeight());
+        $this->accumulator->acceptWidth($this->getWidth());
+    }
+
+    public function asTD() {
+        $x_height = $this->getHeightMultiplier()
+                  * $this->x_height
+                  / $this->accumulator->getMaxHeight();
+        $ten_height = $this->getHeightMultiplier()
+                    * $this->ten_height
+                    / $this->accumulator->getMaxHeight();
+        $width = 100
+               * $this->getWidth()
+               / $this->accumulator->getTotalWidth();
+        return <<<EOTD
+<td class="bar" width="$width%">
+<div class="bar arrow-x" style="height: ${x_height}px;">&nbsp;</div>
+<div class="bar arrow-ten" style="height: ${ten_height}px;">&nbsp;</div>
+</td>
+EOTD;
+    }
+
+}
+
+class RHAC_Bar_Accumulator {
+    private $total_width = 0;
+    private $max_height = 1;
+
+    public function acceptHeight($height) {
+        if ($this->max_height < $height) {
+            $this->max_height = $height;
+        }
+    }
+
+    public function acceptWidth($width) {
+        $this->total_width += $width;
+    }
+
+    public function getMaxHeight() {
+        return $this->max_height;
+    }
+
+    public function getTotalWidth() {
+        return $this->total_width;
+    }
+
+}
+
+abstract class RHAC_BarchartBuilder {
+
+    public static function getBarchartBuilder($scoring_name) {
         switch ($scoring_name) {
             case "five zone":
-                return new RHAC_FiveZoneCharter();
+                return new RHAC_FiveZoneBarchartBuilder();
             case "ten zone":
-                return new RHAC_TenZoneCharter();
+                return new RHAC_TenZoneBarchartBuilder();
             case "metric inner ten":
-                return new RHAC_InnerTenZoneCharter();
+                return new RHAC_InnerTenZoneBarchartBuilder();
             case "vegas":
-                return new RHAC_VegasCharter();
+                return new RHAC_VegasBarchartBuilder();
             case "vegas inner ten":
-                return new RHAC_VegasInnerTenCharter();
+                return new RHAC_VegasInnerTenBarchartBuilder();
             case "worcester":
-                return new RHAC_WorcesterCharter();
+                return new RHAC_WorcesterBarchartBuilder();
             default:
-                return new RHAC_UnknownCharter($scoring_name);
+                return new RHAC_UnknownBarchartBuilder($scoring_name);
         }
     }
 
     public function makeBarchart($counter) {
-        $array = $this->makeArray();
-        $max_height = 1;
-        $total_width = 0;
-        foreach ($array as &$bar) {
-            $bar['height'] = $counter->getCount($bar['arrow']);
-            if ($max_height < $bar['height']) {
-                $max_height = $bar['height'];
-            }
-            $total_width += $bar['width'];
+        $accumulator = new RHAC_Bar_Accumulator();
+        $bars = $this->analyseBars($counter, $accumulator);
+        return  $this->buildXML($bars, $accumulator);
+    }
+
+    private function analyseBars($counter, $accumulator) {
+        $bars = $this->makeArray();
+        foreach ($bars as $bar) {
+            $bar->setAccumulator($accumulator);
+            $bar->acceptScore($counter);
         }
-        unset($bar);
+        return $bars;
+    }
+
+    protected function buildXML($bars, $accumulator) {
         $html = array();
         $html []= '<table style="width: '
-                 . 100 * $total_width / 11
-                 . '%"><tr>';
-        foreach ($array as $bar) {
-            $height = 150 * $bar['height'] / $max_height;
-            $width = 100 * $bar['width'] / $total_width;
-            $html []= '<td class="bar" width="' . $width . '%">'
-                        . '<div class="bar '
-                        . $bar['class']
-                        . '" style="height: ' . $height . 'px;">'
-                        . '&nbsp;</div></td>';
+                . 100 * $accumulator->getTotalWidth() / 11
+                . '%"><tr>';
+        foreach ($bars as $bar) {
+            $html []= $bar->asTD();
         }
         $html []= "</tr></table>\n";
         return implode('', $html);
     }
 
     protected abstract function makeArray();
+
 }
 
-class RHAC_FiveZoneCharter extends RHAC_Charter {
+class RHAC_FiveZoneBarchartBuilder extends RHAC_BarchartBuilder {
     protected function makeArray() {
         return array(
-            array( "arrow" => '9', "width" => 1, "class" => 'arrow-gold'),
-            array( 'arrow' => '7', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '5', 'width' => 1, 'class' => 'arrow-blue'),
-            array( 'arrow' => '3', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '1', 'width' => 1, 'class' => 'arrow-white'),
-            array( 'arrow' => 'M', 'width' => 1, 'class' => 'arrow-miss')
+            new RHAC_Bar('9', 'arrow-gold'),
+            new RHAC_Bar('7', 'arrow-red'),
+            new RHAC_Bar('5', 'arrow-blue'),
+            new RHAC_Bar('3', 'arrow-black'),
+            new RHAC_Bar('1', 'arrow-white'),
+            new RHAC_Bar('M', 'arrow-miss')
         );
     }
 }
 
-class RHAC_TenZoneCharter extends RHAC_Charter {
+class RHAC_TenZoneBarchartBuilder extends RHAC_BarchartBuilder {
     protected function makeArray() {
         return array(
-            array( 'arrow' => 'X', 'width' => 0.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '10', 'width' => 0.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '9', 'width' => 1, 'class' => 'arrow-gold'),
-            array( 'arrow' => '8', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '7', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '6', 'width' => 1, 'class' => 'arrow-blue'),
-            array( 'arrow' => '5', 'width' => 1, 'class' => 'arrow-blue'),
-            array( 'arrow' => '4', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '3', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '2', 'width' => 1, 'class' => 'arrow-white'),
-            array( 'arrow' => '1', 'width' => 1, 'class' => 'arrow-white'),
-            array( 'arrow' => 'M', 'width' => 1, 'class' => 'arrow-miss'),
+            new RHAC_Bar_XTen(),
+            new RHAC_Bar('9', 'arrow-gold'),
+            new RHAC_Bar('8', 'arrow-red'),
+            new RHAC_Bar('7', 'arrow-red'),
+            new RHAC_Bar('6', 'arrow-blue'),
+            new RHAC_Bar('5', 'arrow-blue'),
+            new RHAC_Bar('4', 'arrow-black'),
+            new RHAC_Bar('3', 'arrow-black'),
+            new RHAC_Bar('2', 'arrow-white'),
+            new RHAC_Bar('1', 'arrow-white'),
+            new RHAC_Bar('M', 'arrow-miss')
         );
     }
 }
 
-class RHAC_InnerTenZoneCharter extends RHAC_Charter {
+class RHAC_InnerTenZoneBarchartBuilder extends RHAC_BarchartBuilder {
     protected function makeArray() {
         return array(
-            array( 'arrow' => '10', 'width' => 0.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '9', 'width' => 1.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '8', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '7', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '6', 'width' => 1, 'class' => 'arrow-blue'),
-            array( 'arrow' => '5', 'width' => 1, 'class' => 'arrow-blue'),
-            array( 'arrow' => '4', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '3', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '2', 'width' => 1, 'class' => 'arrow-white'),
-            array( 'arrow' => '1', 'width' => 1, 'class' => 'arrow-white'),
-            array( 'arrow' => 'M', 'width' => 1, 'class' => 'arrow-miss'),
+            new RHAC_Bar_InnerTen(),
+            new RHAC_Bar_WideNine(),
+            new RHAC_Bar('8', 'arrow-red'),
+            new RHAC_Bar('7', 'arrow-red'),
+            new RHAC_Bar('6', 'arrow-blue'),
+            new RHAC_Bar('5', 'arrow-blue'),
+            new RHAC_Bar('4', 'arrow-black'),
+            new RHAC_Bar('3', 'arrow-black'),
+            new RHAC_Bar('2', 'arrow-white'),
+            new RHAC_Bar('1', 'arrow-white'),
+            new RHAC_Bar('M', 'arrow-miss')
         );
     }
 }
 
-class RHAC_VegasCharter extends RHAC_Charter {
+class RHAC_VegasBarchartBuilder extends RHAC_BarchartBuilder {
     protected function makeArray() {
         return array(
-            array( 'arrow' => 'X', 'width' => 0.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '10', 'width' => 0.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '9', 'width' => 1, 'class' => 'arrow-gold'),
-            array( 'arrow' => '8', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '7', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '6', 'width' => 1, 'class' => 'arrow-blue'),
-            array( 'arrow' => 'M', 'width' => 1, 'class' => 'arrow-miss'),
+            new RHAC_Bar_XTen(),
+            new RHAC_Bar('9', 'arrow-gold'),
+            new RHAC_Bar('8', 'arrow-red'),
+            new RHAC_Bar('7', 'arrow-red'),
+            new RHAC_Bar('6', 'arrow-blue'),
+            new RHAC_Bar('M', 'arrow-miss')
         );
     }
 }
 
-class RHAC_VegasInnerTenCharter extends RHAC_Charter {
+class RHAC_VegasInnerTenBarchartBuilder extends RHAC_BarchartBuilder {
     protected function makeArray() {
         return array(
-            array( 'arrow' => '10', 'width' => 0.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '9', 'width' => 1.5, 'class' => 'arrow-gold'),
-            array( 'arrow' => '8', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '7', 'width' => 1, 'class' => 'arrow-red'),
-            array( 'arrow' => '6', 'width' => 1, 'class' => 'arrow-blue'),
-            array( 'arrow' => 'M', 'width' => 1, 'class' => 'arrow-miss'),
+            new RHAC_Bar_InnerTen(),
+            new RHAC_Bar_WideNine(),
+            new RHAC_Bar('8', 'arrow-red'),
+            new RHAC_Bar('7', 'arrow-red'),
+            new RHAC_Bar('6', 'arrow-blue'),
+            new RHAC_Bar('M', 'arrow-miss')
         );
     }
 }
 
-class RHAC_WorcesterCharter extends RHAC_Charter {
+class RHAC_WorcesterBarchartBuilder extends RHAC_BarchartBuilder {
     protected function makeArray() {
         return array(
-            array( 'arrow' => '5', 'width' => 1, 'class' => 'arrow-white'),
-            array( 'arrow' => '4', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '3', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '2', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => '1', 'width' => 1, 'class' => 'arrow-black'),
-            array( 'arrow' => 'M', 'width' => 1, 'class' => 'arrow-miss'),
+            new RHAC_Bar('5', 'arrow-white'),
+            new RHAC_Bar('4', 'arrow-black'),
+            new RHAC_Bar('3', 'arrow-black'),
+            new RHAC_Bar('2', 'arrow-black'),
+            new RHAC_Bar('1', 'arrow-black'),
+            new RHAC_Bar('M', 'arrow-miss')
         );
     }
 }
 
-class RHAC_UnknownCharter extends RHAC_Charter {
+class RHAC_UnknownBarchartBuilder extends RHAC_BarchartBuilder {
     private $name;
 
     protected function makeArray() {}
@@ -447,7 +583,7 @@ class RHACScorecardViewer {
     private function scorecardAsBarchart($counter, $scorecard) {
         $round = GNAS_Round::getInstanceByName($scorecard['round']);
         $scoring_name = $round->getScoringNameByBow($scorecard['bow']);
-        $charter = RHAC_Charter::getCharter($scoring_name);
+        $charter = RHAC_BarchartBuilder::getBarchartBuilder($scoring_name);
         return $charter->makeBarchart($counter);
     }
 
