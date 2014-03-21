@@ -1,4 +1,3 @@
 Replace bland search and reveal buttons with nice (blue) icons
-Overlay X's and 10s in one bar with a 1px divider rather than separate bars.
 Click anywhere on result to fetch/hide/reveal the scorecard.
 Make the scorecards responsive - either hide innesential data or display them mirrored around y=-x
