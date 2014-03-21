@@ -139,13 +139,13 @@ class RHAC_Bar {
     private $arrow;
     private $class;
     private $height;
-    private $accumulator;
+    protected $accumulator;
 
     public function getHeightMultiplier() {
         return 150;
     }
 
-    protected function __construct($arrow, $class) {
+    public function __construct($arrow, $class) {
         $this->arrow = $arrow;
         $this->class = $class;
     }
@@ -179,7 +179,7 @@ class RHAC_Bar {
         $width = 100
                * $this->getWidth()
                / $this->accumulator->getTotalWidth();
-        $class = $self->getClass();
+        $class = $this->getClass();
         return <<<EOTD
 <td class="bar" width="$width%">
 <div class="bar $class" style="height: ${height}px;">
@@ -192,19 +192,20 @@ EOTD;
 class RHAC_Bar_InnerTen extends RHAC_Bar {
 
     public function __construct() {
+        parent::__construct("10", "arrow-gold");
     }
 
     public function getWidth() {
         return 0.5;
     }
 
-    public function getClass() {
-        return 'arrow-gold';
-    }
-
 }
 
-class RHAC_Bar_WideNine extends RHAC_Bar_InnerTen {
+class RHAC_Bar_WideNine extends RHAC_Bar {
+
+    public function __construct() {
+        parent::__construct("9", "arrow-gold");
+    }
 
     public function getWidth() {
         return 1.5;
@@ -238,13 +239,19 @@ class RHAC_Bar_XTen extends RHAC_Bar {
         $ten_height = $this->getHeightMultiplier()
                     * $this->ten_height
                     / $this->accumulator->getMaxHeight();
+        $ten_border_top = '';
+        if ($ten_height > 1 && $x_height > 1) {
+            $ten_height--;
+            $x_height--;
+            $ten_border_top = ' border-top: 2px solid white;';
+        }
         $width = 100
                * $this->getWidth()
                / $this->accumulator->getTotalWidth();
         return <<<EOTD
 <td class="bar" width="$width%">
 <div class="bar arrow-x" style="height: ${x_height}px;">&nbsp;</div>
-<div class="bar arrow-ten" style="height: ${ten_height}px;">&nbsp;</div>
+<div class="bar arrow-ten" style="height: ${ten_height}px;$ten_border_top">&nbsp;</div>
 </td>
 EOTD;
     }
@@ -299,7 +306,7 @@ abstract class RHAC_BarchartBuilder {
     public function makeBarchart($counter) {
         $accumulator = new RHAC_Bar_Accumulator();
         $bars = $this->analyseBars($counter, $accumulator);
-        return  $this->buildXML($bars, $accumulator);
+        return  $this->buildHTML($bars, $accumulator);
     }
 
     private function analyseBars($counter, $accumulator) {
@@ -311,7 +318,7 @@ abstract class RHAC_BarchartBuilder {
         return $bars;
     }
 
-    protected function buildXML($bars, $accumulator) {
+    protected function buildHTML($bars, $accumulator) {
         $html = array();
         $html []= '<table style="width: '
                 . 100 * $accumulator->getTotalWidth() / 11
