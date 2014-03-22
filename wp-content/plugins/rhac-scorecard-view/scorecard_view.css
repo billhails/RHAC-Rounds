@@ -11,6 +11,9 @@
     div.scorecard th.scorecard-doz,
     div.scorecard td.scorecard-doz,
     div.scorecard td.scorecard-total-doz,
+    div.scorecard th.scorecard-end,
+    div.scorecard td.end-total,
+    div.scorecard td.scorecard-inessential,
     table.rhac-scorecard-viewer th.inessential,
     table.rhac-scorecard-viewer td.inessential
     {

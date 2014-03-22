@@ -570,7 +570,9 @@ class RHACScorecardViewer {
         }
 
         $table []= '<tr>';
-        $table []= str_repeat('<td></td>', 14);
+        $table []= '<td class="scorecard-inessential"></td>';
+        $table []= '<td class="scorecard-inessential"></td>';
+        $table []= '<td colspan="12" class="scorecard-totals-label">Totals:</td>';
         $table []= '<td class="scorecard-total-hits">'
                  . $counter->totalHits() . '</td>';
         $table []= '<td class="scorecard-total-xs">'
