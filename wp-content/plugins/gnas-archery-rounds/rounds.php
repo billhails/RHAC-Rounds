@@ -1454,15 +1454,31 @@ abstract class GNAS_AllRounds {
         return $text;
     }
 
-    public static function asData() {
+    public static function asData($nested=false) {
         $rounds = new GNAS_OutdoorImperialRounds();
-        $data = $rounds->getAllRounds();
+        if ($nested) {
+            $data = array("Outdoor Imperial" => $rounds->getAllRounds());
+        } else {
+            $data = $rounds->getAllRounds();
+        }
         $rounds = new GNAS_OutdoorMetricRounds();
-        $data = array_merge($data, $rounds->getAllRounds());
+        if ($nested) {
+            $data['Outdoor Metric'] = $rounds->getAllRounds();
+        } else {
+            $data = array_merge($data, $rounds->getAllRounds());
+        }
         $rounds = new GNAS_IndoorImperialRounds();
-        $data = array_merge($data, $rounds->getAllRounds());
+        if ($nested) {
+            $data['Indoor Imperial'] = $rounds->getAllRounds();
+        } else {
+            $data = array_merge($data, $rounds->getAllRounds());
+        }
         $rounds = new GNAS_IndoorMetricRounds();
-        $data = array_merge($data, $rounds->getAllRounds());
+        if ($nested) {
+            $data['Indoor Metric'] = $rounds->getAllRounds();
+        } else {
+            $data = array_merge($data, $rounds->getAllRounds());
+        }
         return $data;
     }
 
@@ -2184,8 +2200,8 @@ class GNAS_Page {
     /**
      * used by other plugins
      */
-    public static function roundData() {
-        return GNAS_AllRounds::asData();
+    public static function roundData($nested=false) {
+        return GNAS_AllRounds::asData($nested);
     }
 
     public static function roundFinder() {

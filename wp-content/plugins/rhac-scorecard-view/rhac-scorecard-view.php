@@ -475,9 +475,9 @@ class RHACScorecardViewer {
         return $this->archers;
     }
 
-    public function getRounds() {
+    public function getRounds($nested = false) {
         if (!isset($this->rounds)) {
-            $this->rounds = GNAS_Page::roundData();
+            $this->rounds = GNAS_Page::roundData($nested);
         }
         return $this->rounds;
     }
@@ -775,15 +775,25 @@ function rhac_ajax_get_one_scorecard() {
     exit;
 }
 
-function rhac_make_select($name, $array) {
+function rhac_make_select($name, $array, $nested=false) {
     $select = array();
     $label = ucfirst($name);
     $select []= "<span style='display: inline-block;'>";
     $select []= "<label for='$name'>$label</label>";
     $select []= "<select name='$name' id='$name'>";
     $select []= "<option value='all'>all</option>";
-    foreach ($array as $option) {
-        $select []= "<option value='$option'>$option</option>";
+    if ($nested) {
+        foreach ($array as $roundGroup => $names) {
+            $select []= "<optgroup label='$roundGroup'>";
+            foreach ($names as $option) {
+                $select []= "<option value='$option'>$option</option>";
+            }
+            $select []= "</optgroup>";
+        }
+    } else {
+        foreach ($array as $option) {
+            $select []= "<option value='$option'>$option</option>";
+        }
     }
     $select []= "</select>";
     $select []= "</span>";
@@ -793,11 +803,15 @@ function rhac_make_select($name, $array) {
 function rhac_scorecard_viewer() {
     $viewer = RHACScorecardViewer::getInstance();
     $archers = rhac_make_select('archer', $viewer->getArchers());
-    $roundNames = array();
-    foreach ($viewer->getRounds() as $roundObject) {
-        $roundNames []= $roundObject->getName();
+    $roundGroups = array();
+    foreach ($viewer->getRounds(true) as $groupName => $roundObjects) {
+        $roundNames = array();
+        foreach ($roundObjects as $roundObject) {
+            $roundNames []= $roundObject->getName();
+        }
+        $roundGroups[$groupName] = $roundNames;
     }
-    $rounds = rhac_make_select('round', $roundNames);
+    $rounds = rhac_make_select('round', $roundGroups, true);
     $bows = rhac_make_select('bow', array('recurve', 'compound',
                                           'longbow', 'barebow'));
     return <<<EOHTML
