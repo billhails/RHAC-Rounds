@@ -700,19 +700,20 @@ function rhac_ajax_get_scorecards() {
                       . " data-average='$average'"
                       . " data-best='$best'";
     foreach ($scorecards as $scorecard) {
+        $date = preg_replace('/\//', ' ', $scorecard['date']);
         $rows []= "<tr class='scorecard-header'$extra_attributes>"
                 . "<td><button type='button'"
                 . " class='reveal'"
                 . " id='reveal-$scorecard[scorecard_id]'"
                 . " data-id='$scorecard[scorecard_id]'"
                 . " data-round='$scorecard[round]'/></td>"
-                . "<td>$scorecard[date]</td>"
+                . "<td>$date</td>"
                 . "<td>$scorecard[archer]</td>"
                 . "<td>$scorecard[round]</td>"
                 . "<td>$scorecard[bow]</td>"
-                . "<td>$scorecard[hits]</td>"
-                . "<td>$scorecard[xs]</td>"
-                . "<td>$scorecard[golds]</td>"
+                . "<td class='inessential'>$scorecard[hits]</td>"
+                . "<td class='inessential'>$scorecard[xs]</td>"
+                . "<td class='inessential'>$scorecard[golds]</td>"
                 . "<td><b>$scorecard[score]</b></td>"
                 . '</tr>'
                 . "\n<tr>"
@@ -777,6 +778,7 @@ function rhac_ajax_get_one_scorecard() {
 function rhac_make_select($name, $array) {
     $select = array();
     $label = ucfirst($name);
+    $select []= "<span style='display: inline-block;'>";
     $select []= "<label for='$name'>$label</label>";
     $select []= "<select name='$name' id='$name'>";
     $select []= "<option value='all'>all</option>";
@@ -784,6 +786,7 @@ function rhac_make_select($name, $array) {
         $select []= "<option value='$option'>$option</option>";
     }
     $select []= "</select>";
+    $select []= "</span>";
     return implode("\n", $select);
 }
 
@@ -814,9 +817,9 @@ $bows
 <th>Archer</th>
 <th>Round</th>
 <th>Bow</th>
-<th>Hits</th>
-<th>Xs</th>
-<th>Golds</th>
+<th class="inessential">Hits</th>
+<th class="inessential">Xs</th>
+<th class="inessential">Golds</th>
 <th>Score</th></tr>
 </thead>
 <tbody id="results">
