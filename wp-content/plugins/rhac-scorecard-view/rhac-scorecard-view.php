@@ -529,11 +529,13 @@ class RHACScorecardViewer {
         $table []= "<tr>";
         for ($i = 0; $i < 2; ++$i) {
             foreach (array(1, 2, 3, 4, 5, 6, 'END') as $th) {
-                $table []= "<th>$th</th>";
+                $th_class = "scorecard-" . strtolower($th);
+                $table []= "<th class='$th_class'>$th</th>";
             }
         }
         foreach (array('HITS', 'XS', 'GOLDS', 'DOZ', 'TOT') as $th) {
-            $table []= "<th>$th</th>";
+            $th_class = "scorecard-" . strtolower($th);
+            $table []= "<th class='$th_class'>$th</th>";
         }
         $table []= "</tr>\n</thead>\n<tbody>";
 
@@ -568,15 +570,14 @@ class RHACScorecardViewer {
         }
 
         $table []= '<tr>';
-        $table []= '<td colspan="14" class="scorecard-totals-label">'
-                 . 'Totals:</td>';
+        $table []= str_repeat('<td></td>', 14);
         $table []= '<td class="scorecard-total-hits">'
                  . $counter->totalHits() . '</td>';
         $table []= '<td class="scorecard-total-xs">'
                  . $counter->totalXs() . '</td>';
         $table []= '<td class="scorecard-total-golds">'
                  . $counter->totalGolds() . '</td>';
-        $table []= '<td></td>';
+        $table []= '<td class="scorecard-total-doz"></td>';
         $table []= '<td class="scorecard-total-total">'
                  . $counter->totalScore() . '</td>';
         $table []= "</tr>\n";
