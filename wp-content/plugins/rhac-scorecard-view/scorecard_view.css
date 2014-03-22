@@ -66,6 +66,7 @@ div.scorecard {
     border: 2px solid black;
     border-radius: 4px;
     padding: 4px;
+    background-color: white;
 }
 
 div.scorecard th {
