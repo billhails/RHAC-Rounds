@@ -671,15 +671,26 @@ class RHACScorecardViewer {
 
 ###############################################################################
 
-wp_enqueue_script('rhac_scorecard_view',
-                  plugins_url('scorecard_view.js', __FILE__),
-                  array('jquery'));
+function rhac_load_deps() {
+    global $wp_scripts;
+ 
+    wp_enqueue_script('rhac_scorecard_view',
+                      plugins_url('scorecard_view.js', __FILE__),
+                      array('jquery-ui-autocomplete', 'jquery'));
 
-wp_localize_script('rhac_scorecard_view', 'rhacScorecardData',
-                   rhac_get_scorecard_data());
-
-wp_enqueue_style('scorecard_view',
-                 plugins_url('scorecard_view.css', __FILE__));
+    wp_enqueue_style('scorecard_view',
+                     plugins_url('scorecard_view.css', __FILE__));
+ 
+    $ui = $wp_scripts->query('jquery-ui-core');
+ 
+    $protocol = is_ssl() ? 'https' : 'http';
+    $url = "$protocol://ajax.googleapis.com/ajax/libs/jqueryui/{$ui->ver}/themes/redmond/jquery-ui.min.css";
+    wp_enqueue_style('jquery-ui-redmond', $url, false, null);
+    wp_localize_script('rhac_scorecard_view', 'rhacScorecardData',
+                       rhac_get_scorecard_data());
+}
+ 
+add_action('init', 'rhac_load_deps');
 
 function rhac_get_scorecard_data() {
     $data = array();
