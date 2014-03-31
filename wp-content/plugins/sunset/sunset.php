@@ -62,13 +62,17 @@ class SunSetWidget extends WP_Widget {
 
     function widget($args, $instance) {
         extract($args, EXTR_SKIP);
-        $title = empty($instance['title']) ? ' ' : apply_filters('widget_title', $instance['title']);
+        date_default_timezone_set(get_option('timezone_string'));
+        $title = empty($instance['title']) ? '' : apply_filters('widget_title', $instance['title']);
         $lat = $instance['lat'];
         $lon = $instance['lon'];
         echo $before_widget;
 
-        if (!empty($title))
+        if (!empty($title)) {
+            $title .= ' ';
+            $title .= date("l jS F Y");
             echo $before_title . $title . $after_title;  
+        }
 
         $this->sunset_display( $lat, $lon );
 
@@ -77,7 +81,6 @@ class SunSetWidget extends WP_Widget {
 
 // --- Fetches and displayes the sunrise and sunset times ---
     function sunset_display( $lat, $lon) {
-        date_default_timezone_set(get_option('timezone_string'));
         $sunset = $this->sunset($lat, $long, 90.8);
         $lastlight = $this->sunset($lat, $long, 96.0);
 
