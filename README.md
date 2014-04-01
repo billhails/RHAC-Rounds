@@ -31,12 +31,8 @@ round names like <q>Metric</q>, <q>Short Metric</q> and <q>Short
 Metric II</q> tended to confuse the older version.
 
 The rhac-scorecards plugin in <tt>wp-content/plugins/rhac-scorecards</tt>
-is currently a Work In Progress.  The intention is to provide an
-admin interface where scorecards can be entered and edited, and
-final scores reviewed for entry into other software like Golden
-Records, at the same time storing the scorecards and allowing members
-to view their own scorecards as well as providing summaries in chart
-form (bar and/or pie charts) based on round and/or distance.
+allows the entry of users score cards, which are then viewable with the
+rhac-scorecard-view plugin <tt>wp-content/plugins/rhac-scorecard-view</tt>.
 
 The sunset plugin is just a utility that displays the sunset and last light
 for a configured latitude and longditude. It's useful for our club
@@ -46,13 +42,15 @@ how much daylight we have left.
 The <tt>wp-content/themes/</tt> is just a backup of the modified
 themes our website uses.
 
-To Do
------
+TODO
+====
 
-* Move all the databases out of SQLite and in to the WordPress MySQL database.
-* Unify the user list in the scoresheets with the WordPress user list.
-* Extend user metadata to include DoB and current classification.
-* Figure out WordPress's REST support and use that with jQuery.
-  > need to use OAuth or similar if the api is public.
-* Present read-only version of a user"s scorecards and other performance data
-  to logged in users.
+note to self: We can't use unoficcial rounds for classifications. We *can* use them
+for handicaps, provided they're properly described.
+
+* Generate handicap tables to be able to look up a handicap for a particular score.
+* Keep a separate table of club records, and views on it.
+* Keep a separate table of handicap improvements, and views on it.
+* Keep a separate table of Classifications, and views on it.
+* Re-build all the above new tables on demand.
+* Add an interface for defining new rounds.
