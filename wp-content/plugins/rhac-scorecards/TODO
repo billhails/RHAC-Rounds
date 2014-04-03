@@ -1,46 +1,54 @@
-Delete.
-
-Backup/restore. - sort of done
-
 Members pages for viewing scorecards.
     Admins can see all scorecards (admin page).
-    Members can only see their own scorecards.
+    Members can only see their own scorecards (not done).
     could present:
         1. Individual scorecard.
         2. Bar charts.
             a. By round.
             b. By distance + face.
             c. By date.
-        3. Trigonometric calculations.
-            estimates of scores (linear interpolation).
-            actual scores vs. estimates (performance).
+        3. Handicap and Classification (for the round).
 
 Scores distinct from scorecards.
     Maybe foreign key allowing null referencing scorecard id.
     Then we can scrape the golden records html once.
-    "Your scores for this round"
-        inline with link to scorecard where available.
-    "Club records for this round".
 
-Should move all data from sqlite to the WP MySQL dabase.
+Be able to show the following (indoor and outdoor combined):
+    * All club records for this round/category/class.
+    * Current club records for this round/category/class.
+    * Historical club records for this archer.
+        * date achieved and previous record.
+        * date lost and new record.
+    * Current club records for this archer.
+    * Historical club records (full report).
+    * Current club records (summary).
 
-Rounds selector needs submenus for real families.
+Be able to show the following (indoor and outdoor are separate):
+    * Handicap/classification history (per archer/bow).
+        * includes season-end re-assessment.
+    * Current handicap/classification (per archer/bow).
+    * Current handicaps/classifications (all archers).
+    * link to qualifying scores/scorecards.
 
-Extend rounds to cover indoor rounds.
+Printable reports must not be forgotten.
 
-Extend rounds to allow arbitrary unofficial classifications.
+"Round Picker" widget?
 
-AJAX/REST API
-    GET scorecard/$id
-    POST scorecard
-    PUT scorecard/$id
-    GET scorecard?
-    DELETE scorecard/$id
+Selectors For Club Records
+    * Archer or all.
+        * Show context (if single archer).
+    * Current or all.
+    * Round or all.
+    * Bow or all.
+    * Category or all.
 
-CSS for rounds tables, try:
+Colour code club records as current or lost.
 
-table {
-  width: 100%;
-  overflow-y: scroll;
-}
- 
+Admin has single "Generate Tables" button that rebuilds handicap,
+classification and records tables, including doing all year-end
+re-assessments. The actual reports are then generated on the fly,
+and dataTables or similar JS filters them for viewing.
+
+User controlled "categorise by" option on each column, with category
+order, plus "sort by" with sort order, "limit to" individual
+vales and "hide/reveal" columns should be enough to do all required displays.
