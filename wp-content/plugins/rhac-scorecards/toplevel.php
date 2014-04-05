@@ -521,10 +521,10 @@ class RHAC_Scorecards {
 
     private function rebuildRoundHandicaps() {
         $this->pdo->beginTransaction();
-        $self->deleteAllRoundHandicaps();
+        $this->deleteAllRoundHandicaps();
         foreach (GNAS_Page::roundData() as $round) {
-            $self->populateSingleRoundHandicaps('N', $round->getScoring(), $round);
-            $self->populateSingleRoundHandicaps('Y', $round->getCompoundScoring(), $round);
+            $this->populateSingleRoundHandicaps('N', $round->getScoring(), $round);
+            $this->populateSingleRoundHandicaps('Y', $round->getCompoundScoring(), $round);
         }
         $this->pdo->commit();
     }
@@ -536,7 +536,7 @@ class RHAC_Scorecards {
     private function populateSingleRoundHandicaps($compoundYN, $scoring, $round) {
         $scoring_name = $scoring->getName();
         $measure = $round->getMeasure()->getName();
-        $distances = json_decode($round->getDistances()->getJSON());
+        $distances = $round->getDistances()->asArray();
         $round_name = $round->getName();
         $score = 0;
         $previous_handicap = 100;
@@ -545,13 +545,13 @@ class RHAC_Scorecards {
             $calc = RHAC_Handicap::getCalculator($scoring_name, $handicap, $measure, $distances, 0.357);
             $predicted_score = $calc->predict();
             while ($score < $predicted_score) {
-                $self->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
+                $this->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
                 ++$score;
             }
             $previous_handicap = $handicap;
         }
         while ($score <= $max_score) {
-            $self->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
+            $this->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
             ++$score;
         }
     }

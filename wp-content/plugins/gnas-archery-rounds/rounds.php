@@ -489,6 +489,14 @@ class GNAS_SingleDistance {
 
     }
 
+    public function asArray() {
+        return array(
+            "N" =>  $this->getNumArrows(),
+            "D" => $this->getDiameter(),
+            "R" => $this->getDistance(),
+        );
+    }
+
     public function getJSON() {
         return '{'
              . '"N": ' . $this->getNumArrows()
@@ -535,6 +543,16 @@ class GNAS_Distances {
 
     public function rawData() {
         return $this->rawDistances;
+    }
+
+    public function asArray() {
+        $distances = array();
+        foreach ($this->distances as $face => $faceDistances) {
+            foreach ($faceDistances as $singleDistance) {
+                $distances []= $singleDistance->asArray();
+            }
+        }
+        return $distances;
     }
 
     public function getJSON() {
@@ -911,7 +929,7 @@ class GNAS_Round implements GNAS_RoundInterface {
     }
 
     public function getMaxScore() {
-        return $this->getScoring()->maxScore($this->getArrowCounts());
+        return $this->getScoring()->maxScore($this->getFamily()->getArrowCounts());
     }
 
     private function getHandicapText() {
