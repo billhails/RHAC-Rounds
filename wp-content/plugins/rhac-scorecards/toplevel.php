@@ -549,6 +549,9 @@ class RHAC_Scorecards {
                 ++$score;
             }
             $previous_handicap = $handicap;
+            if ($predicted_score == $max_score) {
+                break;
+            }
         }
         while ($score <= $max_score) {
             $this->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);

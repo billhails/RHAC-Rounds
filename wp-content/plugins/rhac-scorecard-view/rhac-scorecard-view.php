@@ -519,75 +519,85 @@ class RHACScorecardViewer {
         return $rows[0];
     }
 
-    private function scorecardAsTable($ends, $counter) {
-        $table = array();
+    private function getHandicapForScore($scorecard) {
+        $compound = $scorecard["bow"] == "compound" ? "Y" : "N";
+        $rows = $this->select("handicap"
+                            . " from round_handicaps"
+                            . " where round = ? and compound = ? and score = ?",
+                            array($scorecard["round"], $compound, $scorecard["score"]));
+        return $rows[0]["handicap"];
+    }
+
+    private function scorecardAsTable($ends, $counter, $scorecard) {
+        $div = array();
         $arrow_keys = array('arrow_1', 'arrow_2', 'arrow_3',
                             'arrow_4', 'arrow_5', 'arrow_6');
-        $table []= "<div class='scorecard-table'>\n";
-        $table []= "<table>\n";
-        $table []= "<thead>\n";
-        $table []= "<tr>";
+        $div []= "<div class='scorecard-table'>\n";
+        $div []= "<table>\n";
+        $div []= "<thead>\n";
+        $div []= "<tr>";
         for ($i = 0; $i < 2; ++$i) {
             foreach (array(1, 2, 3, 4, 5, 6, 'END') as $th) {
                 $th_class = "scorecard-" . strtolower($th);
-                $table []= "<th class='$th_class'>$th</th>";
+                $div []= "<th class='$th_class'>$th</th>";
             }
         }
         foreach (array('HITS', 'XS', 'GOLDS', 'DOZ', 'TOT') as $th) {
             $th_class = "scorecard-" . strtolower($th);
-            $table []= "<th class='$th_class'>$th</th>";
+            $div []= "<th class='$th_class'>$th</th>";
         }
-        $table []= "</tr>\n</thead>\n<tbody>";
+        $div []= "</tr>\n</thead>\n<tbody>";
 
         foreach ($ends as $end_data) {
             $counter->newEnd();
             if ($counter->isLeft()) {
-                $table []= '<tr>';
+                $div []= '<tr>';
             }
             foreach ($arrow_keys as $key) {
                 $arrow = $end_data[$key];
                 $counter->add($arrow);
-                $table []= '<td class="arrow '
+                $div []= '<td class="arrow '
                          . $this->arrowClass($arrow) . '">'
                          . $arrow . '</td>';
             }
-            $table []= '<td class="end-total">'
+            $div []= '<td class="end-total">'
                      . $counter->endScore()
                      . '</td>';
             if ($counter->isRight()) {
-                $table []= '<td class="scorecard-hits">'
+                $div []= '<td class="scorecard-hits">'
                          . $counter->dozHits() . '</td>';
-                $table []= '<td class="scorecard-xs">'
+                $div []= '<td class="scorecard-xs">'
                          . $counter->dozXs() . '</td>';
-                $table []= '<td class="scorecard-golds">'
+                $div []= '<td class="scorecard-golds">'
                          . $counter->dozGolds() . '</td>';
-                $table []= '<td class="scorecard-doz">'
+                $div []= '<td class="scorecard-doz">'
                          . $counter->dozScore() . '</td>';
-                $table []= '<td class="scorecard-total">'
+                $div []= '<td class="scorecard-total">'
                          . $counter->totalScore() . '</td>';
-                $table []= "</tr>\n";
+                $div []= "</tr>\n";
             }
         }
 
-        $table []= '<tr>';
-        $table []= '<td class="scorecard-inessential"></td>';
-        $table []= '<td class="scorecard-inessential"></td>';
-        $table []= '<td colspan="12" class="scorecard-totals-label">Totals:</td>';
-        $table []= '<td class="scorecard-total-hits">'
+        $div []= '<tr>';
+        $div []= '<td class="scorecard-inessential"></td>';
+        $div []= '<td class="scorecard-inessential"></td>';
+        $div []= '<td colspan="12" class="scorecard-totals-label">Totals:</td>';
+        $div []= '<td class="scorecard-total-hits">'
                  . $counter->totalHits() . '</td>';
-        $table []= '<td class="scorecard-total-xs">'
+        $div []= '<td class="scorecard-total-xs">'
                  . $counter->totalXs() . '</td>';
-        $table []= '<td class="scorecard-total-golds">'
+        $div []= '<td class="scorecard-total-golds">'
                  . $counter->totalGolds() . '</td>';
-        $table []= '<td class="scorecard-total-doz"></td>';
-        $table []= '<td class="scorecard-total-total">'
+        $div []= '<td class="scorecard-total-doz"></td>';
+        $div []= '<td class="scorecard-total-total">'
                  . $counter->totalScore() . '</td>';
-        $table []= "</tr>\n";
-        $table []= "</tbody>\n";
-        $table []= "</table>\n";
-        $table []= "</div>\n";
+        $div []= "</tr>\n";
+        $div []= "</tbody>\n";
+        $div []= "</table>\n";
+        $div []= "<p>Handicap rating: " . $this->getHandicapForScore($scorecard) . "</p>";
+        $div []= "</div>\n";
 
-        return implode('', $table);
+        return implode('', $div);
     }
 
     private function scorecardAsBarchart($counter, $scorecard) {
@@ -602,7 +612,7 @@ class RHACScorecardViewer {
         $ends = $this->getScorecardEnds($id);
         $counter = new RHACScorecardCounter();
         return array("html" => '<div class="scorecard">'
-                             . $this->scorecardAsTable($ends, $counter)
+                             . $this->scorecardAsTable($ends, $counter, $scorecard)
                              . '<div class="scorecard-graph">'
                              . $this->scorecardAsBarchart($counter,
                                                           $scorecard)
