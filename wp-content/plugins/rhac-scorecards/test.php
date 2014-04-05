@@ -10,7 +10,7 @@ $tests = array(
             array("D" => 122, "R" => 50, "N" => 24),
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_Imperial",
+        "scoring" => "five zone",
         "tests" => array(
             array( "handicap" => 100, "expected" => 2),
             array( "handicap" => 50, "expected" => 436),
@@ -24,7 +24,7 @@ $tests = array(
             array("D" => 122, "R" => 20, "N" => 36)
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_Imperial",
+        "scoring" => "five zone",
         "tests" => array(
             array( "handicap" => 100, "expected" => 65),
             array( "handicap" => 50, "expected" => 315),
@@ -38,7 +38,7 @@ $tests = array(
             array("D" => 122, "R" => 100, "N" => 36)
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_Imperial",
+        "scoring" => "five zone",
         "tests" => array(
             array( "handicap" => 100, "expected" => 0),
             array( "handicap" => 50, "expected" => 91),
@@ -52,7 +52,7 @@ $tests = array(
             array("D" => 80, "R" => 30, "N" => 36)
         ),
         "units" => "metric",
-        "class" => "RHAC_Handicap_Metric",
+        "scoring" => "ten zone",
         "tests" => array(
             array( "handicap" => 100, "expected" => 5),
             array( "handicap" => 50, "expected" => 265),
@@ -69,7 +69,7 @@ $tests = array(
             array("D" => 80, "R" => 30, "N" => 36),
         ),
         "units" => "metric",
-        "class" => "RHAC_Handicap_Metric",
+        "scoring" => "ten zone",
         "tests" => array(
             array( "handicap" => 100, "expected" => 7),
             array( "handicap" => 50, "expected" => 817),
@@ -83,7 +83,7 @@ $tests = array(
             array("D" => 40.64, "R" => 20, "N" => 60),
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_Worcester",
+        "scoring" => "worcester",
         "tests" => array(
             array( "handicap" => 100, "expected" => 9),
             array( "handicap" => 50, "expected" => 222),
@@ -97,7 +97,7 @@ $tests = array(
             array("D" => 40, "R" => 15, "N" => 60),
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_Metric",
+        "scoring" => "ten zone",
         "tests" => array(
             array( "handicap" => 100, "expected" => 39),
             array( "handicap" => 50, "expected" => 470),
@@ -111,7 +111,7 @@ $tests = array(
             array("D" => 40, "R" => 15, "N" => 60),
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_Vegas",
+        "scoring" => "vegas",
         "tests" => array(
             array( "handicap" => 100, "expected" => 19),
             array( "handicap" => 50, "expected" => 450),
@@ -125,7 +125,7 @@ $tests = array(
             array("D" => 40, "R" => 15, "N" => 60),
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_MetricInnerTen",
+        "scoring" => "metric inner ten",
         "tests" => array(
             array( "handicap" => 100, "expected" => 39),
             array( "handicap" => 50, "expected" => 465),
@@ -139,7 +139,7 @@ $tests = array(
             array("D" => 40, "R" => 15, "N" => 60),
         ),
         "units" => "imperial",
-        "class" => "RHAC_Handicap_VegasInnerTen",
+        "scoring" => "vegas inner ten",
         "tests" => array(
             array( "handicap" => 100, "expected" => 19),
             array( "handicap" => 50, "expected" => 445),
@@ -150,9 +150,12 @@ $tests = array(
 );
 
 function run_one_test($test) {
-    $class = $test["class"];
     foreach ($test["tests"] as $testcase) {
-        $hc =  new $class($testcase["handicap"], $test["units"], $test["distances"], 0.357);
+        $hc =  RHAC_Handicap::getCalculator($test['scoring'],
+                                            $testcase["handicap"],
+                                            $test["units"],
+                                            $test["distances"],
+                                            0.357);
         $result = $hc->predict();
         if ($result == $testcase["expected"]) {
             print "$test[round] $testcase[handicap] [OK]\n";

@@ -910,6 +910,10 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $this->getFamily()->getVenue();
     }
 
+    public function getMaxScore() {
+        return $this->getScoring()->maxScore($this->getArrowCounts());
+    }
+
     private function getHandicapText() {
         $name = $this->getName();
         $compound = '';

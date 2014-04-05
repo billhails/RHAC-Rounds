@@ -33,3 +33,11 @@ CREATE TABLE scorecard_end (
     PRIMARY KEY (scorecard_id, end_number),
     FOREIGN KEY (scorecard_id) REFERENCES scorecards(scorecard_id)
 );
+
+CREATE TABLE round_handicaps (
+    round TEXT NOT NULL,
+    compound TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    handicap INTEGER NOT NULL,
+    PRIMARY KEY (round, compound, score)
+);

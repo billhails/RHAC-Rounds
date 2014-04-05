@@ -46,6 +46,15 @@ abstract class RHAC_Handicap {
     private $sigma_theta;
     private $K;
     private $conversion;
+    private static $converters = array(
+        'five zone' => 'RHAC_Handicap_Imperial',
+        'ten zone' => 'RHAC_Handicap_Metric',
+        'metric inner ten' => 'RHAC_Handicap_MetricInnerTen',
+        'vegas' => 'RHAC_Handicap_Vegas',
+        'vegas inner ten' => 'RHAC_Handicap_VegasInnerTen',
+        'worcester' => 'RHAC_Handicap_Worcester',
+        'fita six zone' => 'RHAC_Handicap_FitaSixZone',
+    );
 
     public function __construct($handicap, $units, $distances, $arrow_radius) {
         $this->conversion = ($units == "metric" ? 1.0 : 0.9144);
@@ -82,6 +91,16 @@ abstract class RHAC_Handicap {
         }
         // print "total = $total\n";
         return round($total);
+    }
+
+    public static function getCalculator($scoring, $handicap, $units, $distances, $arrow_radius) {
+        $class = self::$converters[$scoring];
+        if ($class) {
+            return new $class($handicap, $units, $distances, $arrow_radius);
+        }
+        else {
+            die("no class available for scoring [$scoring]\n");
+        }
     }
 }
 

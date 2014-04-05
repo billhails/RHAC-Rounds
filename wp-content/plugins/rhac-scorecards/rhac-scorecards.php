@@ -10,6 +10,7 @@ License: GPL
 
 define('RHAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
+include_once RHAC_PLUGIN_DIR . 'RHAC_Haandicap.php';
 include_once RHAC_PLUGIN_DIR . 'toplevel.php';
 
 wp_enqueue_script('rhac_scorecards',

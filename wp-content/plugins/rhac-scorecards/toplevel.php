@@ -114,7 +114,6 @@ class RHAC_Scorecards {
         return self::$instance;
     }
 
-
     public function fetch($query, $params = array()) {
         $stmt = $this->pdo->prepare($query);
         if (!$stmt) {
@@ -178,6 +177,9 @@ class RHAC_Scorecards {
             $this->homePage();
         } elseif (isset($_POST['add-archer'])) {
             $this->addArcher($_POST['archer']);
+            $this->homePage();
+        } elseif (isset($_POST['rebuild-round-handicaps'])) {
+            $this->rebuildRoundHandicaps();
             $this->homePage();
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
@@ -471,6 +473,7 @@ class RHAC_Scorecards {
 
     /**
      * Generate round data to html that javascript can inspect.
+     * TODO replace with wp_localize_script()
      */
     private function roundData() {
         $text = '<span id="round-data">';
@@ -505,14 +508,58 @@ class RHAC_Scorecards {
         foreach (GNAS_Page::roundData() as $round) {
             $round_json = array();
             $round_json['measure'] = $round->getMeasure()->getName();
-            $count = 0;
+            $round_json['scoring'] = $round->getScoring()->getName();
+            $round_json['compound-scoring'] = $round->getCompoundScoring()->getName();
+            $round_json['distances'] = array();
             foreach ($round->getDistances()->rawData() as $distance) {
-                $count += $distance->getNumArrows();
+                $round_json['distances'] []= $distance->getNumArrows();
             }
-            $round_json['arrows'] = $count;
             $rounds[$round->getName()] = $round_json;
         }
         return json_encode($rounds);
+    }
+
+    private function rebuildRoundHandicaps() {
+        $this->pdo->beginTransaction();
+        $self->deleteAllRoundHandicaps();
+        foreach (GNAS_Page::roundData() as $round) {
+            $self->populateSingleRoundHandicaps('N', $round->getScoring(), $round);
+            $self->populateSingleRoundHandicaps('Y', $round->getCompoundScoring(), $round);
+        }
+        $this->pdo->commit();
+    }
+
+    private function deleteAllRoundHandicaps() {
+        $this->exec("DELETE FROM round_handicaps");
+    }
+
+    private function populateSingleRoundHandicaps($compoundYN, $scoring, $round) {
+        $scoring_name = $scoring->getName();
+        $measure = $round->getMeasure()->getName();
+        $distances = json_decode($round->getDistances()->getJSON());
+        $round_name = $round->getName();
+        $score = 0;
+        $previous_handicap = 100;
+        $max_score = $round->getMaxScore();
+        for ($handicap = 100; $handicap >= 0; --$handicap) {
+            $calc = RHAC_Handicap::getCalculator($scoring_name, $handicap, $measure, $distances, 0.357);
+            $predicted_score = $calc->predict();
+            while ($score < $predicted_score) {
+                $self->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
+                ++$score;
+            }
+            $previous_handicap = $handicap;
+        }
+        while ($score <= $max_score) {
+            $self->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
+            ++$score;
+        }
+    }
+
+    private function insertOneRoundHandicap($round_name, $compoundYN, $score, $handicap) {
+        $this->exec("INSERT INTO round_handicaps(round, compound, score, handicap) values(?,?,?,?)",
+            array($round_name, $compoundYN, $score, $handicap)
+        );
     }
 
     public function roundDataAsSelect() {
@@ -608,6 +655,14 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    private function rebuildRoundHandicapsForm() {
+        return <<<EOFORM
+<form method="post" id="rebuild-round-handicaps" action="">
+<input type="submit" name="rebuild-round-handicaps" value="Rebuild All Handicap Tables"/>
+</form>
+EOFORM;
+    }
+
     public function homePageHTML() {
         $text = array();
         $text []= '<h1>Score Cards</h1>';
@@ -622,6 +677,8 @@ class RHAC_Scorecards {
         $text []= $this->mergeArcherForm();
         $text []= '<hr/>';
         $text []= $this->twoFiveTwoLink();
+        $text []= '<hr/>';
+        $text []= $this->rebuildRoundHandicapsForm();
         $text []= '<hr/>';
         $text []= "<a href='" . $this->homeurl . 'scorecard.db' ."'>Download a backup</a> (click right and save as...)";
         return implode($text);
