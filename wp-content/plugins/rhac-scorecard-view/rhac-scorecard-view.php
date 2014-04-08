@@ -521,9 +521,9 @@ class RHACScorecardViewer {
 
     private function getHandicapForScore($scorecard) {
         $compound = $scorecard["bow"] == "compound" ? "Y" : "N";
-        $rows = $this->select("handicap"
+        $rows = $this->select("min(handicap)"
                             . " from round_handicaps"
-                            . " where round = ? and compound = ? and score = ?",
+                            . " where round = ? and compound = ? and score <= ?",
                             array($scorecard["round"], $compound, $scorecard["score"]));
         return $rows[0]["handicap"];
     }

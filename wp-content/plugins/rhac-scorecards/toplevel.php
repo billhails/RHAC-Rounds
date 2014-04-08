@@ -5,6 +5,7 @@ include_once plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
 class RHAC_Archer252 {
     private static $instances;
     private static $scores;
+    private static $counts;
     private static $requirements = array(
         'Green 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 164, 'barebow' => 189),
         'White 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 164, 'barebow' => 189),
@@ -19,15 +20,41 @@ class RHAC_Archer252 {
     public static function init() {
         self::$instances = array();
         self::$scores = array();
+        self::$counts = array();
     }
 
     // assumes the data is sorted by date, archer, round, bow
     public static function addRow($row) {
-        if (self::below_required_score($row['bow'], $row['round'], $row['score'])) {
+        $archer = $row['archer'];
+        $bow = $row['bow'];
+        $round = $row['round'];
+        $score = $row['score'];
+        if (self::below_required_score($bow, $round, $score)) {
             return;
         }
-        $row['previous'] = self::previous($row['archer'], $row['bow'], $row['round'], $row['score']);
+        if (self::already_seen_two($archer, $bow, $round)) {
+            return;
+        }
+        $row['previous'] = self::previous($archer, $bow, $round, $score);
+        self::count($archer, $bow, $round);
         self::$instances []= $row;
+    }
+
+    private static function count($archer, $bow, $round) {
+        if (!isset(self::$counts[$archer])) {
+            self::$counts[$archer] = array();
+        }
+        if (!isset(self::$counts[$archer][$bow])) {
+            self::$counts[$archer][$bow] = array();
+        }
+        if (!isset(self::$counts[$archer][$bow][$round])) {
+            self::$counts[$archer][$bow][$round] = 0;
+        }
+        self::$counts[$archer][$bow][$round]++;
+    }
+
+    private static function already_seen_two($archer, $bow, $round) {
+        return self::$counts[$archer][$bow][$round] >= 2;
     }
 
     private static function previous($archer, $bow, $round, $score) {
@@ -103,6 +130,7 @@ class RHAC_Scorecards {
             die('Error!: ' . $e->getMessage());
             exit();
         }
+        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->exec('PRAGMA foreign_keys = ON');
         // echo '<p>construct successful</p>';
     }
@@ -175,8 +203,11 @@ class RHAC_Scorecards {
         } elseif (isset($_POST['merge-archers'])) { // merge requested
             $this->mergeArchers($_POST['from-archer'], $_POST['to-archer']);
             $this->homePage();
+        } elseif (isset($_POST['add-venue'])) {
+            $this->addVenue($_POST['venue']);
+            $this->homePage();
         } elseif (isset($_POST['add-archer'])) {
-            $this->addArcher($_POST['archer']);
+            $this->addArcher($_POST['archer'], $_POST['dob'], $_POST['gender'], $_POST['archived']);
             $this->homePage();
         } elseif (isset($_POST['rebuild-round-handicaps'])) {
             $this->rebuildRoundHandicaps();
@@ -200,16 +231,32 @@ class RHAC_Scorecards {
 
     private function mergeArchers($from, $to) {
         if ($from && $to && $from != $to) {
+            $this->pdo->beginTransaction();
             $this->exec("UPDATE scorecards SET archer = ? WHERE archer = ?", array($to, $from));
             $this->exec("DELETE FROM archer WHERE name = ?", array($from));
+            $this->pdo->commit();
             echo "<p>Archer $from is now $to</p>";
         }
     }
 
-    private function addArcher($archer) {
-        if ($archer) {
-            $this->exec("INSERT INTO archer(name) VALUES(?)", array($archer));
+    private function addArcher($archer, $dob, $gender, $archived) {
+        if ($archer && preg_match('#^\d\d\d\d/\d\d/\d\d$#', $dob) && $gender && $archived) {
+            $this->exec("INSERT INTO archer(name, date_of_birth, gender, archived) VALUES(?, ?, ?, ?)",
+                        array($archer, $dob, $gender, $archived));
             echo "<p>Archer $archer added</p>";
+        }
+        else {
+            echo "<p>Archer [$archer] [$dob] [$gender] [$archived] <b>NOT</b> added</p>";
+        }
+    }
+
+    private function addVenue($venue) {
+        if ($venue) {
+            $this->exec("INSERT INTO venue(name) VALUES(?)", array($venue));
+            echo "<p>Venue $venue added</p>";
+        }
+        else {
+            echo "<p>Venue <b>NOT</b> added</p>";
         }
     }
 
@@ -401,6 +448,10 @@ class RHAC_Scorecards {
             $criteria []= 'round = ?';
             $params []= $_GET["round"];
         }
+        if ($_GET["bow"]) {
+            $criteria []= 'bow = ?';
+            $params []= $_GET["bow"];
+        }
         if ($_GET["lower-date"]) {
             if ($_GET["upper-date"]) {
                 $criteria []= 'date BETWEEN ? and ?';
@@ -411,6 +462,10 @@ class RHAC_Scorecards {
                 $criteria []= 'date = ?';
                 $params []= $this->dateToStoredFormat($_GET["lower-date"]);
             }
+        }
+        else if ($_GET["upper-date"]) {
+            $criteria []= 'date = ?';
+            $params []= $this->dateToStoredFormat($_GET["upper-date"]);
         }
         $query = "SELECT * FROM scorecards WHERE "
                . implode(' AND ', $criteria)
@@ -538,24 +593,14 @@ class RHAC_Scorecards {
         $measure = $round->getMeasure()->getName();
         $distances = $round->getDistances()->asArray();
         $round_name = $round->getName();
-        $score = 0;
-        $previous_handicap = 100;
-        $max_score = $round->getMaxScore();
+        $previous_prediction = -1;
         for ($handicap = 100; $handicap >= 0; --$handicap) {
             $calc = RHAC_Handicap::getCalculator($scoring_name, $handicap, $measure, $distances, 0.357);
             $predicted_score = $calc->predict();
-            while ($score < $predicted_score) {
-                $this->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
-                ++$score;
+            if ($previous_predicction != $predicted_score) {
+                $this->insertOneRoundHandicap($round_name, $compoundYN, $predicted_score, $handicap);
+                $previous_predicction = $predicted_score;
             }
-            $previous_handicap = $handicap;
-            if ($predicted_score == $max_score) {
-                break;
-            }
-        }
-        while ($score <= $max_score) {
-            $this->insertOneRoundHandicap($round_name, $compoundYN, $score, $previous_handicap);
-            ++$score;
         }
     }
 
@@ -582,6 +627,16 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    public function bowDataAsSelect() {
+        $bows = array('recurve', 'compound', 'longbow', 'barebow');
+        $text = array('<select name="bow" id="bow">');
+        $text []= "<option value=''>- - -</option>\n";
+        foreach ($bows as $bow) {
+            $text []= "<option value='$bow'>$bow</option>\n";
+        }
+        $text []= '<select>';
+        return implode($text);
+    }
 
     private function homePage() {
         // echo '<p>in homePage()</p>';
@@ -600,6 +655,9 @@ class RHAC_Scorecards {
         $text []= '</td></tr>';
         $text []= '<tr><td>Round</td><td colspan="2">';
         $text []= $this->roundDataAsSelect();
+        $text []= '</td></tr>';
+        $text []= '<tr><td>Bow</td><td colspan="2">';
+        $text []= $this->bowDataAsSelect();
         $text []= '</td></tr>';
         $text []= '<tr><td>Date or Date Range</td>';
         $text []= '<td>';
@@ -623,7 +681,7 @@ class RHAC_Scorecards {
         $text []= '<form method="get" action="">';
         $text []= '<input type="hidden" name="page" value="'
                     . $_GET[page] . '"/>';
-        $text []= '<input type="submit" name="edit-scorecard" value="New" />';
+        $text []= '<input type="submit" name="edit-scorecard" value="New Scorecard" />';
         $text []= '</form>';
         return implode($text);
     }
@@ -631,8 +689,37 @@ class RHAC_Scorecards {
     private function newArcherForm() {
         $text = array();
         $text []= '<form method="post" action="">';
+
+        $text []= '<label for="archer">Archer:</label>&nbsp;';
         $text []= '<input type="text" name="archer"/>';
-        $text []= '<input type="submit" name="add-archer" value="Add Archer"/>';
+
+        $text []= '&nbsp;<label for="dob">DoB:&nbsp;</label>&nbsp;';
+        $text []= '<input type="text" maxlength="10" name="dob" value="0001/01/01"/>';
+
+        $text []= '&nbsp;<label for="gender">Gender:</label>&nbsp;';
+        $text []= '<input type="radio" name="gender" checked="1" value="M">&nbsp;M&nbsp;</input>&nbsp;';
+        $text []= '<input type="radio" name="gender" value="F">&nbsp;F&nbsp;</input>&nbsp;';
+
+        $text []= '&nbsp;<label for="archived">Archived:</label>&nbsp;';
+        $text []= '<input type="radio" name="archived" value="Y">&nbsp;Y&nbsp;</input>&nbsp;';
+        $text []= '<input type="radio" name="archived" checked="1" value="N">&nbsp;N&nbsp;</input>&nbsp;';
+
+        $text []= '&nbsp;<input type="submit" name="add-archer" value="Add Archer"/>';
+
+        $text []= '</form>';
+        return implode($text);
+    }
+
+
+    private function newVenueForm() {
+        $text = array();
+        $text []= '<form method="post" action="">';
+
+        $text []= '<label for="venue">Venue:</label>&nbsp;';
+        $text []= '<input type="text" name="venue"/>';
+
+        $text []= '&nbsp;<input type="submit" name="add-venue" value="Add Venue"/>';
+
         $text []= '</form>';
         return implode($text);
     }
@@ -678,6 +765,8 @@ EOFORM;
         $text []= $this->deleteArcherForm();
         $text []= '<hr/>';
         $text []= $this->mergeArcherForm();
+        $text []= '<hr/>';
+        $text []= $this->NewVenueForm();
         $text []= '<hr/>';
         $text []= $this->twoFiveTwoLink();
         $text []= '<hr/>';
@@ -739,7 +828,7 @@ EOT
         $text = array("<select name='$id' id='$id'>");
         $text []= "<option value=''>- - -</option>\n";
         $archers = RHAC_Scorecards::getInstance()->fetch(
-                            'SELECT name FROM archer ORDER BY name');
+                            'SELECT name FROM archer where archived = "N" ORDER BY name');
         foreach ($archers as $archer) {
             $text []= "<option value='$archer[name]'"
                 . ($archer["name"] == $this->scorecard_data["archer"]

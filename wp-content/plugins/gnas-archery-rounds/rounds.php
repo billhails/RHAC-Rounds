@@ -932,10 +932,18 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $this->getScoring()->maxScore($this->getFamily()->getArrowCounts());
     }
 
+    public function isIndoor() {
+        return $this->getVenue() == "indoor";
+    }
+
+    public function isOutdoor() {
+        return $this->getVenue() == "outdoor";
+    }
+
     private function getHandicapText() {
         $name = $this->getName();
         $compound = '';
-        if ($this->getVenue() == "indoor") {
+        if ($this->isIndoor()) {
             $compound = " <input type='checkbox' id='compound_scoring'>Compound</input>";
         }
         return <<<EOJS
@@ -1334,7 +1342,7 @@ class GNAS_Classifications {
                 . ' ORDER BY gender, age_groups.display_order, bow';
     }
 
-    function getTable() {
+    public function getTable() {
 
         $subtitle = array();
         $headers = array();

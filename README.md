@@ -48,11 +48,10 @@ TODO
 note to self: We can't use unoficcial rounds for classifications. We *can* use them
 for handicaps, provided they're properly described.
 
-* Extend the archer table to include:
-    * gender.
-    * DoB.
 * Extend the interface to edit the archer table.
 * Add <tt>ageAt($archer, $date)</tt> method.
+    * use <tt>ageAt()</tt> to implement <tt>classAt($archer, $date)</tt>
+      i.e. Gent U18.
 * Add <tt>getClassification($round, $age, $bow, $gender, $score)</tt> to gnas-rounds.
 * Add a venue table (id, name) and an interface to edit it.
 * Extend the scorecard table to include:
