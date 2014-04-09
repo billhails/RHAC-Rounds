@@ -48,20 +48,15 @@ TODO
 note to self: We can't use unoficcial rounds for classifications. We *can* use them
 for handicaps, provided they're properly described.
 
-* Extend the interface to edit the archer table.
-* Add <tt>ageAt($archer, $date)</tt> method.
-    * use <tt>ageAt()</tt> to implement <tt>classAt($archer, $date)</tt>
-      i.e. Gent U18.
-* Add <tt>getClassification($round, $age, $bow, $gender, $score)</tt> to gnas-rounds.
-* Add a venue table (id, name) and an interface to edit it.
-* Extend the scorecard table to include:
-    * handicap ranking.
-    * classification.
-    * a flag to indicate whether it is a scorecard or just a score.
-    * venue id joins venues.
-    * a flag to say whether it is or was a club record (3-state?)
-* Keep separate tables of indoor and outdoor handicap improvements.
-* Keep separate tables of indoor and outdoor classifications.
-* Re-build or update relevant tables on demand.
+* Add <tt>$round-&gt;getClassification($score, $gender, $bow, $age_group);</tt>
+* Add capability to edit scorecard where has_ends = "N"
+    * i.e. enter the scores directly: "new score" as opposed to "new scorecard"
+* Add/update score/scorecard should include hidden has_ends = "Y"/"N" in the form.
+* Add/update score/scorecard should include dropdown venue in the form.
+* Add/update score/scorecard should (re-)calculate outdoor/indoor.
+* Add/update score/scorecard should (re-)calculate handicap_ranking and classification.
+* Add/update score/scorecard should (re-)calculate category.
+* Re-build or update all calculable fields on demand.
+    * pay attention to age group changes.
 * Add an interface for defining new rounds.
 * Re-do the scorecards admin interface altogether.

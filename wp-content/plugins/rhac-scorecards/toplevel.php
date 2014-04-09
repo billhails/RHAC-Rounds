@@ -116,7 +116,7 @@ class RHAC_Scorecards {
     private $scorecard_end_data;
     private $homepath;
     private $homeurl;
-    private $archers;
+    private $archer_map;
     private static $instance;
 
     private function __construct() {
@@ -481,8 +481,11 @@ class RHAC_Scorecards {
         $text []= '<tr>';
         $text []= '<th>Archer</th>';
         $text []= '<th>Bow</th>';
+        $text []= '<th>Age</th>';
+        $text []= '<th>Gender</th>';
         $text []= '<th>Round</th>';
         $text []= '<th>Date</th>';
+        $text []= '<th>Venue</th>';
         $text []= '<th>Hits</th>';
         $text []= '<th>Xs</th>';
         $text []= '<th>Golds</th>';
@@ -494,6 +497,7 @@ class RHAC_Scorecards {
         $odd = true;
         $prev_date = '';
         $count = 0;
+        $venue_map = $this->getVenueMap();
         foreach ($search_results as $result) {
             ++$count;
             if ($result['date'] != $prev_date) {
@@ -501,11 +505,21 @@ class RHAC_Scorecards {
                 $prev_date = $result['date'];
             }
             $tr_class = $odd ? 'odd' : 'even';
+            if ($result['venue_id']) {
+                $venue = $venue_map[$result['venue_id']];
+            }
+            else {
+                $venue = '?';
+            }
+            $gender = ($this->getGender($result['archer']) == 'M') ? 'Gent' : 'Lady';
             $text []= "<tr class='$tr_class'>";
             $text []= "<td>$result[archer]</td>";
             $text []= "<td>$result[bow]</td>";
+            $text []= '<td>' . $this->categoryAt($result['archer'], $result['date']) . '</td>';
+            $text []= "<td>$gender</td>";
             $text []= "<td>$result[round]</td>";
             $text []= '<td>' . $this->dateToDisplayedFormat($result['date']) . '</td>';
+            $text []= "<td>$venue</td>";
             $text []= "<td>$result[hits]</td>";
             $text []= "<td>$result[xs]</td>";
             $text []= "<td>$result[golds]</td>";
@@ -644,6 +658,64 @@ class RHAC_Scorecards {
         // echo '<p>finished homePage()</p>';
     }
 
+    private function getArcherMap() {
+        if (!isset($this->archer_map)) {
+            $this->archer_map = array();
+            $rows = $this->fetch('select * from archer');
+            foreach ($rows as $row) {
+                $this->archer_map[$row['name']] = $row;
+            }
+        }
+        return $this->archer_map;
+    }
+
+    private function getDoB($archer) {
+        $archer_map = $this->getArcherMap();
+        return $archer_map[$archer]['date_of_birth'];
+    }
+
+    private function getGender($archer) {
+        $archer_map = $this->getArcherMap();
+        return $archer_map[$archer]['gender'];
+    }
+
+    private function ageAt($archer, $date_string) {
+        $dob_string = $this->getDoB($archer);
+        $dob = new DateTime($dob_string);
+        $date = new DateTime($date_string);
+        $diff = $dob->diff($date);
+        return $diff->format('%y');
+    }
+
+    private function getVenueMap() {
+        $rows = $this->fetch("select * from venue");
+        $map = array();
+        foreach ($rows as $row) {
+            $map[$row['venue_id']] = $row['name'];
+            $map[$row['name']] = $row['venue_id'];
+        }
+        return $map;
+    }
+
+    private function categoryAt($archer, $date_string) {
+        $age = $this->ageAt($archer, $date_string);
+        if ($age < 12) {
+            return 'U12';
+        }
+        else if ($age < 14) {
+            return 'U14';
+        }
+        else if ($age < 16) {
+            return 'U16';
+        }
+        else if ($age < 18) {
+            return 'U18';
+        }
+        else {
+            return 'Senior';
+        }
+    }
+
     private function searchForm() {
         $text = array();
         $text []= '<form method="get" action="">';
@@ -651,7 +723,7 @@ class RHAC_Scorecards {
                     . $_GET[page] . '"/>';
         $text []= '<table>';
         $text []= '<tr><td>Archer</td><td colspan="2">';
-        $text []= $this->archersAsSelect();
+        $text []= $this->archersAsSelect('archer', true);
         $text []= '</td></tr>';
         $text []= '<tr><td>Round</td><td colspan="2">';
         $text []= $this->roundDataAsSelect();
@@ -727,7 +799,7 @@ class RHAC_Scorecards {
     private function deleteArcherForm() {
         $text = array();
         $text []= '<form method="post" action="">';
-        $text []= $this->archersAsSelect();
+        $text []= $this->archersAsSelect('archer', true);
         $text []= '<input type="submit" name="delete-archer" value="Delete Archer"/>';
         $text []= '</form>';
         return implode($text);
@@ -737,9 +809,9 @@ class RHAC_Scorecards {
         $text = array();
         $text []= '<form method="post" id="merge-archers" action="">';
         $text []= '<label for="from-archer">From</label>';
-        $text []= $this->archersAsSelect("from-archer");
+        $text []= $this->archersAsSelect("from-archer", true);
         $text []= '<label for="to-archer">To</label>';
-        $text []= $this->archersAsSelect("to-archer");
+        $text []= $this->archersAsSelect("to-archer", true);
         $text []= '<input type="submit" name="merge-archers" value="Merge Archers"/>';
         $text []= '</form>';
         return implode($text);
@@ -747,9 +819,12 @@ class RHAC_Scorecards {
 
     private function rebuildRoundHandicapsForm() {
         return <<<EOFORM
+</p>
 <form method="post" id="rebuild-round-handicaps" action="">
 <input type="submit" name="rebuild-round-handicaps" value="Rebuild All Handicap Tables"/>
 </form>
+You only need do this if a new round has been added or a round definition changed.
+</p>
 EOFORM;
     }
 
@@ -818,17 +893,21 @@ EOT
     }
 
     private function archers() {
-        if (!isset($this->archers)) {
-            $this->archers = $this->fetch('SELECT name FROM archer ORDER BY name');
-        }
-        return $this->archers;
+        $archer_map = $this->getArcherMap();
+        return array_keys($archer_map);
     }
 
-    public function archersAsSelect($id = 'archer') {
+    public function archersAsSelect($id = 'archer', $include_archived = false) {
         $text = array("<select name='$id' id='$id'>");
         $text []= "<option value=''>- - -</option>\n";
+        if ($include_archived) {
+            $exclude_archived = '';
+        }
+        else {
+            $exclude_archived = 'where archived = "N"';
+        }
         $archers = RHAC_Scorecards::getInstance()->fetch(
-                            'SELECT name FROM archer where archived = "N" ORDER BY name');
+                            "SELECT name FROM archer $exclude_archived ORDER BY name");
         foreach ($archers as $archer) {
             $text []= "<option value='$archer[name]'"
                 . ($archer["name"] == $this->scorecard_data["archer"]
