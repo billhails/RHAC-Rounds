@@ -322,6 +322,7 @@ class RHAC_Scorecards {
             $_POST['total-xs'],
             $_POST['total-golds'],
             $_POST['total-total'],
+            $_POST['has-ends'],
             $id
         );
         // echo '<p>update() ' . print_r($params, true) . '</p>';
@@ -335,12 +336,15 @@ class RHAC_Scorecards {
                  . " hits = ?,"
                  . " xs = ?,"
                  . " golds = ?,"
-                 . " score = ?"
+                 . " score = ?,"
+                 . " has_ends = ?"
                  . " WHERE scorecard_id = ?",
                     $params);
-        $this->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?",
-                         array($id));
-        $this->insertEnds($id);
+        if ($_POST['has-ends'] == "Y") {
+            $this->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?",
+                             array($id));
+            $this->insertEnds($id);
+        }
         $this->pdo->commit();
     }
 
@@ -348,8 +352,8 @@ class RHAC_Scorecards {
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
-                 . "(archer, venue, date, round, bow, hits, xs, golds, score)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 . "(archer, venue, date, round, bow, hits, xs, golds, score, has_ends)"
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
                        $_POST['venue'],
                        $this->dateToStoredFormat($_POST['date']),
@@ -358,7 +362,8 @@ class RHAC_Scorecards {
                        $_POST['total-hits'],
                        $_POST['total-xs'],
                        $_POST['total-golds'],
-                       $_POST['total-total']));
+                       $_POST['total-total'],
+                       $_POST['has-ends']));
         if (!$status) {
             echo '<p>INSERT returned false:'
                 . print_r($this->pdo->errorInfo(), true) . '</p>';
@@ -1199,6 +1204,7 @@ EOT
 
     private function formInputs() {
         $text = array();
+        $text []= '<input type="hidden" name="has-ends" value="Y" />';
         $text []= '<input type="hidden" name="scorecard-id" value="'
                 . $this->scorecard_id . '" />';
         $text []= '<input type="hidden"'
