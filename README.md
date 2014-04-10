@@ -57,7 +57,7 @@ for handicaps, provided they're properly described.
 * Add/update score/scorecard should (re-)calculate category.
 * re-calculate all handicap_rankings. *done*
 * re-calculate all indoor/outdoor.
-* re-calculate all classifications.
+* re-calculate all classifications. *done*
 * re-calculate all new_classifications.
 * re-calculate all handicap_improvements.
 * re-calculate all club_records.

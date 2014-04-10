@@ -933,7 +933,7 @@ class GNAS_Round implements GNAS_RoundInterface {
     }
 
     public function isIndoor() {
-        return $this->getVenue() == "indoor";
+        return !$this->isOutdoor();
     }
 
     public function isOutdoor() {
@@ -964,6 +964,10 @@ EOJS;
             }
         }
         return $this->classifications;
+    }
+
+    public function getClassification($gender, $age_group, $bow, $score) {
+        return $this->getClassifications()->getClassification($gender, $age_group, $bow, $score);
     }
 
     public function getTableHeader() {
@@ -1301,8 +1305,9 @@ class GNAS_Requirements {
 ############################
 class GNAS_Classifications {
 
-    private $roundName;
+    protected $roundName;
     private $gender_map;
+    protected $all_data;
 
     public function __construct($roundName) {
         $this->roundName = $roundName;
@@ -1342,8 +1347,38 @@ class GNAS_Classifications {
                 . ' ORDER BY gender, age_groups.display_order, bow';
     }
 
-    public function getTable() {
+    private function getAllData() {
+        if (!isset($this->all_data)) {
+            $this->all_data = array();
+            $rows = GNAS_PDO::SELECT('* FROM outdoor_classifications WHERE round = ?',
+                                     array($this->roundName));
+            foreach ($rows as $row) {
+                $this->all_data[$row['gender']][$row['age_group']][$row['bow']] = $row;
+            }
+        }
+        return $this->all_data;
+    }
 
+    public function getClassification($gender, $age_group, $bow, $score) {
+        $map = $this->getAllData();
+        if (isset($map[$gender])) {
+            if (isset($map[$gender][$age_group])) {
+                if (isset($map[$gender][$age_group][$bow])) {
+                    $data = $map[$gender][$age_group][$bow];
+                    $fields = array('gmbm', 'mbm', 'bm', 'first', 'second', 'third');
+                    foreach ($fields as $field) {
+                        if ($data[$field] && $score >= $data[$field]) {
+                            return $field;
+                        }
+                    }
+                    return 'archer';
+                }
+            }
+        }
+        return '';
+    }
+
+    public function getTable() {
         $subtitle = array();
         $headers = array();
         $fields = array();
@@ -1464,6 +1499,39 @@ class GNAS_IndoorClassifications extends GNAS_Classifications {
                 . ' WHERE '
                 . implode(' AND ', $conditions)
                 . ' ORDER BY gender, bow';
+    }
+
+    private function getAllData() {
+        if (!isset($this->all_data)) {
+            $this->all_data = array();
+            $roundName = $this->roundName;
+            // TODO replace with lookup table in database
+            if ($roundName == "Plymouth" || $roundName == "Plymouth (triple)") {
+                $roundName = 'Portsmouth';
+            }
+            $rows = GNAS_PDO::SELECT('* FROM indoor_classifications WHERE round = ?',
+                                     array($roundName));
+            foreach ($rows as $row) {
+                $this->all_data[$row['gender']][$row['bow']] = $row;
+            }
+        }
+        return $this->all_data;
+    }
+
+    public function getClassification($gender, $age_group, $bow, $score) {
+        $map = $this->getAllData();
+        if (isset($map[$gender])) {
+            if (isset($map[$gender][$bow])) {
+                $data = $map[$gender][$bow];
+                $fields = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
+                foreach ($fields as $field) {
+                    if ($data[$field] && $score >= $data[$field]) {
+                        return $field;
+                    }
+                }
+            }
+        }
+        return '';
     }
 
 }

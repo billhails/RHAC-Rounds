@@ -117,11 +117,13 @@ class RHAC_Scorecards {
     private $homepath;
     private $homeurl;
     private $archer_map;
+    private $rounds;
     private static $instance;
 
     private function __construct() {
         $this->homepath = plugin_dir_path(__FILE__);
         $this->homeurl = plugin_dir_url(__FILE__);
+        $this->rounds = array();
         try {
             $this->pdo = new PDO('sqlite:'
                          . $this->homepath
@@ -140,6 +142,10 @@ class RHAC_Scorecards {
             self::$instance = new self();
         }
         return self::$instance;
+    }
+
+    public function getRound($round_name) {
+        return GNAS_Round::getInstanceByName($round_name);
     }
 
     public function fetch($query, $params = array()) {
@@ -214,6 +220,15 @@ class RHAC_Scorecards {
             $this->homePage();
         } elseif (isset($_POST['recalculate-score-handicaps'])) {
             $this->reCalculateHandicapsForScores();
+            $this->homePage();
+        } elseif (isset($_POST['recalculate-age-groups'])) {
+            $this->reCalculateAgeGroups();
+            $this->homePage();
+        } elseif (isset($_POST['recalculate-genders'])) {
+            $this->reCalculateGenders();
+            $this->homePage();
+        } elseif (isset($_POST['recalculate-classifications'])) {
+            $this->reCalculateClassifications();
             $this->homePage();
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
@@ -509,7 +524,8 @@ class RHAC_Scorecards {
         $text []= '<th>Xs</th>';
         $text []= '<th>Golds</th>';
         $text []= '<th>Score</th>';
-        $text []= '<th>Handicap for Score</th>';
+        $text []= '<th>Handicap</th>';
+        $text []= '<th>Classification</th>';
         $text []= '<th>&nbsp;</th>';
         $text []= '</tr>';
         $text []= '</thead>';
@@ -531,12 +547,11 @@ class RHAC_Scorecards {
             else {
                 $venue = '?';
             }
-            $gender = ($this->getGender($result['archer']) == 'M') ? 'Gent' : 'Lady';
             $text []= "<tr class='$tr_class'>";
             $text []= "<td>$result[archer]</td>";
             $text []= "<td>$result[bow]</td>";
-            $text []= '<td>' . $this->categoryAt($result['archer'], $result['date']) . '</td>';
-            $text []= "<td>$gender</td>";
+            $text []= "<td>$result[category]</td>";
+            $text []= "<td>$result[gender]</td>";
             $text []= "<td>$result[round]</td>";
             $text []= '<td>' . $this->dateToDisplayedFormat($result['date']) . '</td>';
             $text []= "<td>$venue</td>";
@@ -545,6 +560,7 @@ class RHAC_Scorecards {
             $text []= "<td>$result[golds]</td>";
             $text []= "<td>$result[score]</td>";
             $text []= "<td>$result[handicap_ranking]</td>";
+            $text []= "<td>$result[classification]</td>";
             $text []= "<td>";
             $text []= "<form method='get' action=''>";
             $text []= '<input type="hidden" name="page" value="'
@@ -618,6 +634,21 @@ class RHAC_Scorecards {
                     array($handicap_ranking, $scorecard_id));
     }
 
+    private function updateAgeGroup($scorecard_id, $category) {
+        $this->exec("UPDATE scorecards SET category = ? WHERE scorecard_id = ?",
+                    array($category, $scorecard_id));
+    }
+
+    private function updateGender($scorecard_id, $gender) {
+        $this->exec("UPDATE scorecards SET gender = ? WHERE scorecard_id = ?",
+                    array($gender, $scorecard_id));
+    }
+
+    private function updateClassification($scorecard_id, $classification) {
+        $this->exec("UPDATE scorecards SET classification = ? WHERE scorecard_id = ?",
+                    array($classification, $scorecard_id));
+    }
+
     private function getHandicapForScore($bow, $round, $score) {
         $compound = $bow == "compound" ? "Y" : "N";
         $rows = $this->fetch("SELECT min(handicap) as result"
@@ -633,6 +664,34 @@ class RHAC_Scorecards {
             $handicap_ranking = $this->getHandicapForScore($scorecard['bow'],
                                         $scorecard['round'], $scorecard['score']);
             $this->updateHandicapRanking($scorecard['scorecard_id'], $handicap_ranking);
+        }
+    }
+
+    private function reCalculateAgeGroups() {
+        $scorecards = $this->getAllScoreCards();
+        foreach ($scorecards as $scorecard) {
+            $category = $this->categoryAt($scorecard['archer'], $scorecard['date']);
+            $this->updateAgeGroup($scorecard['scorecard_id'], $category);
+        }
+    }
+
+    private function reCalculateGenders() {
+        $scorecards = $this->getAllScoreCards();
+        foreach ($scorecards as $scorecard) {
+            $gender = $this->getGender($scorecard['archer']);
+            $this->updateGender($scorecard['scorecard_id'], $gender);
+        }
+    }
+
+    private function reCalculateClassifications() {
+        $scorecards = $this->getAllScoreCards();
+        foreach ($scorecards as $scorecard) {
+            $classification = $this->getRound($scorecard['round'])
+                                   ->getClassification($scorecard['gender'],
+                                                       $scorecard['category'],
+                                                       $scorecard['bow'],
+                                                       $scorecard['score']);
+            $this->updateClassification($scorecard['scorecard_id'], $classification);
         }
     }
 
@@ -759,7 +818,7 @@ class RHAC_Scorecards {
             return 'U18';
         }
         else {
-            return 'Senior';
+            return 'adult';
         }
     }
 
@@ -885,6 +944,36 @@ EOFORM;
 EOFORM;
     }
 
+    private function reCalculateAgeGroupsForm() {
+        return <<<EOFORM
+</p>
+<form method="post" id="recalculate-age-groups" action="">
+<input type="submit" name="recalculate-age-groups" value="Recalculate All Age Groups"/>
+</form>
+</p>
+EOFORM;
+    }
+
+    private function reCalculateGendersForm() {
+        return <<<EOFORM
+</p>
+<form method="post" id="recalculate-genders" action="">
+<input type="submit" name="recalculate-genders" value="Recalculate All Genders"/>
+</form>
+</p>
+EOFORM;
+    }
+
+    private function reCalculateClassificationsForm() {
+        return <<<EOFORM
+</p>
+<form method="post" id="recalculate-classifications" action="">
+<input type="submit" name="recalculate-classifications" value="Recalculate All Classifications"/>
+</form>
+</p>
+EOFORM;
+    }
+
     public function homePageHTML() {
         $text = array();
         $text []= '<h1>Score Cards</h1>';
@@ -902,7 +991,13 @@ EOFORM;
         $text []= '<hr/>';
         $text []= $this->twoFiveTwoLink();
         $text []= '<hr/>';
+        $text []= $this->reCalculateGendersForm();
+        $text []= '<hr/>';
+        $text []= $this->reCalculateAgeGroupsForm();
+        $text []= '<hr/>';
         $text []= $this->reCalculateHandicapsForScoresForm();
+        $text []= '<hr/>';
+        $text []= $this->reCalculateClassificationsForm();
         $text []= '<hr/>';
         $text []= $this->rebuildRoundHandicapsForm();
         $text []= '<hr/>';
