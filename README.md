@@ -48,13 +48,14 @@ TODO
 note to self: We can't use unoficcial rounds for classifications. We *can* use them
 for handicaps, provided they're properly described.
 
-* Add <tt>$round-&gt;getClassification($score, $gender, $bow, $age_group);</tt>
+* Add <tt>$round-&gt;getClassification($score, $gender, $bow, $age_group);</tt>. *done*
 * Add capability to edit scorecard where has_ends = "N"
     * i.e. enter the scores directly: "new score" as opposed to "new scorecard"
-* Add/update score/scorecard should (re-)calculate outdoor/indoor.
+* Add/update score/scorecard should (re-)calculate outdoor/indoor. *done*
 * Add/update score/scorecard should (re-)calculate handicap_ranking. *done*
-* Add/update score/scorecard should (re-)calculate classification.
-* Add/update score/scorecard should (re-)calculate category.
+* Add/update score/scorecard should (re-)calculate classification. *done*
+* Add/update score/scorecard should (re-)calculate category. *done*
+* Add/update score/scorecard should (re-)calculate gender. *done*
 * re-calculate all handicap_rankings. *done*
 * re-calculate all indoor/outdoor. *done*
 * re-calculate all classifications. *done*

@@ -334,18 +334,28 @@ class RHAC_Scorecards {
     private function update() {
         $id = $_POST['scorecard-id'];
         $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
+        $gender = $this->getGender($_POST['archer']);
+        $date = $this->dateToStoredFormat($_POST['date']);
+        $category = $this->categoryAt($_POST['archer'], $date);
+        $classification = $this->getClassification($_POST['round'], $gender, $category,
+                                                   $_POST['bow'], $_POST['total-total']);
+        $outdoor = $this->getIsOutdoor($_POST['round']);
         $params = array(
             $_POST['archer'],
             $_POST['venue'],
-            $this->dateToStoredFormat($_POST['date']),
+            $date,
             $_POST['round'],
             $_POST['bow'],
             $_POST['total-hits'],
             $_POST['total-xs'],
             $_POST['total-golds'],
             $_POST['total-total'],
-            $_POST['has-ends'],
             $handicap_ranking,
+            $_POST['has-ends'],
+            $classification,
+            $outdoor,
+            $category,
+            $gender,
             $id
         );
         // echo '<p>update() ' . print_r($params, true) . '</p>';
@@ -360,8 +370,12 @@ class RHAC_Scorecards {
                  . " xs = ?,"
                  . " golds = ?,"
                  . " score = ?,"
+                 . " handicap_ranking = ?,"
                  . " has_ends = ?,"
-                 . " handicap_ranking = ?"
+                 . " classification = ?,"
+                 . " outdoor = ?,"
+                 . " category = ?,"
+                 . " gender = ?"
                  . " WHERE scorecard_id = ?",
                     $params);
         if ($_POST['has-ends'] == "Y") {
@@ -374,14 +388,21 @@ class RHAC_Scorecards {
 
     private function insert() {
         $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
+        $gender = $this->getGender($_POST['archer']);
+        $date = $this->dateToStoredFormat($_POST['date']);
+        $category = $this->categoryAt($_POST['archer'], $date);
+        $classification = $this->getClassification($_POST['round'], $gender, $category,
+                                                   $_POST['bow'], $_POST['total-total']);
+        $outdoor = $this->getIsOutdoor($_POST['round']);
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
-                 . "(archer, venue, date, round, bow, hits, xs, golds, score, has_ends, handicap_ranking)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 . "(archer, venue_id, date, round, bow, hits, xs, golds, score, has_ends, handicap_ranking, "
+                 . "gender, category, classification, outdoor)"
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
                        $_POST['venue'],
-                       $this->dateToStoredFormat($_POST['date']),
+                       $date,
                        $_POST['round'],
                        $_POST['bow'],
                        $_POST['total-hits'],
@@ -389,7 +410,11 @@ class RHAC_Scorecards {
                        $_POST['total-golds'],
                        $_POST['total-total'],
                        $_POST['has-ends'],
-                       $handicap_ranking));
+                       $handicap_ranking,
+                       $gender,
+                       $category,
+                       $classification,
+                       $outdoor));
         if (!$status) {
             echo '<p>INSERT returned false:'
                 . print_r($this->pdo->errorInfo(), true) . '</p>';
@@ -693,23 +718,32 @@ class RHAC_Scorecards {
         }
     }
 
+    private function getClassification($round, $gender, $category, $bow, $score) {
+        return  $this->getRound($round)->getClassification($gender, $category, $bow, $score);
+    }
+
     private function reCalculateClassifications() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
-            $classification = $this->getRound($scorecard['round'])
-                                   ->getClassification($scorecard['gender'],
-                                                       $scorecard['category'],
-                                                       $scorecard['bow'],
-                                                       $scorecard['score']);
+            $classification = $this->getClassificxation($scorecard['round'].
+                                                        $scorecard['gender'],
+                                                        $scorecard['category'],
+                                                        $scorecard['bow'],
+                                                        $scorecard['score']);
             $this->updateClassification($scorecard['scorecard_id'], $classification);
         }
+    }
+
+    private function getIsOutdoor($round) {
+        $isOutdoor = $this->getRound($round)->isOutdoor();
+        return $isOutdoor ? "Y" : "N";
     }
 
     private function reCalculateOutdoor() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
-            $isOutdoor = $this->getRound($scorecard['round'])->isOutdoor();
-            $this->updateOutdoor($scorecard['scorecard_id'], $isOutdoor ? "Y" : "N");
+            $isOutdoor = $this->getIsOutdoor($scorecard['round']);
+            $this->updateOutdoor($scorecard['scorecard_id'], $isOutdoor);
         }
     }
 
