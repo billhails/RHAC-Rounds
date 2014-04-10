@@ -230,6 +230,9 @@ class RHAC_Scorecards {
         } elseif (isset($_POST['recalculate-classifications'])) {
             $this->reCalculateClassifications();
             $this->homePage();
+        } elseif (isset($_POST['recalculate-outdoor'])) {
+            $this->reCalculateOutdoor();
+            $this->homePage();
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
                 $this->edit($_GET['scorecard-id']);
@@ -514,6 +517,7 @@ class RHAC_Scorecards {
         $text []= '<thead>';
         $text []= '<tr>';
         $text []= '<th>Archer</th>';
+        $text []= '<th>Outdoor</th>';
         $text []= '<th>Bow</th>';
         $text []= '<th>Age</th>';
         $text []= '<th>Gender</th>';
@@ -549,6 +553,7 @@ class RHAC_Scorecards {
             }
             $text []= "<tr class='$tr_class'>";
             $text []= "<td>$result[archer]</td>";
+            $text []= "<td>$result[outdoor]</td>";
             $text []= "<td>$result[bow]</td>";
             $text []= "<td>$result[category]</td>";
             $text []= "<td>$result[gender]</td>";
@@ -649,6 +654,11 @@ class RHAC_Scorecards {
                     array($classification, $scorecard_id));
     }
 
+    private function updateOutdoor($scorecard_id, $outdoor) {
+        $this->exec("UPDATE scorecards SET outdoor = ? WHERE scorecard_id = ?",
+                    array($outdoor, $scorecard_id));
+    }
+
     private function getHandicapForScore($bow, $round, $score) {
         $compound = $bow == "compound" ? "Y" : "N";
         $rows = $this->fetch("SELECT min(handicap) as result"
@@ -692,6 +702,14 @@ class RHAC_Scorecards {
                                                        $scorecard['bow'],
                                                        $scorecard['score']);
             $this->updateClassification($scorecard['scorecard_id'], $classification);
+        }
+    }
+
+    private function reCalculateOutdoor() {
+        $scorecards = $this->getAllScoreCards();
+        foreach ($scorecards as $scorecard) {
+            $isOutdoor = $this->getRound($scorecard['round'])->isOutdoor();
+            $this->updateOutdoor($scorecard['scorecard_id'], $isOutdoor ? "Y" : "N");
         }
     }
 
@@ -974,6 +992,16 @@ EOFORM;
 EOFORM;
     }
 
+    private function reCalculateOutdoorForm() {
+        return <<<EOFORM
+</p>
+<form method="post" id="recalculate-outdoor" action="">
+<input type="submit" name="recalculate-outdoor" value="Reassign Outdoor and Indoor Rounds"/>
+</form>
+</p>
+EOFORM;
+    }
+
     public function homePageHTML() {
         $text = array();
         $text []= '<h1>Score Cards</h1>';
@@ -998,6 +1026,8 @@ EOFORM;
         $text []= $this->reCalculateHandicapsForScoresForm();
         $text []= '<hr/>';
         $text []= $this->reCalculateClassificationsForm();
+        $text []= '<hr/>';
+        $text []= $this->reCalculateOutdoorForm();
         $text []= '<hr/>';
         $text []= $this->rebuildRoundHandicapsForm();
         $text []= '<hr/>';

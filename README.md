@@ -56,11 +56,11 @@ for handicaps, provided they're properly described.
 * Add/update score/scorecard should (re-)calculate classification.
 * Add/update score/scorecard should (re-)calculate category.
 * re-calculate all handicap_rankings. *done*
-* re-calculate all indoor/outdoor.
+* re-calculate all indoor/outdoor. *done*
 * re-calculate all classifications. *done*
 * re-calculate all new_classifications.
+    * pay attention to age group changes.
 * re-calculate all handicap_improvements.
 * re-calculate all club_records.
-    * pay attention to age group changes.
 * Add an interface for defining new rounds.
 * Re-do the scorecards admin interface altogether.
