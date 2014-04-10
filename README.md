@@ -52,7 +52,6 @@ for handicaps, provided they're properly described.
 * Add capability to edit scorecard where has_ends = "N"
     * i.e. enter the scores directly: "new score" as opposed to "new scorecard"
 * Add/update score/scorecard should include hidden has_ends = "Y"/"N" in the form.
-* Add/update score/scorecard should include dropdown venue in the form.
 * Add/update score/scorecard should (re-)calculate outdoor/indoor.
 * Add/update score/scorecard should (re-)calculate handicap_ranking and classification.
 * Add/update score/scorecard should (re-)calculate category.

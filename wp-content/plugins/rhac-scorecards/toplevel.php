@@ -314,6 +314,7 @@ class RHAC_Scorecards {
         $id = $_POST['scorecard-id'];
         $params = array(
             $_POST['archer'],
+            $_POST['venue'],
             $this->dateToStoredFormat($_POST['date']),
             $_POST['round'],
             $_POST['bow'],
@@ -327,6 +328,7 @@ class RHAC_Scorecards {
         $this->pdo->beginTransaction();
         $this->exec("UPDATE scorecards"
                  . " SET archer = ?,"
+                 . " venue = ?,"
                  . " date = ?,"
                  . " round = ?,"
                  . " bow = ?,"
@@ -346,9 +348,10 @@ class RHAC_Scorecards {
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
-                 . "(archer, date, round, bow, hits, xs, golds, score)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                 . "(archer, venue, date, round, bow, hits, xs, golds, score)"
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
+                       $_POST['venue'],
                        $this->dateToStoredFormat($_POST['date']),
                        $_POST['round'],
                        $_POST['bow'],
@@ -431,6 +434,9 @@ class RHAC_Scorecards {
             }
             if (isset($_POST['round'])) {
                 $this->scorecard_data['round'] = $_POST['round'];
+            }
+            if (isset($_POST['venue'])) {
+                $this->scorecard_data['venue'] = $_POST['venue'];
             }
             $this->scorecard_end_data = array();
         }
@@ -692,7 +698,6 @@ class RHAC_Scorecards {
         $map = array();
         foreach ($rows as $row) {
             $map[$row['venue_id']] = $row['name'];
-            $map[$row['name']] = $row['venue_id'];
         }
         return $map;
     }
@@ -895,6 +900,20 @@ EOT
     private function archers() {
         $archer_map = $this->getArcherMap();
         return array_keys($archer_map);
+    }
+
+    private function venueAsSelect() {
+        $venue_map = $this->getVenueMap();
+        $text = array("<select name='venue' id='venue'>");
+        foreach ($venue_map as $id => $name) {
+            $text []= "<option value='$id'"
+                . ($id == $this->scorecard_data["venue"]
+                    ? ' selected="1"'
+                    : '')
+                . ">$name</option>";
+        }
+        $text []= '</select>';
+        return implode("\n", $text);
     }
 
     public function archersAsSelect($id = 'archer', $include_archived = false) {
@@ -1165,6 +1184,12 @@ EOT
         $text []= '<th colspan="3">Date</th>';
         $text []= '<td colspan="6">';
         $text []= $this->dateAsInput();
+        $text []= '</td>';
+        $text []= '</tr>';
+        $text []= '<tr>';
+        $text []= '<th colspan="4">Venue</th>';
+        $text []= '<td colspan="16">';
+        $text []= $this->venueAsSelect();
         $text []= '</td>';
         $text []= '</tr>';
         $text []= $this->scorecardHeaderRow();

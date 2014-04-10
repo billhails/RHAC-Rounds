@@ -484,8 +484,8 @@ class RHACScorecardViewer {
 
     public function getScorecards($archer, $round, $bow) {
         $conditions = array();
-        $conditions []= '1 = 1';
-        $params = array();
+        $conditions []= 'has_ends = ?';
+        $params = array("Y");
         if ($archer != "all") {
             $conditions []= "archer = ?";
             $params []= $archer;
