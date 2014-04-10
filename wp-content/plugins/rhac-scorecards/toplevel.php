@@ -212,6 +212,9 @@ class RHAC_Scorecards {
         } elseif (isset($_POST['rebuild-round-handicaps'])) {
             $this->rebuildRoundHandicaps();
             $this->homePage();
+        } elseif (isset($_POST['recalculate-score-handicaps'])) {
+            $this->reCalculateHandicapsForScores();
+            $this->homePage();
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
                 $this->edit($_GET['scorecard-id']);
@@ -312,6 +315,7 @@ class RHAC_Scorecards {
 
     private function update() {
         $id = $_POST['scorecard-id'];
+        $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
         $params = array(
             $_POST['archer'],
             $_POST['venue'],
@@ -323,13 +327,14 @@ class RHAC_Scorecards {
             $_POST['total-golds'],
             $_POST['total-total'],
             $_POST['has-ends'],
+            $handicap_ranking,
             $id
         );
         // echo '<p>update() ' . print_r($params, true) . '</p>';
         $this->pdo->beginTransaction();
         $this->exec("UPDATE scorecards"
                  . " SET archer = ?,"
-                 . " venue = ?,"
+                 . " venue_id = ?,"
                  . " date = ?,"
                  . " round = ?,"
                  . " bow = ?,"
@@ -337,7 +342,8 @@ class RHAC_Scorecards {
                  . " xs = ?,"
                  . " golds = ?,"
                  . " score = ?,"
-                 . " has_ends = ?"
+                 . " has_ends = ?,"
+                 . " handicap_ranking = ?"
                  . " WHERE scorecard_id = ?",
                     $params);
         if ($_POST['has-ends'] == "Y") {
@@ -349,11 +355,12 @@ class RHAC_Scorecards {
     }
 
     private function insert() {
+        $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
-                 . "(archer, venue, date, round, bow, hits, xs, golds, score, has_ends)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 . "(archer, venue, date, round, bow, hits, xs, golds, score, has_ends, handicap_ranking)"
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
                        $_POST['venue'],
                        $this->dateToStoredFormat($_POST['date']),
@@ -363,7 +370,8 @@ class RHAC_Scorecards {
                        $_POST['total-xs'],
                        $_POST['total-golds'],
                        $_POST['total-total'],
-                       $_POST['has-ends']));
+                       $_POST['has-ends'],
+                       $handicap_ranking));
         if (!$status) {
             echo '<p>INSERT returned false:'
                 . print_r($this->pdo->errorInfo(), true) . '</p>';
@@ -496,11 +504,12 @@ class RHAC_Scorecards {
         $text []= '<th>Gender</th>';
         $text []= '<th>Round</th>';
         $text []= '<th>Date</th>';
-        $text []= '<th>Venue</th>';
+        $text []= '<th>Place Shot</th>';
         $text []= '<th>Hits</th>';
         $text []= '<th>Xs</th>';
         $text []= '<th>Golds</th>';
         $text []= '<th>Score</th>';
+        $text []= '<th>Handicap for Score</th>';
         $text []= '<th>&nbsp;</th>';
         $text []= '</tr>';
         $text []= '</thead>';
@@ -535,6 +544,7 @@ class RHAC_Scorecards {
             $text []= "<td>$result[xs]</td>";
             $text []= "<td>$result[golds]</td>";
             $text []= "<td>$result[score]</td>";
+            $text []= "<td>$result[handicap_ranking]</td>";
             $text []= "<td>";
             $text []= "<form method='get' action=''>";
             $text []= '<input type="hidden" name="page" value="'
@@ -597,6 +607,33 @@ class RHAC_Scorecards {
             $rounds[$round->getName()] = $round_json;
         }
         return json_encode($rounds);
+    }
+
+    private function getAllScoreCards() {
+        return $this->fetch("SELECT * FROM scorecards");
+    }
+
+    private function updateHandicapRanking($scorecard_id, $handicap_ranking) {
+        $this->exec("UPDATE scorecards SET handicap_ranking = ? WHERE scorecard_id = ?",
+                    array($handicap_ranking, $scorecard_id));
+    }
+
+    private function getHandicapForScore($bow, $round, $score) {
+        $compound = $bow == "compound" ? "Y" : "N";
+        $rows = $this->fetch("SELECT min(handicap) as result"
+                            . " from round_handicaps"
+                            . " where round = ? and compound = ? and score <= ?",
+                            array($round, $compound, $score));
+        return $rows[0]["result"];
+    }
+
+    private function reCalculateHandicapsForScores() {
+        $scorecards = $this->getAllScoreCards();
+        foreach ($scorecards as $scorecard) {
+            $handicap_ranking = $this->getHandicapForScore($scorecard['bow'],
+                                        $scorecard['round'], $scorecard['score']);
+            $this->updateHandicapRanking($scorecard['scorecard_id'], $handicap_ranking);
+        }
     }
 
     private function rebuildRoundHandicaps() {
@@ -838,6 +875,16 @@ You only need do this if a new round has been added or a round definition change
 EOFORM;
     }
 
+    private function reCalculateHandicapsForScoresForm() {
+        return <<<EOFORM
+</p>
+<form method="post" id="recalculate-score-handicaps" action="">
+<input type="submit" name="recalculate-score-handicaps" value="Recalculate All Score Handicaps"/>
+</form>
+</p>
+EOFORM;
+    }
+
     public function homePageHTML() {
         $text = array();
         $text []= '<h1>Score Cards</h1>';
@@ -854,6 +901,8 @@ EOFORM;
         $text []= $this->NewVenueForm();
         $text []= '<hr/>';
         $text []= $this->twoFiveTwoLink();
+        $text []= '<hr/>';
+        $text []= $this->reCalculateHandicapsForScoresForm();
         $text []= '<hr/>';
         $text []= $this->rebuildRoundHandicapsForm();
         $text []= '<hr/>';

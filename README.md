@@ -52,9 +52,15 @@ for handicaps, provided they're properly described.
 * Add capability to edit scorecard where has_ends = "N"
     * i.e. enter the scores directly: "new score" as opposed to "new scorecard"
 * Add/update score/scorecard should (re-)calculate outdoor/indoor.
-* Add/update score/scorecard should (re-)calculate handicap_ranking and classification.
+* Add/update score/scorecard should (re-)calculate handicap_ranking. *done*
+* Add/update score/scorecard should (re-)calculate classification.
 * Add/update score/scorecard should (re-)calculate category.
-* Re-build or update all calculable fields on demand.
+* re-calculate all handicap_rankings. *done*
+* re-calculate all indoor/outdoor.
+* re-calculate all classifications.
+* re-calculate all new_classifications.
+* re-calculate all handicap_improvements.
+* re-calculate all club_records.
     * pay attention to age group changes.
 * Add an interface for defining new rounds.
 * Re-do the scorecards admin interface altogether.
