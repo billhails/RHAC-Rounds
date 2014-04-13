@@ -528,7 +528,9 @@ jQuery(
         }
 
         if (jQuery('#round-data').text()) {
-            new RHAC_Scorer();
+            if (jQuery('#edit-scorecard').text()) {
+                new RHAC_Scorer();
+            }
             jQuery( "#date" ).datepicker(
                     { dateFormat: "D, d M yy" }
                 );

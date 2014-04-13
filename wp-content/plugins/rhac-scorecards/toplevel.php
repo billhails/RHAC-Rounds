@@ -199,6 +199,32 @@ class RHAC_Scorecards {
                 $this->insert();
             }
             $this->homePage();
+        } elseif (isset($_POST['submit-score-and-edit'])) {
+            // update or insert requested
+            if ($_POST['scorecard-id']) { // update requested
+                // echo '<p>topLevel() update req</p>';
+                $this->update();
+                $id = $_POST['scorecard-id'];
+            } else { // insert requested
+                // echo '<p>topLevel() insert req</p>';
+                $id = $this->insert();
+            }
+            $this->edit($id, false);
+        } elseif (isset($_POST['submit-score-and-new'])) {
+            if ($_POST['scorecard-id']) { // update requested
+                $this->update();
+            } else { // insert requested
+                $this->insert();
+            }
+            $this->edit(0, false);
+        } elseif (isset($_POST['submit-score-and-finish'])) {
+            if ($_POST['scorecard-id']) { // update requested
+                $this->update();
+            } else { // insert requested
+                $this->insert();
+            }
+            $this->homePage();
+
         } elseif (isset($_POST['delete-scorecard'])) { // delete requested
             // echo '<p>topLevel() delete req</p>';
             $this->deleteScorecard($_POST['scorecard-id']);
@@ -233,12 +259,22 @@ class RHAC_Scorecards {
         } elseif (isset($_POST['recalculate-outdoor'])) {
             $this->reCalculateOutdoor();
             $this->homePage();
+        } elseif (isset($_POST['recalculate-tens'])) {
+            $this->reCalculateTens();
+            $this->homePage();
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
                 $this->edit($_GET['scorecard-id']);
             }
             else { // create requested
                 $this->edit(0);
+            }
+        } elseif (isset($_GET['edit-score'])) { // edit or create requested
+            if ($_GET['scorecard-id']) { // edit requested
+                $this->edit($_GET['scorecard-id'], false);
+            }
+            else { // create requested
+                $this->edit(0, false);
             }
         } elseif (isset($_GET['find-scorecard'])) { // search requested
             $this->find();
@@ -332,6 +368,10 @@ class RHAC_Scorecards {
     }
 
     private function update() {
+        # print "<pre>\n";
+        # print_r($_POST);
+        # print "</pre>\n";
+
         $id = $_POST['scorecard-id'];
         $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
         $gender = $this->getGender($_POST['archer']);
@@ -340,9 +380,10 @@ class RHAC_Scorecards {
         $classification = $this->getClassification($_POST['round'], $gender, $category,
                                                    $_POST['bow'], $_POST['total-total']);
         $outdoor = $this->getIsOutdoor($_POST['round']);
+        $tens = $this->countTens();
         $params = array(
             $_POST['archer'],
-            $_POST['venue'],
+            $_POST['venue_id'],
             $date,
             $_POST['round'],
             $_POST['bow'],
@@ -351,11 +392,12 @@ class RHAC_Scorecards {
             $_POST['total-golds'],
             $_POST['total-total'],
             $handicap_ranking,
-            $_POST['has-ends'],
+            $_POST['has_ends'],
             $classification,
             $outdoor,
             $category,
             $gender,
+            $tens,
             $id
         );
         // echo '<p>update() ' . print_r($params, true) . '</p>';
@@ -375,10 +417,11 @@ class RHAC_Scorecards {
                  . " classification = ?,"
                  . " outdoor = ?,"
                  . " category = ?,"
-                 . " gender = ?"
+                 . " gender = ?,"
+                 . " tens = ?"
                  . " WHERE scorecard_id = ?",
                     $params);
-        if ($_POST['has-ends'] == "Y") {
+        if ($_POST['has_ends'] == "Y") {
             $this->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?",
                              array($id));
             $this->insertEnds($id);
@@ -394,14 +437,15 @@ class RHAC_Scorecards {
         $classification = $this->getClassification($_POST['round'], $gender, $category,
                                                    $_POST['bow'], $_POST['total-total']);
         $outdoor = $this->getIsOutdoor($_POST['round']);
+        $tens = $this->countTens();
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
                  . "(archer, venue_id, date, round, bow, hits, xs, golds, score, has_ends, handicap_ranking, "
-                 . "gender, category, classification, outdoor)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 . "gender, category, classification, outdoor, tens)"
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
-                       $_POST['venue'],
+                       $_POST['venue_id'],
                        $date,
                        $_POST['round'],
                        $_POST['bow'],
@@ -409,12 +453,13 @@ class RHAC_Scorecards {
                        $_POST['total-xs'],
                        $_POST['total-golds'],
                        $_POST['total-total'],
-                       $_POST['has-ends'],
+                       $_POST['has_ends'],
                        $handicap_ranking,
                        $gender,
                        $category,
                        $classification,
-                       $outdoor));
+                       $outdoor,
+                       $tens));
         if (!$status) {
             echo '<p>INSERT returned false:'
                 . print_r($this->pdo->errorInfo(), true) . '</p>';
@@ -425,6 +470,28 @@ class RHAC_Scorecards {
         $this->insertEnds($id);
         $this->pdo->commit();
         return $id;
+    }
+
+    private function countTens() {
+        if (isset($_POST['total-tens'])) {
+            return $_POST['total-tens'];
+        }
+        $total = 0;
+        for ($end = 1; $end < 25; ++$end) {
+            if ($_POST["arrow-$end-1"] == "") break;
+            if ($_POST["arrow-$end-2"] == "") break;
+            if ($_POST["arrow-$end-3"] == "") break;
+            if ($_POST["arrow-$end-4"] == "") break;
+            if ($_POST["arrow-$end-5"] == "") break;
+            if ($_POST["arrow-$end-6"] == "") break;
+            for ($arrow = 1; $arrow <= 6; ++$arrow) {
+                $score = $_POST["arrow-$end-$arrow"];
+                if ($score == "10" || $score == "X") {
+                    ++$total;
+                }
+            }
+        }
+        return $total;
     }
 
     private function insertEnds($id) {
@@ -469,15 +536,19 @@ class RHAC_Scorecards {
         $this->scorecard_data = $rows[0];
         $this->scorecard_data['date'] =
             $this->dateToDisplayedFormat($this->scorecard_data['date']);
-        $rows = $this->fetch("SELECT *"
+        $rows = $this->fetchScorecardEnds($id);
+        $this->scorecard_end_data = $rows;
+    }
+
+    private function fetchScorecardEnds($id) {
+        return $this->fetch("SELECT *"
                       . " FROM scorecard_end"
                       . " WHERE scorecard_id = ?"
                       . " ORDER BY end_number",
                       array($id));
-        $this->scorecard_end_data = $rows;
     }
 
-    private function edit($id) {
+    private function edit($id, $has_ends = true) {
         // echo "<p>edit($id)</p>";
         $this->scorecard_id = $id;
         if ($id) {
@@ -491,12 +562,16 @@ class RHAC_Scorecards {
             if (isset($_POST['round'])) {
                 $this->scorecard_data['round'] = $_POST['round'];
             }
-            if (isset($_POST['venue'])) {
-                $this->scorecard_data['venue'] = $_POST['venue'];
+            if (isset($_POST['venue_id'])) {
+                $this->scorecard_data['venue_id'] = $_POST['venue_id'];
+            }
+            if (isset($_POST['has_ends'])) {
+                $this->scorecard_data['has_ends'] = $_POST['has_ends'];
+                $has_ends = $_POST['has_ends'] == "Y";
             }
             $this->scorecard_end_data = array();
         }
-        print $this->editScorecardPage();
+        print $this->editScorecardPage($has_ends);
     }
 
     private function find() {
@@ -552,6 +627,7 @@ class RHAC_Scorecards {
         $text []= '<th>Hits</th>';
         $text []= '<th>Xs</th>';
         $text []= '<th>Golds</th>';
+        $text []= '<th>Tens</th>';
         $text []= '<th>Score</th>';
         $text []= '<th>Handicap</th>';
         $text []= '<th>Classification</th>';
@@ -588,6 +664,7 @@ class RHAC_Scorecards {
             $text []= "<td>$result[hits]</td>";
             $text []= "<td>$result[xs]</td>";
             $text []= "<td>$result[golds]</td>";
+            $text []= "<td>$result[tens]</td>";
             $text []= "<td>$result[score]</td>";
             $text []= "<td>$result[handicap_ranking]</td>";
             $text []= "<td>$result[classification]</td>";
@@ -597,8 +674,8 @@ class RHAC_Scorecards {
                         . $_GET[page] . '"/>';
             $text []=
             "<input type='hidden' name='scorecard-id' value='$result[scorecard_id]' />";
-            $text []=
-            "<input type='submit' name='edit-scorecard' value='Edit' />";
+            $editname = $result['has_ends'] == "Y" ? 'edit-scorecard' : 'edit-score';
+            $text []= "<input type='submit' name='$editname' value='Edit' />";
             $text []= "</form>";
             $text []= "</td>";
             $text []= "</tr>\n";
@@ -655,8 +732,12 @@ class RHAC_Scorecards {
         return json_encode($rounds);
     }
 
-    private function getAllScoreCards() {
-        return $this->fetch("SELECT * FROM scorecards");
+    private function getAllScoreCards($with_ends_only = false) {
+        $query = "SELECT * FROM scorecards";
+        if ($with_ends_only) {
+            $query .= ' WHERE has_ends = "Y"';
+        }
+        return $this->fetch($query);
     }
 
     private function updateHandicapRanking($scorecard_id, $handicap_ranking) {
@@ -682,6 +763,11 @@ class RHAC_Scorecards {
     private function updateOutdoor($scorecard_id, $outdoor) {
         $this->exec("UPDATE scorecards SET outdoor = ? WHERE scorecard_id = ?",
                     array($outdoor, $scorecard_id));
+    }
+
+    private function updateTens($scorecard_id, $tens) {
+        $this->exec("UPDATE scorecards SET tens = ? WHERE scorecard_id = ?",
+                    array($tens, $scorecard_id));
     }
 
     private function getHandicapForScore($bow, $round, $score) {
@@ -725,11 +811,11 @@ class RHAC_Scorecards {
     private function reCalculateClassifications() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
-            $classification = $this->getClassificxation($scorecard['round'].
-                                                        $scorecard['gender'],
-                                                        $scorecard['category'],
-                                                        $scorecard['bow'],
-                                                        $scorecard['score']);
+            $classification = $this->getClassification($scorecard['round'],
+                                                       $scorecard['gender'],
+                                                       $scorecard['category'],
+                                                       $scorecard['bow'],
+                                                       $scorecard['score']);
             $this->updateClassification($scorecard['scorecard_id'], $classification);
         }
     }
@@ -745,6 +831,29 @@ class RHAC_Scorecards {
             $isOutdoor = $this->getIsOutdoor($scorecard['round']);
             $this->updateOutdoor($scorecard['scorecard_id'], $isOutdoor);
         }
+    }
+
+    private function reCalculateTens() {
+        print "<p>reCalculateTens() called</p>\n";
+        $scorecards = $this->getAllScoreCards(true);
+        foreach ($scorecards as $scorecard) {
+            $tens = $this->countTensFromTable($scorecard['scorecard_id']);
+            $this->updateTens($scorecard['scorecard_id'], $tens);
+        }
+    }
+
+    function countTensFromTable($id) {
+        $ends = $this->fetchScorecardEnds($id);
+        $total = 0;
+        foreach ($ends as $end) {
+            for ($arrow = 1; $arrow <= 6; ++ $arrow) {
+                $score = $end["arrow_$arrow"];
+                if ($score == "10" || $score == "X") {
+                    ++$total;
+                }
+            }
+        }
+        return $total;
     }
 
     private function rebuildRoundHandicaps() {
@@ -911,7 +1020,13 @@ class RHAC_Scorecards {
         $text []= '<form method="get" action="">';
         $text []= '<input type="hidden" name="page" value="'
                     . $_GET[page] . '"/>';
+        $text []= '<p>';
         $text []= '<input type="submit" name="edit-scorecard" value="New Scorecard" />';
+        $text []= '</p>';
+        $text []= '<hr/>';
+        $text []= '<p>';
+        $text []= '<input type="submit" name="edit-score" value="New Score" />';
+        $text []= '</p>';
         $text []= '</form>';
         return implode($text);
     }
@@ -1036,6 +1151,16 @@ EOFORM;
 EOFORM;
     }
 
+    private function reCalculateTensForm() {
+        return <<<EOFORM
+</p>
+<form method="post" id="recalculate-tens" action="">
+<input type="submit" name="recalculate-tens" value="Recount all Tens"/>
+</form>
+</p>
+EOFORM;
+    }
+
     public function homePageHTML() {
         $text = array();
         $text []= '<h1>Score Cards</h1>';
@@ -1062,6 +1187,8 @@ EOFORM;
         $text []= $this->reCalculateClassificationsForm();
         $text []= '<hr/>';
         $text []= $this->reCalculateOutdoorForm();
+        $text []= '<hr/>';
+        $text []= $this->reCalculateTensForm();
         $text []= '<hr/>';
         $text []= $this->rebuildRoundHandicapsForm();
         $text []= '<hr/>';
@@ -1102,7 +1229,7 @@ EOT
 
     private function dateAsInput() {
         $text = array();
-        $text []= '<input type="text" name="date" ';
+        $text []= '<input type="text" name="date" size="16" ';
         if ($this->scorecard_data['date']) {
             $text []= "value='" . $this->scorecard_data["date"] . "'";
         }
@@ -1117,10 +1244,18 @@ EOT
 
     private function venueAsSelect() {
         $venue_map = $this->getVenueMap();
-        $text = array("<select name='venue' id='venue'>");
+        # print "<pre>\n";
+        # print "venue_map:\n";
+        # print_r($venue_map);
+        # print "_POST:\n";
+        # print_r($_POST);
+        # print "scorecard_data:\n";
+        # print_r($this->scorecard_data);
+        # print "</pre>\n";
+        $text = array("<select name='venue_id' id='venue_id'>");
         foreach ($venue_map as $id => $name) {
             $text []= "<option value='$id'"
-                . ($id == $this->scorecard_data["venue"]
+                . ($id == $this->scorecard_data['venue_id']
                     ? ' selected="1"'
                     : '')
                 . ">$name</option>";
@@ -1410,9 +1545,10 @@ EOT
         return implode($text);
     }
 
-    private function formInputs() {
+    private function formControls($has_ends) {
+        $has_ends_yn = $has_ends ? "Y" : "N";
         $text = array();
-        $text []= '<input type="hidden" name="has-ends" value="Y" />';
+        $text []= "<input type='hidden' name='has_ends' value='$has_ends_yn' />";
         $text []= '<input type="hidden" name="scorecard-id" value="'
                 . $this->scorecard_id . '" />';
         $text []= '<input type="hidden"'
@@ -1443,7 +1579,50 @@ EOT
         $text = array();
         $text []= '<form method="post" action="" id="edit-scorecard">';
         $text []= $this->scorecardTable();
-        $text []= $this->formInputs();
+        $text []= $this->formControls(true);
+        $text []= '</form>';
+        return implode($text);
+    }
+
+    private function scoreForm() {
+        $text = array();
+        $text []= '<form method="post" action="" id="edit-score">';
+        $text []= '<table>';
+        $text []= '<thead>';
+        $text []= '<tr>';
+        $text []= '<th>Archer</th>';
+        $text []= '<th>Bow</th>';
+        $text []= '<th>Round</th>';
+        $text []= '<th>Date</th>';
+        $text []= '<th>Venue</th>';
+        $text []= '<th>Hits</th>';
+        $text []= '<th>Xs</th>';
+        $text []= '<th>Golds</th>';
+        $text []= '<th>Tens</th>';
+        $text []= '<th>Score</th>';
+        $text []= '</tr>';
+        $text []= '</thead>';
+        $text []= '<tbody>';
+        $text []= '<tr>';
+        $text []= '<td>' . $this->archersAsSelect() . '</td>';
+        $text []= '<td>' . $this->bowsAsRadio() . '</td>';
+        $text []= '<td>' . $this->roundDataAsSelect() . '</td>';
+        $text []= '<td>' . $this->dateAsInput() . '</td>';
+        $text []= '<td>' . $this->venueAsSelect() . '</td>';
+        $text []= '<td><input type="text" name="total-hits" size="4" value="' . $this->scorecard_data['hits'] . '" /></td>';
+        $text []= '<td><input type="text" name="total-xs" size="4" value="' . $this->scorecard_data['xs'] . '" /></td>';
+        $text []= '<td><input type="text" name="total-golds" size="4" value="' . $this->scorecard_data['golds'] . '" /></td>';
+        $text []= '<td><input type="text" name="total-tens" size="4" value="' . $this->scorecard_data['tens'] . '" /></td>';
+        $text []= '<td><input type="text" name="total-total" size="6" value="' . $this->scorecard_data['score'] . '" /></td>';
+        $text []= '</tr>';
+        $text []= '</tbody>';
+        $text []= '</table>';
+        $text []= "<input type='hidden' name='has_ends' value='N' />";
+        $text []= '<input type="hidden" name="scorecard-id" value="'
+                . $this->scorecard_id . '" />';
+        $text []= '<input type="submit" name="submit-score-and-edit" value="Submit and Edit" />';
+        $text []= '<input type="submit" name="submit-score-and-new" value="Submit and New" />';
+        $text []= '<input type="submit" name="submit-score-and-finish" value="Submit and Finish" />';
         $text []= '</form>';
         return implode($text);
     }
@@ -1494,9 +1673,12 @@ EOT
         return implode($text);
     }
 
-    private function editScorecardPage() {
+    private function editScorecardPage($has_ends) {
         $text = array();
-        $text []= '<h1>Edit Score Card';
+        $text []= '<h1>Edit Score';
+        if ($has_ends) {
+            $text []= ' Card';
+        }
         if ($this->scorecard_id) {
             $text []= ' #' . $this->scorecard_id;
         }
@@ -1505,8 +1687,12 @@ EOT
         $text []= $this->deleteScorecardButton();
         $text []= $this->cancelButton();
         $text []= $this->roundData();
-        $text []= $this->scorecardForm();
-        $text []= $this->zoneCharts();
+        if ($has_ends) {
+            $text []= $this->scorecardForm();
+            $text []= $this->zoneCharts();
+        } else {
+            $text []= $this->scoreForm();
+        }
         return implode($text);
     }
 

@@ -63,5 +63,7 @@ for handicaps, provided they're properly described.
     * pay attention to age group changes.
 * re-calculate all handicap_improvements.
 * re-calculate all club_records.
+* Ability to edit Archer.
+* Ability to edit venue.
 * Add an interface for defining new rounds.
 * Re-do the scorecards admin interface altogether.
