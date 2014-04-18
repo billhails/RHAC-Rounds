@@ -1,6 +1,7 @@
 <?php
 
 include_once plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
+include_once plugin_dir_path(__FILE__) . 'RHAC_ScorecardAccumulator.php';
 
 class RHAC_Archer252 {
     private static $instances;
@@ -261,6 +262,9 @@ class RHAC_Scorecards {
             $this->homePage();
         } elseif (isset($_POST['recalculate-tens'])) {
             $this->reCalculateTens();
+            $this->homePage();
+        } elseif (isset($_POST['recalculate-records'])) {
+            $this->reCalculateRecords();
             $this->homePage();
         } elseif (isset($_GET['edit-scorecard'])) { // edit or create requested
             if ($_GET['scorecard-id']) { // edit requested
@@ -589,6 +593,14 @@ class RHAC_Scorecards {
             $criteria []= 'bow = ?';
             $params []= $_GET["bow"];
         }
+        if ($_GET["club-record"] == "current") {
+            $criteria []= 'club_record = ?';
+            $params []= "current";
+        }
+        if ($_GET["category"]) {
+            $criteria []= 'category = ?';
+            $params []= $_GET['category'];
+        }
         if ($_GET["lower-date"]) {
             if ($_GET["upper-date"]) {
                 $criteria []= 'date BETWEEN ? and ?';
@@ -631,6 +643,8 @@ class RHAC_Scorecards {
         $text []= '<th>Score</th>';
         $text []= '<th>Handicap</th>';
         $text []= '<th>Classification</th>';
+        $text []= '<th>Record</th>';
+        $text []= '<th>PB</th>';
         $text []= '<th>&nbsp;</th>';
         $text []= '</tr>';
         $text []= '</thead>';
@@ -668,6 +682,8 @@ class RHAC_Scorecards {
             $text []= "<td>$result[score]</td>";
             $text []= "<td>$result[handicap_ranking]</td>";
             $text []= "<td>$result[classification]</td>";
+            $text []= "<td>$result[club_record]</td>";
+            $text []= "<td>$result[personal_best]</td>";
             $text []= "<td>";
             $text []= "<form method='get' action=''>";
             $text []= '<input type="hidden" name="page" value="'
@@ -737,6 +753,7 @@ class RHAC_Scorecards {
         if ($with_ends_only) {
             $query .= ' WHERE has_ends = "Y"';
         }
+        $query .= ' ORDER BY date, score';
         return $this->fetch($query);
     }
 
@@ -834,12 +851,37 @@ class RHAC_Scorecards {
     }
 
     private function reCalculateTens() {
-        print "<p>reCalculateTens() called</p>\n";
         $scorecards = $this->getAllScoreCards(true);
         foreach ($scorecards as $scorecard) {
             $tens = $this->countTensFromTable($scorecard['scorecard_id']);
             $this->updateTens($scorecard['scorecard_id'], $tens);
         }
+    }
+
+    private function reCalculateRecords() {
+        $scorecards = $this->getAllScoreCards();
+        $accumulator = new RHAC_ScorecardAccumulator();
+        foreach ($scorecards as $scorecard) {
+            $accumulator->accept($scorecard);
+        }
+        $changes = $accumulator->results();
+        foreach ($changes as $scorecard_id => $change) {
+            $this->updateRecords($scorecard_id, $change);
+        }
+    }
+
+    private function updateRecords($scorecard_id, $changes) {
+        $params = array();
+        $arguments = array();
+        $update_statement = "UPDATE scorecards SET ";
+        foreach ($changes as $key => $value) {
+            $arguments []= "$key = ?";
+            $params []= $value;
+        }
+        $update_statement .= implode(', ', $arguments);
+        $update_statement .= " WHERE scorecard_id = ?";
+        $params []= $scorecard_id;
+        $this->exec($update_statement, $params);
     }
 
     function countTensFromTable($id) {
@@ -920,6 +962,24 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    public function categoryAsSelect() {
+        $categories = array('adult', 'U18', 'U16', 'U14', 'U12');
+        $text = array('<select name="category" id="category">');
+        $text []= "<option value=''>- - -</option>\n";
+        foreach ($categories as $category) {
+            $text []= "<option value='$category'>$category</option>\n";
+        }
+        $text []= '<select>';
+        return implode($text);
+    }
+
+    private function clubRecordAsRadio() {
+        $text = array();
+        $text []= '<input type="radio" name="club-record" checked="1" value="">&nbsp;don\'t care&nbsp;</input>&nbsp;';
+        $text []= '<input type="radio" name="club-record" value="current">&nbsp;current&nbsp;</input>&nbsp;';
+        return implode($text);
+    }
+
     private function homePage() {
         // echo '<p>in homePage()</p>';
         print $this->homePageHTML();
@@ -949,10 +1009,20 @@ class RHAC_Scorecards {
 
     private function ageAt($archer, $date_string) {
         $dob_string = $this->getDoB($archer);
-        $dob = new DateTime($dob_string);
-        $date = new DateTime($date_string);
-        $diff = $dob->diff($date);
-        return $diff->format('%y');
+        $dob = $this->unixdate($dob_string);
+        $date = $this->unixdate($date_string);
+        $diff = $date - $dob;
+        return floor($diff / (60 * 60 * 24 * 365.242));
+    }
+
+    private function unixdate($date_string) {
+        $y = substr($date_string, 0, 4) + 0;
+        if ($y < 1970) {
+            $y = 1970;
+        }
+        $m = substr($date_string, 5, 2) + 0;
+        $d = substr($date_string, 8, 2) + 0;
+        return mktime(0, 0, 0, $m, $d, $y, 0);
     }
 
     private function getVenueMap() {
@@ -997,6 +1067,12 @@ class RHAC_Scorecards {
         $text []= '</td></tr>';
         $text []= '<tr><td>Bow</td><td colspan="2">';
         $text []= $this->bowDataAsSelect();
+        $text []= '</td></tr>';
+        $text []= '<tr><td>Age Group</td><td colspan="2">';
+        $text []= $this->categoryAsSelect();
+        $text []= '</td></tr>';
+        $text []= '<tr><td>Club Record</td><td colspan="2">';
+        $text []= $this->clubRecordAsRadio();
         $text []= '</td></tr>';
         $text []= '<tr><td>Date or Date Range</td>';
         $text []= '<td>';
@@ -1161,6 +1237,16 @@ EOFORM;
 EOFORM;
     }
 
+    private function reCalculateRecordsForm() {
+        return <<<EOFORM
+</p>
+<form method="post" id="recalculate-records" action="">
+<input type="submit" name="recalculate-records" value="Recalculate Club Records"/>
+</form>
+</p>
+EOFORM;
+    }
+
     public function homePageHTML() {
         $text = array();
         $text []= '<h1>Score Cards</h1>';
@@ -1189,6 +1275,8 @@ EOFORM;
         $text []= $this->reCalculateOutdoorForm();
         $text []= '<hr/>';
         $text []= $this->reCalculateTensForm();
+        $text []= '<hr/>';
+        $text []= $this->reCalculateRecordsForm();
         $text []= '<hr/>';
         $text []= $this->rebuildRoundHandicapsForm();
         $text []= '<hr/>';
