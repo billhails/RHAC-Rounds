@@ -4,10 +4,14 @@ include_once('RHAC_ReassesmentInserter.php');
 
 class Test_RHAC_ReassesmentInserter extends PHPUnit_Framework_TestCase {
 
-    private $data;
+    private $inserter;
 
-    public function testHelloWorld() {
-        $this->assertEquals(1, 1);
+    public function setUp() {
+        $this->inserter = new RHAC_ReassesmentInserter();
+    }
+
+    public function testNew() {
+        $this->assertInstanceOf('RHAC_ReassesmentInserter', $this->inserter);
     }
 
 }

@@ -2,6 +2,28 @@
 
 class RHAC_ReassesmentInserter {
 
+    private static $children = array();
+
+    public function accept($row) {
+        $key = implode("\e", array($row['bow'], $row['archer'], $row['outdoor']));
+        if (!isset($this->children[$key])) {
+            $this->children[$key] = new RHAC_ReassesmentInserterLeaf($row);
+        }
+        $this->children[$key]->accept($row);
+    }
+
+    protected function results() {
+        $results = array();
+        foreach ($this->children as $child) {
+            $results = array_merge($results, $child);
+        }
+        return $results;
+    }
+
+}
+
+class RHAC_ReassesmentInserterLeaf {
+
     private $next_season;
     private $suggestions = array();
     private $unexpected = array();
@@ -11,34 +33,16 @@ class RHAC_ReassesmentInserter {
     private $outdoor;
     private $season_calculator;
 
-    private static $instances = array();
-
-    public static function call($row) {
-        self::getInstance($row)->accept($row);
-    }
-
-    private function __construct($row) {
+    public function __construct($row) {
         $this->bow = $row['bow'];
         $this->archer = $row['archer'];
         $this->outdoor = $row['outdoor'];
         if ($outdoor = "Y") {
-            $this->season_calculator = new RHAC_NextOutdoorSeasonCalculator();
+            $this->season_calculator = RHAC_NextOutdoorSeasonCalculator::getInstance();
         }
         else {
-            $this->season_calculator = new RHAC_NextIndoorSeasonCalculator();
+            $this->season_calculator = RHAC_NextIndoorSeasonCalculator::getInstance();
         }
-    }
-
-    private static function getInstance($row) {
-        $key = implode("\e", array($row['bow'], $row['archer'], $row['outdoor']));
-        if (!isset(self::$instances[$key])) {
-            self::$instances[$key] = new self($row);
-        }
-        return self::$instances[$key];
-    }
-
-    private static function getAllInstances() {
-        return array_values(self::$instances);
     }
 
     # outdoor, archer, bow
@@ -108,6 +112,17 @@ class RHAC_ReassesmentInserter {
 }
 
 class RHAC_NextOutdoorSeasonCalculator {
+    private static $instance;
+
+    private function __construct() {}
+
+    public static function getInstance() {
+        if (!isset(self::$instance)) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
     public function nextSeason($date) {
         $year = substr($date, 0, 4);
         return sprintf('%04d/01/01', $year + 1);
@@ -115,6 +130,17 @@ class RHAC_NextOutdoorSeasonCalculator {
 }
 
 class RHAC_NextIndoorSeasonCalculator {
+    private static $instance;
+
+    private function __construct() {}
+
+    public static function getInstance() {
+        if (!isset(self::$instance)) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
     public function nextSeason($date) {
         $year = substr($date, 0, 4);
         $month = substr($date, 5, 2);

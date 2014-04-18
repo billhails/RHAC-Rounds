@@ -80,6 +80,28 @@ class Test_RHAC_ReassesmentInserter extends PHPUnit_Framework_TestCase {
         $this->assertEquals($expected, $results);
     }
 
+    public function testSecondClubRecordPreceeding() {
+        $this->acc->accept($this->makeRow());
+        $this->acc->accept($this->makeRow(array(
+            'scorecard_id' => 2,
+            'archer' => 'Archer B',
+            'score' => 100,
+            'club_record' => 'current',
+        )));
+        $results = $this->acc->results();
+        $expected = array(
+            1 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+            ),
+            2 => array(
+                'club_record' => 'N',
+                'personal_best' => 'Y',
+            ),
+        );
+        $this->assertEquals($expected, $results);
+    }
+
     public function testReplaceClubRecord() {
         $this->acc->accept($this->makeRow(array('club_record' => 'current')));
         $this->acc->accept($this->makeRow(array(
