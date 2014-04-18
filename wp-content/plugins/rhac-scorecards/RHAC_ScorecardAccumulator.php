@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * This is the top-level accumulator
+ */
 $rhac_scorecard_accumulator_manifest = array(
     'RHAC_ClubRecordAccumulator',
     'RHAC_PersonalBestAccumulator',
@@ -13,28 +16,39 @@ foreach ($rhac_scorecard_accumulator_manifest as $accumulator) {
 
 class RHAC_ScorecardAccumulator {
 
-    public function accept($row) {
+    private $children = array();
+
+    public function __construct() {
         global $rhac_scorecard_accumulator_manifest;
         foreach ($rhac_scorecard_accumulator_manifest as $class) {
-            call_user_func(array($class, 'callAccumulator'), $row);
+            $this->children []= new $class();
+        }
+    }
+
+    public function accept($row) {
+        foreach ($this->getChildren() as $child) {
+            $child->accept($row);
         }
     }
 
     public function results() {
         $results = array();
-        foreach ($this->getAllAccumulators() as $accumulator) {
+        foreach ($this->getAllLeaves() as $accumulator) {
             $results = $this->mergeHashes($results, $accumulator->results());
         }
         return $results;
     }
 
-    private function getAllAccumulators() {
+    protected function getAllLeaves() {
         $result = array();
-        global $rhac_scorecard_accumulator_manifest;
-        foreach ($rhac_scorecard_accumulator_manifest as $class) {
-            $result = array_merge($result, call_user_func(array($class, 'getAllInstances')));
+        foreach ($this->getChildren() as $child) {
+            $result = array_merge($result, $child->getAllLeaves());
         }
         return $result;
+    }
+
+    protected function getChildren() {
+        return $this->children;
     }
 
     private function mergeHashes($hash1, $hash2) {
@@ -60,4 +74,22 @@ class RHAC_ScorecardAccumulator {
         return $hash1;
     }
 
+}
+
+abstract class RHAC_AccumulatorLeaf {
+    public function getAllLeaves() {
+        return array($this);
+    }
+
+    public function results() {
+        $changes = array();
+        foreach ($this->proposed_changes as $scorecard_id => $value) {
+            if ($this->current_db_values[$scorecard_id] != $value) {
+                $changes[$scorecard_id] = array($this->keyToChange() => $value);
+            }
+        }
+        return $changes;
+    }
+
+    abstract protected function keyToChange();
 }
