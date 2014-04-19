@@ -50,7 +50,7 @@ for handicaps, provided they're properly described.
 
 * Add <tt>$round-&gt;getClassification($score, $gender, $bow, $age_group);</tt>. *done*
 * Add capability to edit scorecard where has_ends = "N"
-    * i.e. enter the scores directly: "new score" as opposed to "new scorecard"
+    * i.e. enter the scores directly: "new score" as opposed to "new scorecard" *done*
 * Add/update score/scorecard should (re-)calculate outdoor/indoor. *done*
 * Add/update score/scorecard should (re-)calculate handicap_ranking. *done*
 * Add/update score/scorecard should (re-)calculate classification. *done*
@@ -59,10 +59,10 @@ for handicaps, provided they're properly described.
 * re-calculate all handicap_rankings. *done*
 * re-calculate all indoor/outdoor. *done*
 * re-calculate all classifications. *done*
-* re-calculate all new_classifications.
-    * pay attention to age group changes.
-* re-calculate all handicap_improvements.
-* re-calculate all club_records.
+* re-calculate all new_classifications. *done*
+    * pay attention to age group changes. *done*
+* re-calculate all handicap_improvements. *done*
+* re-calculate all club_records. *done*
 * Ability to edit Archer.
 * Ability to edit venue.
 * Add an interface for defining new rounds.
