@@ -646,6 +646,8 @@ class RHAC_Scorecards {
         $text []= '<th>Classification</th>';
         $text []= '<th>Record</th>';
         $text []= '<th>PB</th>';
+        $text []= '<th>HCI</th>';
+        $text []= '<th>NC</th>';
         $text []= '<th>&nbsp;</th>';
         $text []= '</tr>';
         $text []= '</thead>';
@@ -661,6 +663,9 @@ class RHAC_Scorecards {
                 $prev_date = $result['date'];
             }
             $tr_class = $odd ? 'odd' : 'even';
+            if ($result['reassessment'] != "N") {
+                $tr_class = 'reassessment';
+            }
             if ($result['venue_id']) {
                 $venue = $venue_map[$result['venue_id']];
             }
@@ -685,6 +690,8 @@ class RHAC_Scorecards {
             $text []= "<td>$result[classification]</td>";
             $text []= "<td>$result[club_record]</td>";
             $text []= "<td>$result[personal_best]</td>";
+            $text []= "<td>$result[handicap_improvement]</td>";
+            $text []= "<td>$result[new_classification]</td>";
             $text []= "<td>";
             $text []= "<form method='get' action=''>";
             $text []= '<input type="hidden" name="page" value="'

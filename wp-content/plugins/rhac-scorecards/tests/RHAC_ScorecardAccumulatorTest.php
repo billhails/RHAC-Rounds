@@ -37,7 +37,39 @@ class RHAC_ScorecardAccumulatorTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('RHAC_ScorecardAccumulator', $this->acc);
     }
 
-    public function testThreeHandicaps() {
+    public function testFourClassifications() {
+        $this->acc->accept($this->makeRow(array('classification' => 'third')));
+        $this->acc->accept($this->makeRow(array('classification' => 'third', 'scorecard_id' => 2)));
+        $this->acc->accept($this->makeRow(array('classification' => 'third', 'scorecard_id' => 3)));
+        $this->acc->accept($this->makeRow(array('classification' => 'second', 'scorecard_id' => 4)));
+        $this->acc->accept($this->makeRow(array('reassessment' => 'end_of_season', 'scorecard_id' => 5)));
+        $results = $this->acc->results();
+        $expected = array(
+            1 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+            ),
+            2 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+            ),
+            3 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+                'new_classification' => 'third',
+            ),
+            4 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+            ),
+            5 => array(
+                'new_classification' => 'third',
+            ),
+        );
+        $this->assertEquals($expected, $results);
+    }
+
+    public function testFourHandicaps() {
         $this->acc->accept($this->makeRow(array('handicap_ranking' => 52)));
         $this->acc->accept($this->makeRow(array('handicap_ranking' => 51, 'scorecard_id' => 2)));
         $this->acc->accept($this->makeRow(array('handicap_ranking' => 50, 'scorecard_id' => 3)));
@@ -65,6 +97,7 @@ class RHAC_ScorecardAccumulatorTest extends PHPUnit_Framework_TestCase {
             ),
             5 => array(
                 'handicap_improvement' => 50,
+                'new_classification' => 'archer',
             ),
         );
         $this->assertEquals($expected, $results);

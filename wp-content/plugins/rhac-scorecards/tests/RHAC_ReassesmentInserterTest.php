@@ -36,6 +36,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'archer' => 'Archer A',
                 'bow' => 'compound',
                 'outdoor' => 'N',
+                'category' => 'U14',
                 'reassessment' => 'age_group',
             ),
             array(
@@ -44,6 +45,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'archer' => 'Archer A',
                 'bow' => 'compound',
                 'outdoor' => 'N',
+                'category' => 'U12',
                 'reassessment' => 'end_of_season'
             )
         );
@@ -77,6 +79,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'archer' => 'Archer A',
                 'bow' => 'compound',
                 'outdoor' => 'N',
+                'category' => 'U14',
                 'reassessment' => 'age_group',
             ),
         );
@@ -116,6 +119,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'archer' => 'Archer A',
                 'bow' => 'compound',
                 'outdoor' => 'Y',
+                'category' => 'U14',
                 'reassessment' => 'age_group',
             ),
             array(
@@ -124,6 +128,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'archer' => 'Archer A',
                 'bow' => 'compound',
                 'outdoor' => 'Y',
+                'category' => 'U12',
                 'reassessment' => 'end_of_season',
             ),
             array(
@@ -132,6 +137,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'archer' => 'Archer A',
                 'bow' => 'compound',
                 'outdoor' => 'Y',
+                'category' => 'U12',
                 'reassessment' => 'end_of_season',
             ),
         );

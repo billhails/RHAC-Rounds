@@ -113,11 +113,15 @@ div#help-text {
 }
 
 
+tr.reassessment td {
+    background-color:#aaaaee;
+    color:black;
+}
 tr.odd td {
-    background-color:green;
-    color:white;
+    background-color:#dddddd;
+    color:black;
 }
 tr.even td {
-    color:green;
+    color:black;
     background-color:white;
 }

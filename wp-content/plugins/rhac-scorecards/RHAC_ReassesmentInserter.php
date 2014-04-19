@@ -126,7 +126,12 @@ class RHAC_ReassesmentInserterLeaf {
                      'archer' => $this->archer,
                      'bow' => $this->bow,
                      'outdoor' => $this->outdoor,
+                     'category' => $this->categoryAt($date),
                      'reassessment' => $reassessment);
+    }
+
+    private function categoryAt($date) {
+        return $this->age_helper->categoryAt($this->archer, $date);
     }
 
     protected function nextSeason($date) {
