@@ -598,9 +598,21 @@ class RHAC_Scorecards {
             $criteria []= 'club_record = ?';
             $params []= "current";
         }
+        if ($_GET["outdoor"] == "Y") {
+            $criteria []= 'outdoor = ?';
+            $params []= "Y";
+        }
+        elseif ($_GET["outdoor"] == "N") {
+            $criteria []= 'outdoor = ?';
+            $params []= "N";
+        }
         if ($_GET["category"]) {
             $criteria []= 'category = ?';
             $params []= $_GET['category'];
+        }
+        if ($_GET["gender"]) {
+            $criteria []= 'gender = ?';
+            $params []= $_GET['gender'];
         }
         if ($_GET["lower-date"]) {
             if ($_GET["upper-date"]) {
@@ -648,6 +660,8 @@ class RHAC_Scorecards {
         $text []= '<th>PB</th>';
         $text []= '<th>HCI</th>';
         $text []= '<th>NC</th>';
+        $text []= '<th>252</th>';
+        $text []= '<th>Medal</th>';
         $text []= '<th>&nbsp;</th>';
         $text []= '</tr>';
         $text []= '</thead>';
@@ -663,14 +677,26 @@ class RHAC_Scorecards {
                 $prev_date = $result['date'];
             }
             $tr_class = $odd ? 'odd' : 'even';
-            if ($result['reassessment'] != "N") {
-                $tr_class = 'reassessment';
-            }
             if ($result['venue_id']) {
                 $venue = $venue_map[$result['venue_id']];
             }
             else {
                 $venue = '?';
+            }
+            if ($result['reassessment'] != "N") {
+                $tr_class = 'reassessment';
+                $venue = '';
+                $result['hits'] = '';
+                $result['xs'] = '';
+                $result['golds'] = '';
+                $result['tens'] = '';
+                $result['score'] = '';
+                $result['handicap_ranking'] = '';
+                $result['classification'] = '';
+                $result['club_record'] = '';
+                $result['personal_best'] = '';
+                $result['two_five_two'] = '';
+                $result['medal'] = '';
             }
             $text []= "<tr class='$tr_class'>";
             $text []= "<td>$result[archer]</td>";
@@ -692,6 +718,8 @@ class RHAC_Scorecards {
             $text []= "<td>$result[personal_best]</td>";
             $text []= "<td>$result[handicap_improvement]</td>";
             $text []= "<td>$result[new_classification]</td>";
+            $text []= "<td>$result[two_five_two]</td>";
+            $text []= "<td>$result[medal]</td>";
             $text []= "<td>";
             $text []= "<form method='get' action=''>";
             $text []= '<input type="hidden" name="page" value="'
@@ -1045,10 +1073,29 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    public function genderAsSelect() {
+        $genders = array('M', 'F');
+        $text = array('<select name="gender" id="gender">');
+        $text []= "<option value=''>- - -</option>\n";
+        foreach ($genders as $gender) {
+            $text []= "<option value='$gender'>$gender</option>\n";
+        }
+        $text []= '<select>';
+        return implode($text);
+    }
+
     private function clubRecordAsRadio() {
         $text = array();
         $text []= '<input type="radio" name="club-record" checked="1" value="">&nbsp;don\'t care&nbsp;</input>&nbsp;';
         $text []= '<input type="radio" name="club-record" value="current">&nbsp;current&nbsp;</input>&nbsp;';
+        return implode($text);
+    }
+
+    private function venueAsRadio() {
+        $text = array();
+        $text []= '<input type="radio" name="outdoor" checked="1" value="Y">&nbsp;Outdoor&nbsp;</input>&nbsp;';
+        $text []= '<input type="radio" name="outdoor" value="N">&nbsp;Indoor&nbsp;</input>&nbsp;';
+        $text []= '<input type="radio" name="outdoor" value="">&nbsp;Both&nbsp;</input>&nbsp;';
         return implode($text);
     }
 
@@ -1143,8 +1190,14 @@ class RHAC_Scorecards {
         $text []= '<tr><td>Age Group</td><td colspan="2">';
         $text []= $this->categoryAsSelect();
         $text []= '</td></tr>';
+        $text []= '<tr><td>Gender</td><td colspan="2">';
+        $text []= $this->genderAsSelect();
+        $text []= '</td></tr>';
         $text []= '<tr><td>Club Record</td><td colspan="2">';
         $text []= $this->clubRecordAsRadio();
+        $text []= '</td></tr>';
+        $text []= '<tr><td>Venue</td><td colspan="2">';
+        $text []= $this->venueAsRadio();
         $text []= '</td></tr>';
         $text []= '<tr><td>Date or Date Range</td>';
         $text []= '<td>';

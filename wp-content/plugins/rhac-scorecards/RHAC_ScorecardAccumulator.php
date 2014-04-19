@@ -8,6 +8,7 @@ $rhac_scorecard_accumulator_manifest = array(
     'RHAC_PersonalBestAccumulator',
     'RHAC_HandicapImprovementAccumulator',
     'RHAC_NewClassificationAccumulator',
+    'RHAC_252Accumulator',
 );
 
 foreach ($rhac_scorecard_accumulator_manifest as $accumulator) {
