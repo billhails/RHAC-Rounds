@@ -30,6 +30,9 @@ class RHAC_PersonalBestAccumulatorLeaf extends RHAC_AccumulatorLeaf {
     private $unbeaten_records = array();
 
     public function accept($row) {
+        if ($row['reassessment'] != 'N') {
+            return;
+        }
         if ($row['score'] > $this->max) {
             $this->handleNewPB($row);
         }

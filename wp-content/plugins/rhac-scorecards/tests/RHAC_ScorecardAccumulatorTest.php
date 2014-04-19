@@ -6,7 +6,7 @@ function plugin_dir_path($file) {
 
 include_once('RHAC_ScorecardAccumulator.php');
 
-class Test_RHAC_ReassesmentInserter extends PHPUnit_Framework_TestCase {
+class RHAC_ScorecardAccumulatorTest extends PHPUnit_Framework_TestCase {
 
     private $acc;
 
@@ -25,6 +25,7 @@ class Test_RHAC_ReassesmentInserter extends PHPUnit_Framework_TestCase {
             'score' => 252,
             'club_record' => 'N',
             'personal_best' => 'N',
+            'reassessment' => 'N',
         );
         foreach ($changes as $key => $value) {
             $row[$key] = $value;
@@ -34,6 +35,39 @@ class Test_RHAC_ReassesmentInserter extends PHPUnit_Framework_TestCase {
 
     public function testNew() {
         $this->assertInstanceOf('RHAC_ScorecardAccumulator', $this->acc);
+    }
+
+    public function testThreeHandicaps() {
+        $this->acc->accept($this->makeRow(array('handicap_ranking' => 52)));
+        $this->acc->accept($this->makeRow(array('handicap_ranking' => 51, 'scorecard_id' => 2)));
+        $this->acc->accept($this->makeRow(array('handicap_ranking' => 50, 'scorecard_id' => 3)));
+        $this->acc->accept($this->makeRow(array('handicap_ranking' => 48, 'scorecard_id' => 4)));
+        $this->acc->accept($this->makeRow(array('reassessment' => 'end_of_season', 'scorecard_id' => 5)));
+        $results = $this->acc->results();
+        $expected = array(
+            1 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+            ),
+            2 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+            ),
+            3 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+                'handicap_improvement' => 51,
+            ),
+            4 => array(
+                'club_record' => 'current',
+                'personal_best' => 'Y',
+                'handicap_improvement' => 50,
+            ),
+            5 => array(
+                'handicap_improvement' => 50,
+            ),
+        );
+        $this->assertEquals($expected, $results);
     }
 
     public function testSingleRow() {

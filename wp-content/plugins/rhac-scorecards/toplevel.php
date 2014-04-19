@@ -2,6 +2,7 @@
 
 include_once plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
 include_once plugin_dir_path(__FILE__) . 'RHAC_ScorecardAccumulator.php';
+include_once plugin_dir_path(__FILE__) . 'RHAC_ReassesmentInserter.php';
 
 class RHAC_Archer252 {
     private static $instances;
@@ -753,7 +754,7 @@ class RHAC_Scorecards {
         if ($with_ends_only) {
             $query .= ' WHERE has_ends = "Y"';
         }
-        $query .= ' ORDER BY date, score';
+        $query .= ' ORDER BY date, handicap_ranking desc, score';
         return $this->fetch($query);
     }
 
@@ -859,6 +860,7 @@ class RHAC_Scorecards {
     }
 
     private function reCalculateRecords() {
+        $this->insertReasessments();
         $scorecards = $this->getAllScoreCards();
         $accumulator = new RHAC_ScorecardAccumulator();
         foreach ($scorecards as $scorecard) {
@@ -884,7 +886,70 @@ class RHAC_Scorecards {
         $this->exec($update_statement, $params);
     }
 
-    function countTensFromTable($id) {
+    private function insertReasessments() {
+        $scorecards = $this->getAllScoreCards();
+        $inserter = new RHAC_ReassesmentInserter($this->getArcherMap());
+        foreach ($scorecards as $scorecard) {
+            $inserter->accept($scorecard);
+        }
+        foreach ($inserter->results() as $change) {
+            if ($change['action'] == 'insert') {
+                $this->insertReasessment($change);
+            }
+            elseif ($change['action'] == 'delete') {
+                $this->deleteReasessment($change);
+            }
+        }
+    }
+
+    private function insertReasessment($change) {
+        $venue = $change['outdoor'] == 'Y' ? 'Outdoor' : 'Indoor';
+        $round = $change['reassessment'] == 'end_of_season'
+            ? "End of $venue Season Reassessment"
+            : "Age Group Reassessment";
+        $defaults = array(
+            'archer' => '',
+            'date' => '0001/01/01',
+            'round' => $round,
+            'bow' => '',
+            'hits' => 0,
+            'xs' => 0,
+            'tens' => 0,
+            'golds' => 0,
+            'score' => 0,
+            'venue_id' => $venue == 'Outdoor' ? 1 : 2,
+            'handicap_ranking' => 101,
+            'has_ends' => 'N',
+            'classification' => '',
+            'outdoor' => '',
+            'club_record' => 'N',
+            'personal_best' => 'N',
+        );
+        foreach ($change as $key => $value) {
+            if ($key == 'action') continue;
+            $defaults[$key] = $value;
+        }
+        $keys = array();
+        $placeholders = array();
+        $params = array();
+        foreach ($defaults as $key => $value) {
+            $keys []= $key;
+            $placeholders []= '?';
+            $params []= $value;
+        }
+        $query = "INSERT INTO scorecards("
+            . implode(',', $keys)
+            . ") VALUES("
+            . implode(',', $placeholders)
+            . ")";
+        $this->exec($query, $params);
+
+    }
+
+    private function deleteReasessment($change) {
+    }
+
+    private function countTensFromTable($id) {
         $ends = $this->fetchScorecardEnds($id);
         $total = 0;
         foreach ($ends as $end) {

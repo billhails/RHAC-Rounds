@@ -6,7 +6,7 @@
 $rhac_scorecard_accumulator_manifest = array(
     'RHAC_ClubRecordAccumulator',
     'RHAC_PersonalBestAccumulator',
-    # 'RHAC_HandicapImprovementAccumulator',
+    'RHAC_HandicapImprovementAccumulator',
     # 'RHAC_NewClassificationAccumulator',
 );
 
