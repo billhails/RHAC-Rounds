@@ -467,7 +467,7 @@ class RHACScorecardViewer {
     public function getArchers() {
         if (!isset($this->archers)) {
             $this->archers = array();
-            $archers = $this->select("name from archer order by name");
+            $archers = $this->select('name from archer where archived = "N" order by name');
             foreach ($archers as $archer) {
                 $this->archers []= $archer['name'];
             }
@@ -521,11 +521,11 @@ class RHACScorecardViewer {
 
     private function getHandicapForScore($scorecard) {
         $compound = $scorecard["bow"] == "compound" ? "Y" : "N";
-        $rows = $this->select("min(handicap)"
+        $rows = $this->select("min(handicap) as result"
                             . " from round_handicaps"
                             . " where round = ? and compound = ? and score <= ?",
                             array($scorecard["round"], $compound, $scorecard["score"]));
-        return $rows[0]["handicap"];
+        return $rows[0]["result"];
     }
 
     private function scorecardAsTable($ends, $counter, $scorecard) {
