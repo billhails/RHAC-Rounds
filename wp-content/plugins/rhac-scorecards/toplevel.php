@@ -1511,7 +1511,7 @@ EOT
             if ($this->scorecard_data['bow'] == $bow) {
                 $text []= " checked='1'";
             }
-            $text []= " value='$bow'>$initial</input>\n";
+            $text []= " value='$bow'>$initial&nbsp;&nbsp;</input>\n";
         }
         return implode($text);
     }
