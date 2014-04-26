@@ -41,20 +41,20 @@ class RHAC_RecordsViewer {
     private function initIcons() {
         $this->icons = array();
         foreach(array('scorecard', 'personal-best', 'current-club-record', 'old-club-record') as $icon) {
-            $this->icons[$icon] = "<img class='no-shadow' src='"
+            $this->icons[$icon] = "<img class='badge no-shadow' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
                                 . "icons/$icon.png'/>";
         }
         foreach(array('green', 'white', 'black', 'blue', 'red', 'bronze', 'silver', 'gold') as $icon) {
-            $this->icons["$icon-252"] = "<img class='no-shadow' src='"
+            $this->icons["$icon-252"] = "<img class='badge no-shadow' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
                                 . "icons/$icon-252.png'/>";
-            $this->icons["half-$icon-252"] = "<img class='no-shadow' src='"
+            $this->icons["half-$icon-252"] = "<img class='badge no-shadow' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
                                 . "icons/half-$icon-252.png'/>";
         }
         foreach(array('bronze', 'silver', 'gold') as $icon) {
-            $this->icons["medal-$icon"] = "<img class='no-shadow' src='"
+            $this->icons["medal-$icon"] = "<img class='badge no-shadow' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
                                 . "icons/medal-$icon.png'/>";
         }

@@ -41,6 +41,11 @@ span.h-class {
 span.archer-class, span.unclassified-class {
     border: 1px solid black;
     font-weight: normal;
+    background: #ffffff;
+}
+
+img.badge {
+    vertical-align: middle;
 }
 
 span.third-class {
