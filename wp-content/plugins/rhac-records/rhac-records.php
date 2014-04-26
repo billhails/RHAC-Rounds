@@ -17,7 +17,7 @@ function rhac_re_load_deps() {
  
     wp_enqueue_script('rhac_records_view',
                       plugins_url('rhac_records_view.js', __FILE__),
-                      array('jquery-ui-tabs', 'jquery-ui-datepicker'));
+                      array('jquery-ui-datepicker'));
 
     wp_enqueue_style('rhac_records_view',
                      plugins_url('rhac_records_view.css', __FILE__));
@@ -39,6 +39,7 @@ function rhac_get_data() {
 add_action('init', 'rhac_re_load_deps');
 
 function rhac_ajax_display_results() {
+    // error_log("rhac_ajax_display_results");
     $viewer = RHAC_RecordsViewer::getInstance();
     echo $viewer->display();
     exit;
@@ -48,6 +49,7 @@ add_action('wp_ajax_rhac_display_results', 'rhac_ajax_display_results');
 add_action('wp_ajax_nopriv_rhac_display_results', 'rhac_ajax_display_results');
 
 function rhac_records_viewer() {
+    // error_log("rhac_records_viewer");
     $viewer = RHAC_RecordsViewer::getInstance();
     return $viewer->view();
 }

@@ -679,6 +679,8 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
 
     private static $instances = array();
 
+    private static $names;
+
     public function asText() {
         return $this->getTitle()
              . $this->getDescription()
@@ -697,6 +699,10 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
             }
             return array($this->name => $children);
         }
+    }
+
+    public function getName() {
+        return $this->name;
     }
 
     private function getTitle() {
@@ -754,6 +760,14 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         return $this->venue;
     }
 
+    public function isOutdoor() {
+        return $this->venue == 'outdoor';
+    }
+
+    public function isIndoor() {
+        return !$this->isOutdoor();
+    }
+
     public function getScoring() {
         return $this->scoring;
     }
@@ -768,6 +782,11 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         } else {
             return $this->getScoring();
         }
+    }
+
+    public function getRounds() {
+        $this->populate();
+        return $this->rounds;
     }
 
     private function populate() {
@@ -838,6 +857,20 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
                     new GNAS_UnrecognisedRoundFamily($name);
         }
         return self::$instances[$name];
+    }
+
+    public static function getAllInstances() {
+        if (!isset(self::$names)) {
+            self::$names = array();
+            $rows = GNAS_PDO::SELECT('name FROM round_family ORDER BY name');
+            foreach ($rows as $row) {
+                self::$names []= $row['name'];
+            }
+        }
+        foreach (self::$names as $name) {
+            self::getInstance($name);
+        }
+        return self::$instances;
     }
 
 }
@@ -2300,6 +2333,10 @@ class GNAS_Page {
      */
     public static function roundData($nested=false) {
         return GNAS_AllRounds::asData($nested);
+    }
+
+    public static function familyData() {
+        return GNAS_RoundFamily::getAllInstances();
     }
 
     public static function roundFinder() {
