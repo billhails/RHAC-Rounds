@@ -1,0 +1,204 @@
+<style>
+
+#rhac-re-main {
+    width: 70%;
+    font-family: Helvetica;
+}
+
+div.rhac-re {
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 1em;
+}
+
+#rhac-re-more-left, #rhac-re-more-right {
+    float: left;
+    width: 45%;
+}
+
+#rhac-re-clear {
+    clear: both;
+}
+
+#rhac-re-help-toggle, #rhac-re-more-toggle {
+    background-color: #4cd7ff;
+}
+
+#rhac-re-help {
+    background-color: white;
+}
+
+div.rhac-re-section,
+div.rhac-re-reports-section {
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em;
+}
+
+input {
+    background-color: #c9fcff;
+}
+
+.rhac-re-radios {
+}
+
+div.rhac-re-section {
+    background-color: white;
+}
+
+div.rhac-re-reports-section {
+    background-color: #4cd7ff;
+}
+div.rhac-re-reports-section input,
+div.rhac-re-reports-section button  {
+    width: 100%;
+}
+
+#rhac-re-simpleform, #rhac-re-moreform {
+    background-color: #c9fcff;
+}
+div.rhac-re-checklist div {
+    display: block;
+    padding-bottom: 0.5em;
+}
+
+label.rhac-re-label {
+    display: block;
+    font-weight: bold;
+    font-size: 110%;
+    padding-bottom: 0.5em;
+}
+
+</style>
+<div id="rhac-re-main">
+  <div id="rhac-re-help-toggle" class="rhac-re">Help</div>
+  <div id="rhac-re-help" class="rhac-re">
+    <p>The simplest thing to do is ... </p>
+  </div>
+  <div id="rhac-re-simpleform" class="rhac-re">
+    <select id="rhac-re-report" name="rhac-re-report">
+      <option value="Scores">Scores</option>
+      <option value="Club Records">Club Records</option>
+    </select>
+    <button type="button" id="rhac-re-run-report">Run Report</button>
+  </div>
+  <div id="rhac-re-more-toggle" class="rhac-re">More</div>
+  <div id="rhac-re-moreform" class="rhac-re">
+    <div id="rhac-re-more-left">
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label" for="seasons">Seasons</label>
+        <div class="rhac-re-radios">
+          <input type="radio" id="rhac-re-season" value="Y" checked="1">Outdoor</input>
+          <input type="radio" id="rhac-re-season" value="N">Indoor</input>
+          <input type="radio" id="rhac-re-season" value="">Both</input>
+        </div>
+      </div>
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label" for="archer">Archer</label>
+        <div>
+          <div><input type="checkbox" id="rhac-re-include-lapsed">Include lapsed members</input></div>
+          <div>
+            <select id="rhac-re-archer" name="archer">
+              <option value="">Any</option>
+              <?php echo $archers_select; ?>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label">Category</label>
+        <div class="rhac-re-selects">
+          <select id="rhac-re-gender" name="gender">
+              <option value="">Any</option>
+              <option value="M">Gent</option>
+              <option value="F">Lady</option>
+          </select>
+          <select id="rhac-re-age" name="age">
+              <option value="">Any</option>
+              <option value="senior">Senior</option>
+              <option value="U18">Under 18</option>
+              <option value="U16">Under 16</option>
+              <option value="U14">Under 14</option>
+              <option value="U12">Under 12</option>
+          </select>
+          <select id="rhac-re-bow" name="bow">
+              <option value="">Any</option>
+              <option value="R">Recurve</option>
+              <option value="C">Compound</option>
+              <option value="L">Longbow</option>
+              <option value="B">Barebow</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label" for="round">Round</label>
+        <div class="rhac-re-radios">
+          <input type="radio" id="rhac-re-single-round" value="Y" name="single-round" checked="1">Round</input>
+          <input type="radio" id="rhac-re-single-round" value="N" name="single-round">Round Family</input>
+        </div>
+        <select id="rhac-re-round" name="round">
+          <option value="">Any</option>
+          <?php echo $rounds_select; ?>
+        </select>
+      </div>
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label">Dates</label>
+        <div class="rhac-re-dates">
+          <input type="text" id="rhac-re-lower-date" name="lower-date"></input>
+          <input type="text" id="rhac-re-upper-date" name="upper-date"></input>
+        </div>
+        <select id="rhac-re-seasons" name="seasons">
+          <option value="">Any</option>
+          <?php echo $seasons_select; ?>
+        </select>
+      </div>
+
+    </div>
+    <div id="rhac-re-more-right">
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label">Limit to</label>
+        <div class="rhac-re-checklist">
+          <div><input type="checkbox" id="rhac-re-current-records" name="current-records">Current Records</input></div>
+          <div><input type="checkbox" id="rhac-re-old-records" name="old-records">Old Records</input></div>
+          <div><input type="checkbox" id="rhac-re-medals" name="medals">Medals and awards</input></div>
+          <div><input type="checkbox" id="rhac-re-personal-bests" name="personal-bests">Personal Bests</input></div>
+          <div><input type="checkbox" id="rhac-re-handicap-improvements" name="handicap-improvements">Handicap Improvements</input></div>
+          <div><input type="checkbox" id="rhac-re-new-classifications" name="new-classifications">New Classifications</input></div>
+          <div><input type="checkbox" id="rhac-re-best-scores" name="best-scores">Best Scores</input></div>
+        </div>
+      </div>
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label">Include</label>
+        <div class="rhac-re-checklist">
+          <div><input type="checkbox" id="rhac-re-reassessments" name="reassessments">Reassessments</input></div>
+        </div>
+      </div>
+
+      <div class="rhac-re-reports-section">
+        <label class="rhac-re-label">Reports</label>
+        <div>
+          <input type="text" id="rhac-re-report-name" value="" name="report-name"/>
+        </div>
+        <div>
+          <button type="button" id="rhac-re-save-report">Save This Report</button>
+        </div>
+        <div>
+          <button type="button" id="rhac-re-delete-report">Delete This Report</button>
+        </div>
+      </div>
+
+    </div>
+    <div id="rhac-re-clear"></div>
+  </div>
+  <div id="rhac-re-results" class="rhac-re">
+    Results
+  </div>
+</div>
