@@ -189,7 +189,7 @@ div.rhac-re {
 
 #rhac-re-more-left, #rhac-re-more-right {
     float: left;
-    width: 45%;
+    width: 50%;
 }
 
 #rhac-re-clear {
@@ -212,6 +212,10 @@ div.rhac-re-reports-section {
     margin: 1em;
 }
 
+div.rhac-re-reports-section {
+    margin-top: 2em;
+}
+
 input {
     background-color: #c9fcff;
 }
@@ -230,6 +234,7 @@ div.rhac-re-reports-section {
 #rhac-re-simpleform, #rhac-re-moreform {
     background-color: #c9fcff;
 }
+
 div.rhac-re-checklist div {
     display: block;
     padding-bottom: 0.5em;

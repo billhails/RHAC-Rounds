@@ -10,6 +10,17 @@ License: GPL
 
 define('RHAC_RE_DIR', plugin_dir_path(__FILE__));
 
+define('RHAC_PLUGINS_ROOT',
+       preg_replace('/[^\/]+\/$/', '', RHAC_RE_DIR));
+
+define('RHAC_RE_SCORECARD_DIR', RHAC_PLUGINS_ROOT . 'rhac-scorecards/');
+
+define('RHAC_RE_PLUGIN_URL_ROOT', plugin_dir_url(__FILE__));
+
+define('RHAC_PLUGINS_URL_ROOT',
+       preg_replace('/[^\/]+\/$/', '', RHAC_RE_PLUGIN_URL_ROOT));
+
+
 include_once RHAC_RE_DIR . 'RHAC_RecordsViewer.php';
 
 function rhac_re_load_deps() {
@@ -17,8 +28,9 @@ function rhac_re_load_deps() {
  
     wp_enqueue_script('rhac_records_view',
                       plugins_url('rhac_records_view.js', __FILE__),
-                      array('jquery-ui-datepicker'));
+                      array('jquery-ui-datepicker', 'jquery-ui-tooltip'));
 
+    wp_enqueue_script('rhac_datatables', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/jquery.dataTables.min.js', array('jquery-ui-core'));
     wp_enqueue_style('rhac_records_view',
                      plugins_url('rhac_records_view.css', __FILE__));
  

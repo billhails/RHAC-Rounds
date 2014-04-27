@@ -1,12 +1,5 @@
 <?php
-define('RHAC_RE_PLUGINS_ROOT',
-       preg_replace('/[^\/]+\/$/', '', RHAC_RE_DIR));
-
-define('RHAC_RE_SCORECARD_DIR', RHAC_RE_PLUGINS_ROOT . 'rhac-scorecards/');
-
-include_once(RHAC_RE_PLUGINS_ROOT . 'gnas-archery-rounds/rounds.php');
-
-define('RHAC_RE_PLUGIN_URL_ROOT', plugin_dir_url(__FILE__));
+include_once(RHAC_PLUGINS_ROOT . 'gnas-archery-rounds/rounds.php');
 
 class RHAC_RecordsViewer {
     private $pdo;
@@ -184,18 +177,16 @@ class RHAC_RecordsViewer {
     <p>The simplest thing to do is ... </p>
   </div>
   <div id="rhac-re-simpleform" class="rhac-re">
-    <select id="rhac-re-report" name="rhac-re-report">
-      <option value="Scores">Scores</option>
-      <option value="Club Records">Club Records</option>
+    <select id="rhac-re-report">
     </select>
-    <button type="button" id="rhac-re-run-report">Run Report</button>
+    <button type="button" title="run the selected report" id="rhac-re-run-report">Run Report</button>
   </div>
   <div id="rhac-re-more-toggle" class="rhac-re">More</div>
   <div id="rhac-re-moreform" class="rhac-re">
     <div id="rhac-re-more-left">
 
       <div class="rhac-re-section">
-        <label class="rhac-re-label" for="seasons">Seasons</label>
+        <label class="rhac-re-label" title="select a season type" for="seasons">Seasons</label>
         <div class="rhac-re-radios">
           <input type="radio" name="season" class="rhac-re-outdoor" value="Y" checked="1">Outdoor</input>
           <input type="radio" name="season" class="rhac-re-outdoor" value="N">Indoor</input>
@@ -219,7 +210,7 @@ $current_archers
         <label class="rhac-re-label">Category</label>
         <div class="rhac-re-selects">
           <select id="rhac-re-age" name="age">
-              <option value="">Any</option>
+              <option value="">Any Age</option>
               <option value="adult">Senior</option>
               <option value="U18">Under 18</option>
               <option value="U16">Under 16</option>
@@ -227,12 +218,12 @@ $current_archers
               <option value="U12">Under 12</option>
           </select>
           <select id="rhac-re-gender" name="gender">
-              <option value="">Any</option>
+              <option value="">Any Gender</option>
               <option value="M">Gent</option>
               <option value="F">Lady</option>
           </select>
           <select id="rhac-re-bow" name="bow">
-              <option value="">Any</option>
+              <option value="">Any Bow</option>
               <option value="recurve">Recurve</option>
               <option value="compound">Compound</option>
               <option value="longbow">Longbow</option>
@@ -276,12 +267,6 @@ $outdoor_seasons
           <div><input type="checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests">Personal Bests</input></div>
           <div><input type="checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements">Handicap Improvements</input></div>
           <div><input type="checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications">New Classifications</input></div>
-        </div>
-      </div>
-
-      <div class="rhac-re-section">
-        <label class="rhac-re-label">Include</label>
-        <div class="rhac-re-checklist">
           <div><input type="checkbox" id="rhac-re-reassessments" value="Y" name="reassessments">Reassessments</input></div>
         </div>
       </div>
@@ -292,7 +277,7 @@ $outdoor_seasons
           <input type="text" id="rhac-re-report-name" value="" name="report-name"/>
         </div>
         <div>
-          <button type="button" id="rhac-re-save-report">Save This Report</button>
+          <button type="button" id="rhac-re-save-report">Save This Report As</button>
         </div>
         <div>
           <button type="button" id="rhac-re-delete-report">Delete This Report</button>
@@ -311,7 +296,7 @@ EOHTML;
 
     private function archerOptions($include_archived=false) {
         $text = array();
-        $text []= "<option value=''>all</option>";
+        $text []= "<option value=''>Any Archer</option>";
         $archers = $this->getArcherMap();
         if ($include_archived) {
             foreach ($archers as $archer => $data) {
@@ -330,7 +315,7 @@ EOHTML;
 
     private function outdoorRoundOptions() {
         $text = array();
-        $text []= '<option value="">Any</option>';
+        $text []= '<option value="">Any Outdoor Round</option>';
         foreach ($this->getAllRounds() as $round) {
             if ($round->isOutdoor()) {
                 $name = $round->getName();
@@ -342,7 +327,7 @@ EOHTML;
 
     private function indoorRoundOptions() {
         $text = array();
-        $text []= '<option value="">Any</option>';
+        $text []= '<option value="">Any Indoor Round</option>';
         foreach ($this->getAllRounds() as $round) {
             if ($round->isIndoor()) {
                 $name = $round->getName();
@@ -354,7 +339,7 @@ EOHTML;
 
     private function allRoundOptions() {
         $text = array();
-        $text []= '<option value="">Any</option>';
+        $text []= '<option value="">Any Round</option>';
         foreach ($this->getAllRounds() as $round) {
             $name = $round->getName();
             $text []= "<option value='$name'>$name</option>";
@@ -364,7 +349,7 @@ EOHTML;
 
     private function outdoorFamilyOptions() {
         $text = array();
-        $text []= '<option value="">Any</option>';
+        $text []= '<option value="">Any Outdoor Round Family</option>';
         foreach ($this->getAllFamilies() as $family) {
             if ($family->isOutdoor()) {
                 $name = $family->getName();
@@ -386,7 +371,7 @@ EOHTML;
 
     private function indoorFamilyOptions() {
         $text = array();
-        $text []= '<option value="">Any</option>';
+        $text []= '<option value="">Any Indoor Round Family</option>';
         foreach ($this->getAllFamilies() as $family) {
             if ($family->isIndoor()) {
                 $name = $family->getName();
@@ -408,6 +393,7 @@ EOHTML;
 
     private function allFamilyOptions() {
         $text = array();
+        $text []= '<option value="">Any Round Family</option>';
         foreach ($this->getAllFamilies() as $family) {
             $name = $family->getName();
             $round_names = array();
@@ -444,7 +430,7 @@ EOHTML;
         $year = date('Y', $time);
         $month_day = date('md', $time);
         $seasons = array();
-        $seasons []= '<option value="-">Any</option>';
+        $seasons []= '<option value="-">Any Season</option>';
         if ($month_day >= "0601") {
             $seasons []= sprintf('<option value="%04d/06/01-%04d/05/31">%04d - %04d</option>',
                                                             $year, $year + 1, $year, $year + 1);
@@ -463,7 +449,7 @@ EOHTML;
         $time = $this->getTime();
         $year = date('Y', $time);
         $seasons = array();
-        $seasons []= '<option value="-">Any</option>';
+        $seasons []= '<option value="-">Any Outdoor Season</option>';
         while ($year >= 1996) {
             $seasons []= sprintf('<option value="%04d/01/01-%04d/12/31">%04d</option>',
                                                             $year, $year, $year);
@@ -477,7 +463,7 @@ EOHTML;
         $year = date('Y', $time);
         $month_day = date('md', $time);
         $seasons = array();
-        $seasons []= '<option value="-">Any</option>';
+        $seasons []= '<option value="-">Any Indoor Season</option>';
         if ($month_day >= "0601") {
             $seasons []= sprintf('<option value="%04d/06/01-%04d/05/31">%04d - %04d</option>',
                                                             $year, $year + 1, $year, $year + 1);
@@ -596,7 +582,7 @@ EOHTML;
     }
 
     private function debugQuery($query, $params) {
-        // return '';
+        return '';
         $text = "<pre>\n";
         $text .= $query . "\n";
         $text .= print_r($params, true);
@@ -610,7 +596,7 @@ EOHTML;
         $headers = array(
             'Date', 'Archer', 'Category', 'Round', 'Place Shot',
             'H/C', 'Class', 'Score', '&nbsp;');
-        $text []= '<table>';
+        $text []= '<table id="rhac-re-results-table">';
         $text []= '<thead>';
         $text []= '<tr>';
         foreach ($headers as $header) {

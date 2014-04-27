@@ -2,27 +2,15 @@ function rhacRecordsExplorer() {
 
     function makeDate(lower, upper) {
         if (lower == '') {
-            if (upper == '') {
-                return '';
-            }
-            else {
-                return upper;
-            }
+            if (upper == '') { return ''; }
+            else { return upper; }
         }
         else {
-            if (upper == '') {
-                return lower;
-            }
+            if (upper == '') { return lower; }
             else {
-                if (lower < upper) {
-                    return "[".concat(lower, ",", upper);
-                }
-                else if (lower > upper) {
-                    return "[".concat(upper, ",", lower);
-                }
-                else {
-                    return lower;
-                }
+                if (lower < upper) { return "[".concat(lower, ",", upper); }
+                else if (lower > upper) { return "[".concat(upper, ",", lower); }
+                else { return lower; }
             }
         }
     }
@@ -56,10 +44,40 @@ function rhacRecordsExplorer() {
         ).done(
             function(results) {
                 jQuery('#rhac-re-results').html(results);
+                jQuery('#rhac-re-results-table').dataTable();
             }
         );
     }
-    
+
+    function addReportToMenu(name, data) {
+        jQuery('#rhac-re-report').append("<option>".concat(name, "</option>"));
+        jQuery('#rhac-re-report option').last().data('settings', data);
+    }
+
+    function getCurrentReportSettings() {
+        return {};
+    }
+
+    function saveReport() {
+        if ('localStorage' in window && window['localStorage'] !== null) {
+            var report_name = jQuery('#rhac-re-report-name').val();
+            if (report_name != '') {
+                report_data = getCurrentReportSettings();
+                try {
+                    localStorage.setItem(report_name, report_data);
+                    addReportToMenu(report_name, report_data);
+                } catch(e) {
+                    if (e == QUOTA_EXCEEDED_ERR) {
+                        alert('Quota Exceeded, please delete some old reports first');
+                    }
+                }
+            }
+        }
+        else {
+            alert('Cannot save report, please upgrade your browser');
+        }
+    }
+
     function changeDates() {
         var season = jQuery('#rhac-re-seasons').val();
         if (season != '') {
@@ -121,6 +139,10 @@ function rhacRecordsExplorer() {
         }
     }
 
+    function populateReportMenu() {
+    }
+
+    jQuery('#rhac-re-save-report').click(saveReport);
     jQuery('#rhac-re-seasons').change(changeDates);
     jQuery('.rhac-re-outdoor').change(changeSeasonList);
     jQuery('.rhac-re-outdoor').change(changeRoundList);
@@ -128,10 +150,12 @@ function rhacRecordsExplorer() {
     jQuery('#rhac-re-include-lapsed').change(toggleArcherList);
     jQuery('.rhac-re-date').datepicker({ dateFormat: "yy/mm/dd" });
     jQuery('#rhac-re-run-report').click(doSearch);
+    populateReportMenu();
 }
 
 jQuery(
     function() {
+        jQuery('#rhac-re-main').tooltip();
         if (jQuery('#rhac-re-results')[0]) {
             rhacRecordsExplorer();
         }
