@@ -144,6 +144,7 @@ class RHAC_RecordsViewer {
     }
 
     public function view() {
+        $this->initDisplayMaps();
         $current_archers = $this->archerOptions(false);
         $all_archers = $this->archerOptions(true);
 
@@ -172,32 +173,107 @@ class RHAC_RecordsViewer {
   <div class="rhac-re-invisible" id="rhac-re-all-seasons">$all_seasons</div>
   <div class="rhac-re-invisible" id="rhac-re-outdoor-seasons">$outdoor_seasons</div>
   <div class="rhac-re-invisible" id="rhac-re-indoor-seasons">$indoor_seasons</div>
-  <div id="rhac-re-help-toggle" class="rhac-re">Help</div>
-  <div id="rhac-re-help" class="rhac-re">
-    <p>The simplest thing to do is ... </p>
+  <div id="rhac-re-help-toggle" class="rhac-re" title="click for help">Help</div>
+  <div id="rhac-re-help" class="rhac-re accordion">
+    <h3>Getting Started</h3>
+    <div>
+      <p>The simplest thing to do is to pick one of the predefined reports
+         from the dropdown and click the "Run Report" button. After a
+         little wile the search results will appear in the "Results" box.</p>
+      <p>Clicking on any of the column headers in the results sorts by that column.</p>
+    </div>
+    <h3>Explaination of the Icons in the Results</h3>
+    <div>
+      <dl>
+          <dt>{$this->icons['personal-best']}</dt>
+          <dd>Personal best.</dd>
+          <dt>{$this->icons['current-club-record']}</dt>
+          <dd>Current club record.</dd>
+          <dt>{$this->icons['old-club-record']}</dt>
+          <dd>Old club record.</dd>
+          <dt>{$this->icons['half-black-252']}</dt>
+          <dd>First qualifying Black 252 score (likewise for other colours.)</dd>
+          <dt>{$this->icons['black-252']}</dt>
+          <dd>Second qualifying Black 252 score and award (likewise for other colours.)</dd>
+          <dt>{$this->icons['medal-bronze']}</dt>
+          <dd>Bronze medal awarded at competition.</dd>
+          <dt>{$this->icons['medal-silver']}</dt>
+          <dd>Silver medal awarded at competition.</dd>
+          <dt>{$this->icons['medal-gold']}</dt>
+          <dd>Gold medal awarded at competition.</dd>
+          <dt>{$this->classification_map['third']}</dt>
+          <dd>New third class outdoor classification (likewise for other classifications.)</dd>
+          <dt>{$this->classification_map['(third)']}</dt>
+          <dd>Season confirmation of a third class outdoor classification.
+              At the end of each season you are re-classified on your three best scores.
+              This badge indicates that you have re-achieved your current classification
+              in the current season after your end of season re-assessment.</dd>
+          <dt>{$this->classification_map['E']}</dt>
+          <dd>New indoor classification "E" (likewise for other classifications.)
+              This will also appear in brackets if you have re-achieved it in the current
+              season.</dd>
+          <dt><span class="handicap-improvement">65</span></dt>
+          <dd>New or improved handicap.</dd>
+      </dl>
+    </div>
+    <h3>Exploring Further</h3>
+    <div>
+      <p>Open the "Options" section below by clicking on it and you will see the underlying
+         form. If you then choose a different pre-defined report, you will see the form change to
+         reflect this. When you click "Run Report" it is actually running the undelying form.</p>
+      <p>You can make changes to the form before you run it. Here are a few examples:</p>
+      <dl>
+        <dt>My Personal Bests</dt>
+        <dd>Choose "Personal Bests" from the predefined reports, then select yourself instead of
+            "All Archers" in the "Archer" section of form. Run the report and you will see all of
+            your personal bests.  You can restrict all the other predefined reports similarily.</dd>
+        <dt>Dates</dt>
+        <dd>For any of the reports that mention a year or years, look in the "Dates" section
+            and either choose a season or change the dates directly. If you clear out either of the
+            date fields, the report wil run for just the one remaining date.</dd>
+        <dt>Club Records in My Category</dt>
+        <dd>Select the "Club Records" report, then in the "Category" box select your age group,
+            gender and bow type. Running this will show you just those records,</dd>
+        <dt>History of A Round</dt>
+        <dd>Do as for "Club Records in My Category" above, but further select a particular round
+            from the "Rounds" section, and check "Old Records" in the "Limit to"
+            section. This should show you the history of club records for that round and category.</dd>
+      </dl>
+    </div>
+    <h3>To Do</h3>
+    <div>
+      <ol>
+        <li>Some parts of this are not working yet. Primarily the "Reports" box does nothing.
+           The plan is that you will be able to save your edited queries under new names and they will
+           appear in the reports dropdown from then on.</li>
+        <li>Incorporate scorecards, so that scores in the report results that have scorecards can
+            be clicked on to see the scorecards.</li>
+        <li>No scores have medals attached yet.</li>
+      </ol>
+    </div>
   </div>
   <div id="rhac-re-simpleform" class="rhac-re">
-    <select id="rhac-re-report">
+    <select id="rhac-re-report" title="select a report to run">
     </select>
     <button type="button" title="run the selected report" id="rhac-re-run-report">Run Report</button>
   </div>
-  <div id="rhac-re-more-toggle" class="rhac-re">More</div>
+  <div id="rhac-re-more-toggle" class="rhac-re" title="click to edit the report">Options</div>
   <div id="rhac-re-moreform" class="rhac-re">
     <div id="rhac-re-more-left">
 
       <div class="rhac-re-section">
         <label class="rhac-re-label" title="select a season type" for="seasons">Seasons</label>
         <div class="rhac-re-radios">
-          <input type="radio" name="season" class="rhac-re-outdoor" value="Y" checked="1">Outdoor</input>
+          <input type="radio" name="season" class="rhac-re-outdoor" value="Y">Outdoor</input>
           <input type="radio" name="season" class="rhac-re-outdoor" value="N">Indoor</input>
-          <input type="radio" name="season" class="rhac-re-outdoor" value="">Both</input>
+          <input type="radio" name="season" class="rhac-re-outdoor" checked="Y" value="">Both</input>
         </div>
       </div>
 
       <div class="rhac-re-section">
-        <label class="rhac-re-label" for="archer">Archer</label>
+        <label class="rhac-re-label" title="select an archer" for="archer">Archer</label>
         <div>
-          <div><input type="checkbox" id="rhac-re-include-lapsed">Include lapsed members</input></div>
+          <div><input type="checkbox" value="Y" title="allows you to select lapsed archers in the dropdown below" id="rhac-re-include-lapsed">Include lapsed members</input></div>
           <div>
             <select id="rhac-re-archer" name="archer">
 $current_archers
@@ -207,7 +283,7 @@ $current_archers
       </div>
 
       <div class="rhac-re-section">
-        <label class="rhac-re-label">Category</label>
+        <label class="rhac-re-label" title="you can restrict the search to a particular age group, gender and/or bow type">Category</label>
         <div class="rhac-re-selects">
           <select id="rhac-re-age" name="age">
               <option value="">Any Age</option>
@@ -233,10 +309,10 @@ $current_archers
       </div>
 
       <div class="rhac-re-section">
-        <label class="rhac-re-label" for="round">Round</label>
+        <label class="rhac-re-label" title="restrict the search to a particular round or round family" for="round">Round</label>
         <div class="rhac-re-radios">
-          <input type="radio" class="rhac-re-single-round" value="Y" name="single-round" checked="1">Round</input>
-          <input type="radio" class="rhac-re-single-round" value="N" name="single-round">Round Family</input>
+          <input type="radio" title="select from individual rounds" class="rhac-re-single-round" value="Y" name="single-round" checked="1">Round</input>
+          <input type="radio" title="select from round families (like 252s)" class="rhac-re-single-round" value="N" name="single-round">Round Family</input>
         </div>
         <select id="rhac-re-round" name="round">
 $outdoor_rounds
@@ -244,7 +320,7 @@ $outdoor_rounds
       </div>
 
       <div class="rhac-re-section">
-        <label class="rhac-re-label">Dates</label>
+        <label class="rhac-re-label" title="choose a single date or a range of dates, or pick a season">Dates</label>
         <div class="rhac-re-dates">
           <input type="text" class="rhac-re-date" id="rhac-re-lower-date" name="lower-date"></input>
           <input type="text" class="rhac-re-date" id="rhac-re-upper-date" name="upper-date"></input>
@@ -258,21 +334,21 @@ $outdoor_seasons
     <div id="rhac-re-more-right">
 
       <div class="rhac-re-section">
-        <label class="rhac-re-label">Limit to</label>
+        <label class="rhac-re-label" title="limit the search to scores with any of these attributes">Limit to</label>
         <div class="rhac-re-checklist">
-          <div><input type="checkbox" id="rhac-re-current-records" value="Y" name="current-records">Current Records</input></div>
-          <div><input type="checkbox" id="rhac-re-old-records" value="Y" name="old-records">Old Records</input></div>
-          <div><input type="checkbox" id="rhac-re-medals" value="Y" name="medals">Medals</input></div>
-          <div><input type="checkbox" id="rhac-re-252" value="Y" name="medals">252 awards</input></div>
-          <div><input type="checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests">Personal Bests</input></div>
-          <div><input type="checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements">Handicap Improvements</input></div>
-          <div><input type="checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications">New Classifications</input></div>
-          <div><input type="checkbox" id="rhac-re-reassessments" value="Y" name="reassessments">Reassessments</input></div>
+          <div><input type="checkbox" id="rhac-re-current-records" value="Y" name="current-records" title="scores which are cuurent club records">Current Records</input></div>
+          <div><input type="checkbox" id="rhac-re-old-records" value="Y" name="old-records" title="scores which are old club records">Old Records</input></div>
+          <div><input type="checkbox" id="rhac-re-medals" value="Y" name="medals" title="scores which were awarded a medal">Medals</input></div>
+          <div><input type="checkbox" id="rhac-re-252" value="Y" name="medals" title="qualifying 252 scores">252 awards</input></div>
+          <div><input type="checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests" title="scores which are personal bests">Personal Bests</input></div>
+          <div><input type="checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements" title="scores which resulted in a new handicap or handicap improvement">Handicap Improvements</input></div>
+          <div><input type="checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications" title="scores which resulted in a new classification">New Classifications</input></div>
+          <div><input type="checkbox" id="rhac-re-reassessments" value="Y" name="reassessments" title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Reassessments</input></div>
         </div>
       </div>
 
       <div class="rhac-re-reports-section">
-        <label class="rhac-re-label">Reports</label>
+        <label class="rhac-re-label" title="this does nothing (yet)">Reports</label>
         <div>
           <input type="text" id="rhac-re-report-name" value="" name="report-name"/>
         </div>

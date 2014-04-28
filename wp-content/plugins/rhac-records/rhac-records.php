@@ -28,7 +28,7 @@ function rhac_re_load_deps() {
  
     wp_enqueue_script('rhac_records_view',
                       plugins_url('rhac_records_view.js', __FILE__),
-                      array('jquery-ui-datepicker', 'jquery-ui-tooltip'));
+                      array('jquery-ui-datepicker', 'jquery-ui-tooltip', 'jquery-ui-accordion'));
 
     wp_enqueue_script('rhac_datatables', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/jquery.dataTables.min.js', array('jquery-ui-core'));
     wp_enqueue_style('rhac_records_view',

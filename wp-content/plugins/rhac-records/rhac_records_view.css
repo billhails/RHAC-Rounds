@@ -34,7 +34,7 @@ span.g-class,
 span.h-class {
     font-weight: bold;
     font-size: 110%;
-    padding: 8px;
+    padding: 4px;
     border-radius: 8px;
 }
 
@@ -174,7 +174,9 @@ tr.rhac-re-reassessment-row {
  * styling for the form
  ****************************************************************************************/
 
-.rhac-re-invisible {
+.rhac-re-invisible,
+#rhac-re-help,
+#rhac-re-moreform {
     display: none;
 }
 
@@ -198,6 +200,8 @@ div.rhac-re {
 
 #rhac-re-help-toggle, #rhac-re-more-toggle {
     background-color: #4cd7ff;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
 }
 
 #rhac-re-help {
@@ -247,3 +251,10 @@ label.rhac-re-label {
     padding-bottom: 0.5em;
 }
 
+#rhac-re-results {
+    padding-bottom: 2em;
+}
+
+#rhac-re-report-name {
+    width: 90%;
+}

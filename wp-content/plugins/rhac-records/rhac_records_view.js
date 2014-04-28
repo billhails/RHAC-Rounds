@@ -1,5 +1,154 @@
 function rhacRecordsExplorer() {
 
+    var version = "v1.0";
+
+    // TODO - no hard-coded dates
+    var predefined_reports = {
+        'Outdoor Scores 2014': {
+            '.rhac-re-outdoor': ['Y'],
+            '#rhac-re-include-lapsed': [''],
+            '#rhac-re-archer': '',
+            '#rhac-re-age': '',
+            '#rhac-re-gender': '',
+            '#rhac-re-bow': '',
+            '.rhac-re-single-round': ['Y'],
+            '#rhac-re-round': '',
+            '#rhac-re-seasons': '2014/01/01-2014/12/31',
+            '#rhac-re-current-records': [''],
+            '#rhac-re-old-records': [''],
+            '#rhac-re-medals': [''],
+            '#rhac-re-252': [''],
+            '#rhac-re-personal-bests': [''],
+            '#rhac-re-handicap-improvements': [''],
+            '#rhac-re-new-classifications': [''],
+            '#rhac-re-reassessments': [''],
+
+        },
+
+        'Indoor Scores 2013-2014': {
+            '.rhac-re-outdoor': ['N'],
+            '#rhac-re-include-lapsed': [''],
+            '#rhac-re-archer': '',
+            '#rhac-re-age': '',
+            '#rhac-re-gender': '',
+            '#rhac-re-bow': '',
+            '.rhac-re-single-round': ['Y'],
+            '#rhac-re-round': '',
+            '#rhac-re-seasons': '2013/06/01-2014/05/31',
+            '#rhac-re-current-records': [''],
+            '#rhac-re-old-records': [''],
+            '#rhac-re-medals': [''],
+            '#rhac-re-252': [''],
+            '#rhac-re-personal-bests': [''],
+            '#rhac-re-handicap-improvements': [''],
+            '#rhac-re-new-classifications': [''],
+            '#rhac-re-reassessments': [''],
+        },
+
+        'Personal Bests': {
+            '.rhac-re-outdoor': [''],
+            '#rhac-re-include-lapsed': [''],
+            '#rhac-re-archer': '',
+            '#rhac-re-age': '',
+            '#rhac-re-gender': '',
+            '#rhac-re-bow': '',
+            '.rhac-re-single-round': ['Y'],
+            '#rhac-re-round': '',
+            '#rhac-re-seasons': '-',
+            '#rhac-re-current-records': [''],
+            '#rhac-re-old-records': [''],
+            '#rhac-re-medals': [''],
+            '#rhac-re-252': [''],
+            '#rhac-re-personal-bests': ['Y'],
+            '#rhac-re-handicap-improvements': [''],
+            '#rhac-re-new-classifications': [''],
+            '#rhac-re-reassessments': [''],
+        },
+
+        'Club Records': {
+            '.rhac-re-outdoor': [''],
+            '#rhac-re-include-lapsed': [''],
+            '#rhac-re-archer': '',
+            '#rhac-re-age': '',
+            '#rhac-re-gender': '',
+            '#rhac-re-bow': '',
+            '.rhac-re-single-round': ['Y'],
+            '#rhac-re-round': '',
+            '#rhac-re-seasons': '-',
+            '#rhac-re-current-records': ['Y'],
+            '#rhac-re-old-records': [''],
+            '#rhac-re-medals': [''],
+            '#rhac-re-252': [''],
+            '#rhac-re-personal-bests': [''],
+            '#rhac-re-handicap-improvements': [''],
+            '#rhac-re-new-classifications': [''],
+            '#rhac-re-reassessments': [''],
+        },
+
+        '252 Awards': {
+            '.rhac-re-outdoor': [''],
+            '#rhac-re-include-lapsed': [''],
+            '#rhac-re-archer': '',
+            '#rhac-re-age': '',
+            '#rhac-re-gender': '',
+            '#rhac-re-bow': '',
+            '.rhac-re-single-round': ['N'],
+            '#rhac-re-round': ':Gold 252|Silver 252|Bronze 252|Red 252|Blue 252|Black 252|White 252|Green 252',
+            '#rhac-re-seasons': '-',
+            '#rhac-re-current-records': [''],
+            '#rhac-re-old-records': [''],
+            '#rhac-re-medals': [''],
+            '#rhac-re-252': ['Y'],
+            '#rhac-re-personal-bests': [''],
+            '#rhac-re-handicap-improvements': [''],
+            '#rhac-re-new-classifications': [''],
+            '#rhac-re-reassessments': [''],
+        },
+
+        'All Outdoor Handicaps and Classifications': {
+            '.rhac-re-outdoor': ['Y'],
+            '#rhac-re-include-lapsed': [''],
+            '#rhac-re-archer': '',
+            '#rhac-re-age': '',
+            '#rhac-re-gender': '',
+            '#rhac-re-bow': '',
+            '.rhac-re-single-round': ['Y'],
+            '#rhac-re-round': '',
+            '#rhac-re-seasons': '-',
+            '#rhac-re-current-records': [''],
+            '#rhac-re-old-records': [''],
+            '#rhac-re-medals': [''],
+            '#rhac-re-252': [''],
+            '#rhac-re-personal-bests': [''],
+            '#rhac-re-handicap-improvements': ['Y'],
+            '#rhac-re-new-classifications': ['Y'],
+            '#rhac-re-reassessments': ['Y'],
+        },
+
+        'All Indoor Handicaps and Classifications': {
+            '.rhac-re-outdoor': ['N'],
+            '#rhac-re-include-lapsed': [''],
+            '#rhac-re-archer': '',
+            '#rhac-re-age': '',
+            '#rhac-re-gender': '',
+            '#rhac-re-bow': '',
+            '.rhac-re-single-round': ['Y'],
+            '#rhac-re-round': '',
+            '#rhac-re-seasons': '-',
+            '#rhac-re-current-records': [''],
+            '#rhac-re-old-records': [''],
+            '#rhac-re-medals': [''],
+            '#rhac-re-252': [''],
+            '#rhac-re-personal-bests': [''],
+            '#rhac-re-handicap-improvements': ['Y'],
+            '#rhac-re-new-classifications': ['Y'],
+            '#rhac-re-reassessments': ['Y'],
+        },
+
+    };
+
+    var all_reports = {};
+
     function makeDate(lower, upper) {
         if (lower == '') {
             if (upper == '') { return ''; }
@@ -81,7 +230,6 @@ function rhacRecordsExplorer() {
     function changeDates() {
         var season = jQuery('#rhac-re-seasons').val();
         if (season != '') {
-            // alert("changeDates " + season_dates[0] + " - " + season_dates[1]);
             var season_dates = season.split('-');
             jQuery('#rhac-re-lower-date').val(season_dates[0]);
             jQuery('#rhac-re-upper-date').val(season_dates[1]);
@@ -99,6 +247,8 @@ function rhacRecordsExplorer() {
         else {
             jQuery('#rhac-re-seasons').html(jQuery('#rhac-re-all-seasons').html());
         }
+        jQuery('#rhac-re-seasons').val('-');
+        jQuery('#rhac-re-seasons').change();
     }
 
     function changeRoundList() {
@@ -139,10 +289,26 @@ function rhacRecordsExplorer() {
         }
     }
 
-    function populateReportMenu() {
+    function setForm() {
+        var name = jQuery('#rhac-re-report').val();
+        var report = all_reports[name];
+        for (var selector in report) {
+            jQuery(selector).val(report[selector]);
+            jQuery(selector).change();
+        }
+        jQuery('#rhac-re-report-name').val(name);
     }
 
-    jQuery('#rhac-re-save-report').click(saveReport);
+    function populateReportMenu() {
+        var html = '';
+        for (var name in predefined_reports) {
+            html = html.concat('<option value="', name, '">', name, '</option>');
+            all_reports[name] = predefined_reports[name];
+        }
+        jQuery('#rhac-re-report').html(html);
+    }
+
+    // jQuery('#rhac-re-save-report').click(saveReport);
     jQuery('#rhac-re-seasons').change(changeDates);
     jQuery('.rhac-re-outdoor').change(changeSeasonList);
     jQuery('.rhac-re-outdoor').change(changeRoundList);
@@ -151,11 +317,16 @@ function rhacRecordsExplorer() {
     jQuery('.rhac-re-date').datepicker({ dateFormat: "yy/mm/dd" });
     jQuery('#rhac-re-run-report').click(doSearch);
     populateReportMenu();
+    setForm();
+    jQuery('#rhac-re-report').change(setForm);
+    jQuery('#rhac-re-help-toggle').click(function () { jQuery('#rhac-re-help').toggle(); });
+    jQuery('#rhac-re-more-toggle').click(function () { jQuery('#rhac-re-moreform').toggle(); });
 }
 
 jQuery(
     function() {
         jQuery('#rhac-re-main').tooltip();
+        jQuery('.accordion').accordion({ heightStyle: "content", collapsible: true });
         if (jQuery('#rhac-re-results')[0]) {
             rhacRecordsExplorer();
         }
