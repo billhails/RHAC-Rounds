@@ -179,8 +179,12 @@ class RHAC_RecordsViewer {
     <div>
       <p>The simplest thing to do is to pick one of the predefined reports
          from the dropdown and click the "Run Report" button. After a
-         little wile the search results will appear in the "Results" box.</p>
-      <p>Clicking on any of the column headers in the results sorts by that column.</p>
+         little while the search results will appear in the "Results" box.</p>
+      <ul>
+        <li>Clicking on any of the column headers in the results sorts by that column in ascending order.</li>
+        <li>Clicking again reverses the order of the sort.</li>
+        <li>Shift-clicking on additional columns sorts by those columns secondarily.</li>
+      </ul>
     </div>
     <h3>Explaination of the Icons in the Results</h3>
     <div>
@@ -206,8 +210,8 @@ class RHAC_RecordsViewer {
           <dt>{$this->classification_map['(third)']}</dt>
           <dd>Season confirmation of a third class outdoor classification.
               At the end of each season you are re-classified on your three best scores.
-              This badge indicates that you have re-achieved your current classification
-              in the current season after your end of season re-assessment.</dd>
+              This badge indicates that you have re-achieved your previous end-of-season classification
+              in the current season.</dd>
           <dt>{$this->classification_map['E']}</dt>
           <dd>New indoor classification "E" (likewise for other classifications.)
               This will also appear in brackets if you have re-achieved it in the current
@@ -240,12 +244,21 @@ class RHAC_RecordsViewer {
             section. This should show you the history of club records for that round and category.</dd>
       </dl>
     </div>
+    <h3>Saving Reports</h3>
+    <div>
+      <p>You can save your customized reports so that they will appear in the main dropdown in future.</p>
+      <p>To save a customized report, simply edit the name in the "Reports" section and click the
+         "Save This Report As" button. For example after doing the "My Personal Bests" customization above,
+         change the report name from "Personal Bests" to "My Personal Bests" then save it. From now on,
+         unless you delete it, that report will remain in your list of reports.</p>
+      <p>If you're part of a family of archers who all use the same computer, you might think of
+         naming your reports "John's Personal Bests", "Mary's Personal Bests" etc.</p>
+      <p>You can't change or delete any of the predefined reports, and if you name a personal report badly,
+         just call it up then save it with a better name, then delete the old one.</p>
+    </div>
     <h3>To Do</h3>
     <div>
       <ol>
-        <li>Some parts of this are not working yet. Primarily the "Reports" box does nothing.
-           The plan is that you will be able to save your edited queries under new names and they will
-           appear in the reports dropdown from then on.</li>
         <li>Incorporate scorecards, so that scores in the report results that have scorecards can
             be clicked on to see the scorecards.</li>
         <li>No scores have medals attached yet.</li>
@@ -348,7 +361,7 @@ $outdoor_seasons
       </div>
 
       <div class="rhac-re-reports-section">
-        <label class="rhac-re-label" title="this does nothing (yet)">Reports</label>
+        <label class="rhac-re-label" title="save or delete personal reports">Reports</label>
         <div>
           <input type="text" id="rhac-re-report-name" value="" name="report-name"/>
         </div>
