@@ -262,6 +262,7 @@ class RHAC_RecordsViewer {
         <li>Incorporate scorecards, so that scores in the report results that have scorecards can
             be clicked on to see the scorecards.</li>
         <li>No scores have medals attached yet.</li>
+        <li>Add a "last week" report to show most recent scores for everyone.</li>
       </ol>
     </div>
   </div>

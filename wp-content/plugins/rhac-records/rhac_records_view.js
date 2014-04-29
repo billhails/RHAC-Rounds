@@ -321,6 +321,9 @@ function rhacRecordsExplorer() {
         report_data = getCurrentReportSettings();
         persistance.set(report_name, report_data);
         populateReportMenu();
+        jQuery('#rhac-re-report').val(report_name);
+        jQuery('#rhac-re-report').change();
+        alert("report \"" + report_name + "\" saved");
     }
 
     function deleteReport() {
@@ -343,6 +346,7 @@ function rhacRecordsExplorer() {
         }
         persistance.remove(report_name);
         populateReportMenu();
+        alert("report \"" + report_name + "\" deleted");
     }
 
     function changeDates() {
