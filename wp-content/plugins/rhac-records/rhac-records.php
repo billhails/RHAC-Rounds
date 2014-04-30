@@ -63,10 +63,11 @@ function rhac_ajax_display_results() {
 add_action('wp_ajax_rhac_display_results', 'rhac_ajax_display_results');
 add_action('wp_ajax_nopriv_rhac_display_results', 'rhac_ajax_display_results');
 
-function rhac_records_viewer() {
+function rhac_records_viewer($atts) {
     // error_log("rhac_records_viewer");
+    extract( shortcode_atts( array('help_page_id' => ''), $atts ) );
     $viewer = RHAC_RecordsViewer::getInstance();
-    return $viewer->view();
+    return $viewer->view($help_page_id);
 }
 
 add_shortcode('records_viewer', 'rhac_records_viewer');

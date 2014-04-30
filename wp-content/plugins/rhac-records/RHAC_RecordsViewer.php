@@ -360,8 +360,9 @@ class RHAC_RecordsViewer {
         return $rows;
     }
 
-    public function view() {
+    public function view($help_page_id) {
         $this->initDisplayMaps();
+        $help_page_url = get_permalink($help_page_id);
         $current_archers = $this->archerOptions(false);
         $all_archers = $this->archerOptions(true);
 
@@ -390,105 +391,13 @@ class RHAC_RecordsViewer {
   <div class="rhac-re-invisible" id="rhac-re-all-seasons">$all_seasons</div>
   <div class="rhac-re-invisible" id="rhac-re-outdoor-seasons">$outdoor_seasons</div>
   <div class="rhac-re-invisible" id="rhac-re-indoor-seasons">$indoor_seasons</div>
-  <div id="rhac-re-help-toggle" class="rhac-re" title="click for help">Help</div>
-  <div id="rhac-re-help" class="rhac-re accordion">
-    <h3>Getting Started</h3>
-    <div>
-      <p>The simplest thing to do is to pick one of the predefined reports
-         from the dropdown and click the "Run Report" button. After a
-         little while the search results will appear in the "Results" box.</p>
-      <ul>
-        <li>Clicking on any of the column headers in the results sorts by that column in ascending order.</li>
-        <li>Clicking again reverses the order of the sort.</li>
-        <li>Shift-clicking on additional columns sorts by those columns secondarily.</li>
-      </ul>
-    </div>
-    <h3>Explaination of the Icons in the Results</h3>
-    <div>
-      <dl>
-          <dt>{$this->icons['personal-best']}</dt>
-          <dd>Personal best.</dd>
-          <dt>{$this->icons['current-club-record']}</dt>
-          <dd>Current club record.</dd>
-          <dt>{$this->icons['old-club-record']}</dt>
-          <dd>Old club record.</dd>
-          <dt>{$this->icons['half-black-252']}</dt>
-          <dd>First qualifying Black 252 score (likewise for other colours.)</dd>
-          <dt>{$this->icons['black-252']}</dt>
-          <dd>Second qualifying Black 252 score and award (likewise for other colours.)</dd>
-          <dt>{$this->icons['medal-bronze']}</dt>
-          <dd>Bronze medal awarded at competition.</dd>
-          <dt>{$this->icons['medal-silver']}</dt>
-          <dd>Silver medal awarded at competition.</dd>
-          <dt>{$this->icons['medal-gold']}</dt>
-          <dd>Gold medal awarded at competition.</dd>
-          <dt>{$this->classification_map['third']}</dt>
-          <dd>New third class outdoor classification (likewise for other classifications.)</dd>
-          <dt>{$this->classification_map['(third)']}</dt>
-          <dd>Season confirmation of a third class outdoor classification.
-              At the end of each season you are re-classified on your three best scores.
-              This badge indicates that you have re-achieved your previous end-of-season classification
-              in the current season.</dd>
-          <dt>{$this->classification_map['E']}</dt>
-          <dd>New indoor classification "E" (likewise for other classifications.)
-              This will also appear in brackets if you have re-achieved it in the current
-              season.</dd>
-          <dt><span class="handicap-improvement">65</span></dt>
-          <dd>New or improved handicap.</dd>
-      </dl>
-    </div>
-    <h3>Exploring Further</h3>
-    <div>
-      <p>Open the "Options" section below by clicking on it and you will see the underlying
-         form. If you then choose a different pre-defined report, you will see the form change to
-         reflect this. When you click "Run Report" it is actually running the undelying form.</p>
-      <p>You can make changes to the form before you run it. Here are a few examples:</p>
-      <dl>
-        <dt>My Personal Bests</dt>
-        <dd>Choose "Personal Bests" from the predefined reports, then select yourself instead of
-            "All Archers" in the "Archer" section of form. Run the report and you will see all of
-            your personal bests.  You can restrict all the other predefined reports similarily.</dd>
-        <dt>Dates</dt>
-        <dd>For any of the reports that mention a year or years, look in the "Dates" section
-            and either choose a season or change the dates directly. If you clear out either of the
-            date fields, the report will run for just the one remaining date.</dd>
-        <dt>Club Records in My Category</dt>
-        <dd>Select the "Club Records" report, then in the "Category" box select your age group,
-            gender and bow type. Running this will show you just those records,</dd>
-        <dt>History of A Round</dt>
-        <dd>Do as for "Club Records in My Category" above, but further select a particular round
-            from the "Rounds" section, and check "Old Records" in the "Limit to"
-            section. This should show you the history of club records for that round and category.</dd>
-      </dl>
-    </div>
-    <h3>Saving Reports</h3>
-    <div>
-      <p>You can save your customized reports so that they will appear in the main dropdown in future.</p>
-      <p>To save a customized report, simply edit the name in the "Reports" section and click the
-         "Save This Report As" button. For example after doing the "My Personal Bests" customization above,
-         change the report name from "Personal Bests" to "My Personal Bests" then save it. From now on,
-         unless you delete it, that report will remain in your list of reports.</p>
-      <p>If you're part of a family of archers who all use the same computer, you might think of
-         naming your reports "John's Personal Bests", "Mary's Personal Bests" etc.</p>
-      <p>You can't change or delete any of the predefined reports, and if you name a personal report badly,
-         just call it up then save it with a better name, then delete the old one.</p>
-    </div>
-    <h3>To Do</h3>
-    <div>
-      <ol>
-        <li>Incorporate scorecards, so that scores in the report results that have scorecards can
-            be clicked on to see the scorecards.</li>
-        <li>No scores have medals attached yet.</li>
-        <li>Add a "last week" report to show most recent scores for everyone.</li>
-      </ol>
-    </div>
-  </div>
   <div id="rhac-re-simpleform" class="rhac-re">
     <select id="rhac-re-report" title="select a report to run">
     </select>
     <button type="button" title="run the selected report" id="rhac-re-run-report">Run Report</button>
+    <button type="button" title="edit the selected report" id="rhac-re-edit-report">Edit Report</button>
+    <a href="$help_page_url" target="_blank" title="see help (in a new window)">Help</a>
   </div>
-  <div id="rhac-re-more-toggle" class="rhac-re" title="click to edit the report">Options</div>
   <div id="rhac-re-moreform" class="rhac-re">
     <div id="rhac-re-more-left">
 
@@ -579,12 +488,12 @@ $outdoor_seasons
       </div>
 
       <div class="rhac-re-reports-section">
-        <label class="rhac-re-label" title="save or delete personal reports">Reports</label>
+        <label class="rhac-re-label" title="save or delete personal reports">Save Report</label>
         <div>
           <input type="text" id="rhac-re-report-name" value="" name="report-name"/>
         </div>
         <div>
-          <button type="button" id="rhac-re-save-report">Save This Report As</button>
+          <button type="button" id="rhac-re-save-report">Save This Report</button>
         </div>
         <div>
           <button type="button" id="rhac-re-delete-report">Delete This Report</button>

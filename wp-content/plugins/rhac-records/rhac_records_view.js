@@ -239,6 +239,9 @@ function rhacRecordsExplorer() {
     }
 
     function doSearch() {
+        if (!jQuery('#rhac-re-results').hasClass('rhac-re')) {
+            jQuery('#rhac-re-results').addClass('rhac-re');
+        }
         jQuery('#rhac-re-results').html("<p>Please wait...</p>");
         jQuery.ajax(
             {
@@ -269,6 +272,7 @@ function rhacRecordsExplorer() {
             }
         ).done(
             function(results) {
+                jQuery('#rhac-re-results').removeClass('rhac-re');
                 jQuery('#rhac-re-results').html(results);
                 jQuery('#rhac-re-results-table').dataTable(
                     {
@@ -455,8 +459,7 @@ function rhacRecordsExplorer() {
     populateReportMenu();
     setForm();
     jQuery('#rhac-re-report').change(setForm);
-    jQuery('#rhac-re-help-toggle').click(function () { jQuery('#rhac-re-help').toggle(); });
-    jQuery('#rhac-re-more-toggle').click(function () { jQuery('#rhac-re-moreform').toggle(); });
+    jQuery('#rhac-re-edit-report').click(function () { jQuery('#rhac-re-moreform').toggle(); });
 }
 
 jQuery(
