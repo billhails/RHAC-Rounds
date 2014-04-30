@@ -36,6 +36,7 @@ class RHAC_ReassesmentInserterLeaf {
     private $archer;
     private $bow;
     private $outdoor;
+    private $gender;
     private $season_calculator;
     private $age_helper;
 
@@ -43,6 +44,7 @@ class RHAC_ReassesmentInserterLeaf {
         $this->bow = $row['bow'];
         $this->archer = $row['archer'];
         $this->outdoor = $row['outdoor'];
+        $this->gender = $row['gender'];
         if ($this->outdoor == "Y") {
             $this->season_calculator = RHAC_NextOutdoorSeasonCalculator::getInstance();
         }
@@ -126,6 +128,7 @@ class RHAC_ReassesmentInserterLeaf {
                      'archer' => $this->archer,
                      'bow' => $this->bow,
                      'outdoor' => $this->outdoor,
+                     'gender' => $this->gender,
                      'category' => $this->categoryAt($date),
                      'reassessment' => $reassessment);
     }

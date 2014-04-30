@@ -53,7 +53,7 @@ class RHAC_RecordsViewer {
         }
     }
 
-    private function initDisplayMaps() {
+    public function initDisplayMaps() {
         if ($this->initialized) {
             return;
         }
@@ -121,7 +121,224 @@ class RHAC_RecordsViewer {
         $this->classification_map['(G)'] = '<span class="g-class">(G)</span>';
         $this->classification_map['(H)'] = '<span class="h-class">(H)</span>';
         $this->classification_map[''] = '';
+    }
 
+    public function personalBestIcon() {
+        return $this->pb_map['Y'];
+    }
+
+    public function currentClubRecordIcon() {
+        return $this->cr_map['current'];
+    }
+
+    public function oldClubRecordIcon() {
+        return $this->cr_map['old'];
+    }
+
+    public function greenTwoFiveTwoIcon() {
+        return $this->tft_map['green/2'];
+    }
+
+    public function halfGreenTwoFiveTwoIcon() {
+        return $this->tft_map['green/1'];
+    }
+
+    public function whiteTwoFiveTwoIcon() {
+        return $this->tft_map['white/2'];
+    }
+
+    public function halfWhiteTwoFiveTwoIcon() {
+        return $this->tft_map['white/1'];
+    }
+
+    public function blackTwoFiveTwoIcon() {
+        return $this->tft_map['black/2'];
+    }
+
+    public function halfBlackTwoFiveTwoIcon() {
+        return $this->tft_map['black/1'];
+    }
+
+    public function blueTwoFiveTwoIcon() {
+        return $this->tft_map['blue/2'];
+    }
+
+    public function halfBlueTwoFiveTwoIcon() {
+        return $this->tft_map['blue/1'];
+    }
+
+    public function redTwoFiveTwoIcon() {
+        return $this->tft_map['red/2'];
+    }
+
+    public function halfRedTwoFiveTwoIcon() {
+        return $this->tft_map['red/1'];
+    }
+
+    public function bronzeTwoFiveTwoIcon() {
+        return $this->tft_map['bronze/2'];
+    }
+
+    public function halfBronzeTwoFiveTwoIcon() {
+        return $this->tft_map['bronze/1'];
+    }
+
+    public function silverTwoFiveTwoIcon() {
+        return $this->tft_map['silver/2'];
+    }
+
+    public function halfSilverTwoFiveTwoIcon() {
+        return $this->tft_map['silver/1'];
+    }
+
+    public function goldTwoFiveTwoIcon() {
+        return $this->tft_map['gold/2'];
+    }
+
+    public function halfGoldTwoFiveTwoIcon() {
+        return $this->tft_map['gold/1'];
+    }
+
+
+    public function bronzeMedalIcon() {
+        return $this->medal_map['bronze'];
+    }
+
+    public function silverMedalIcon() {
+        return $this->medal_map['silver'];
+    }
+
+    public function goldMedalIcon() {
+        return $this->medal_map['gold'];
+    }
+
+
+    public function archerClassificationIcon() {
+        return $this->classification_map['archer'];
+    }
+
+    public function unclassifiedClassificationIcon() {
+        return $this->classification_map['unclassified'];
+    }
+
+    public function thirdClassificationIcon() {
+        return $this->classification_map['third'];
+    }
+
+    public function secondClassificationIcon() {
+        return $this->classification_map['second'];
+    }
+
+    public function firstClassificationIcon() {
+        return $this->classification_map['first'];
+    }
+
+    public function bmClassificationIcon() {
+        return $this->classification_map['bm'];
+    }
+
+    public function mbmClassificationIcon() {
+        return $this->classification_map['mbm'];
+    }
+
+    public function gmbmClassificationIcon() {
+        return $this->classification_map['gmbm'];
+    }
+
+    public function aClassificationIcon() {
+        return $this->classification_map['A'];
+    }
+
+    public function bClassificationIcon() {
+        return $this->classification_map['B'];
+    }
+
+    public function cClassificationIcon() {
+        return $this->classification_map['C'];
+    }
+
+    public function dClassificationIcon() {
+        return $this->classification_map['D'];
+    }
+
+    public function eClassificationIcon() {
+        return $this->classification_map['E'];
+    }
+
+    public function fClassificationIcon() {
+        return $this->classification_map['F'];
+    }
+
+    public function gClassificationIcon() {
+        return $this->classification_map['G'];
+    }
+
+    public function hClassificationIcon() {
+        return $this->classification_map['H'];
+    }
+
+    public function confirmedArcherClassificationIcon() {
+        return $this->classification_map['(archer)'];
+    }
+
+    public function confirmedUnclassifiedClassificationIcon() {
+        return $this->classification_map['(unclassified)'];
+    }
+
+    public function confirmedThirdClassificationIcon() {
+        return $this->classification_map['(third)'];
+    }
+
+    public function confirmedSecondClassificationIcon() {
+        return $this->classification_map['(second)'];
+    }
+
+    public function confirmedFirstClassificationIcon() {
+        return $this->classification_map['(first)'];
+    }
+
+    public function confirmedBmClassificationIcon() {
+        return $this->classification_map['(bm)'];
+    }
+
+    public function confirmedMbmClassificationIcon() {
+        return $this->classification_map['(mbm)'];
+    }
+
+    public function confirmedGmbmClassificationIcon() {
+        return $this->classification_map['(gmbm)'];
+    }
+
+    public function confirmedAclassificationIcon() {
+        return $this->classification_map['(A)'];
+    }
+
+    public function confirmedBclassificationIcon() {
+        return $this->classification_map['(B)'];
+    }
+
+    public function confirmedCclassificationIcon() {
+        return $this->classification_map['(C)'];
+    }
+
+    public function confirmedDclassificationIcon() {
+        return $this->classification_map['(D)'];
+    }
+
+    public function confirmedEclassificationIcon() {
+        return $this->classification_map['(E)'];
+    }
+
+    public function confirmedFclassificationIcon() {
+        return $this->classification_map['(F)'];
+    }
+
+    public function confirmedGclassificationIcon() {
+        return $this->classification_map['(G)'];
+    }
+
+    public function confirmedHclassificationIcon() {
+        return $this->classification_map['(H)'];
     }
 
     public static function getInstance() {
@@ -234,7 +451,7 @@ class RHAC_RecordsViewer {
         <dt>Dates</dt>
         <dd>For any of the reports that mention a year or years, look in the "Dates" section
             and either choose a season or change the dates directly. If you clear out either of the
-            date fields, the report wil run for just the one remaining date.</dd>
+            date fields, the report will run for just the one remaining date.</dd>
         <dt>Club Records in My Category</dt>
         <dd>Select the "Club Records" report, then in the "Category" box select your age group,
             gender and bow type. Running this will show you just those records,</dd>
