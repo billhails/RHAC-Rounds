@@ -48,7 +48,7 @@ function rhacRecordsExplorer() {
         },
 
         '252 Awards': {
-            '.rhac-re-outdoor': [''],
+            '.rhac-re-outdoor': ['Y'],
             '#rhac-re-include-lapsed': [''],
             '#rhac-re-archer': '',
             '#rhac-re-age': '',
