@@ -53,10 +53,7 @@ add_action('init', 'rhac_re_load_deps');
 function rhac_ajax_display_results() {
     // error_log("rhac_ajax_display_results");
     $viewer = RHAC_RecordsViewer::getInstance();
-    $result = $viewer->display();
-    // error_log("rhac_ajax_display_results got result");
-    echo $result;
-
+    echo $viewer->display();
     exit;
 }
 

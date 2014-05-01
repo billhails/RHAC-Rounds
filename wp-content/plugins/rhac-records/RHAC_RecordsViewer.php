@@ -839,6 +839,7 @@ EOHTML;
             $text []= "<td>$row[classification]</td>";
             $text []= "<td>$row[score]</td>";
             $text []= "<td>";
+            $text []= "<span style='display: inline-block;'>";
             $text []= $this->classification_map[$row[new_classification]];
             $text []= ' ';
             if (strlen($row[handicap_improvement])) {
@@ -848,6 +849,7 @@ EOHTML;
             $text []= $this->cr_map[$row[club_record]];
             $text []= $this->tft_map[$row[two_five_two]];
             $text []= $this->pb_map[$row[personal_best]];
+            $text []= "</span>";
             $text []= "</td>";
             $text []= '</tr>';
         }
