@@ -26,6 +26,14 @@ class RHAC_ScorecardAccumulator {
         }
     }
 
+    protected function makeKey($row, $fields) {
+        $key = array();
+        foreach ($fields as $field) {
+            $key []= $row[$field];
+        }
+        return implode("\e", $key);
+    }
+
     public function accept($row) {
         foreach ($this->getChildren() as $child) {
             $child->accept($row);
