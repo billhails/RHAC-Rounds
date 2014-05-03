@@ -1,6 +1,6 @@
 <?php
 
-include_once('RHAC_ReassesmentInserter.php');
+include_once('./RHAC_ReassesmentInserter.php');
 
 date_default_timezone_set('Europe/London');
 
@@ -26,6 +26,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
             'outdoor' => 'N',
             'date' => '2007/04/04',
             'reassessment' => 'N',
+            'gender' => 'M',
         );
         $this->inserter->accept($row);
         $results = $this->inserter->results();
@@ -38,6 +39,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'outdoor' => 'N',
                 'category' => 'U14',
                 'reassessment' => 'age_group',
+                'gender' => 'M',
             ),
             array(
                 'action' => 'insert',
@@ -46,7 +48,8 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'bow' => 'compound',
                 'outdoor' => 'N',
                 'category' => 'U12',
-                'reassessment' => 'end_of_season'
+                'reassessment' => 'end_of_season',
+                'gender' => 'M',
             )
         );
         $this->assertEquals($expected, $results);
@@ -60,6 +63,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
             'outdoor' => 'N',
             'date' => '2007/04/04',
             'reassessment' => 'N',
+            'gender' => 'M',
         );
         $this->inserter->accept($row);
         $row = array(
@@ -69,6 +73,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
             'outdoor' => 'N',
             'date' => '2007/06/01',
             'reassessment' => 'end_of_season',
+            'gender' => 'M',
         );
         $this->inserter->accept($row);
         $results = $this->inserter->results();
@@ -81,6 +86,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'outdoor' => 'N',
                 'category' => 'U14',
                 'reassessment' => 'age_group',
+                'gender' => 'M',
             ),
         );
         $this->assertEquals($expected, $results);
@@ -93,6 +99,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
             'outdoor' => 'Y',
             'date' => '2007/04/04',
             'reassessment' => 'N',
+            'gender' => 'M',
         );
         $this->inserter->accept($row);
         $row = array(
@@ -101,6 +108,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
             'outdoor' => 'Y',
             'date' => '2007/05/04',
             'reassessment' => 'N',
+            'gender' => 'M',
         );
         $this->inserter->accept($row);
         $row = array(
@@ -109,6 +117,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
             'outdoor' => 'Y',
             'date' => '2008/04/04',
             'reassessment' => 'N',
+            'gender' => 'M',
         );
         $this->inserter->accept($row);
         $results = $this->inserter->results();
@@ -121,6 +130,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'outdoor' => 'Y',
                 'category' => 'U14',
                 'reassessment' => 'age_group',
+                'gender' => 'M',
             ),
             array(
                 'action' => 'insert',
@@ -130,6 +140,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'outdoor' => 'Y',
                 'category' => 'U12',
                 'reassessment' => 'end_of_season',
+                'gender' => 'M',
             ),
             array(
                 'action' => 'insert',
@@ -139,6 +150,7 @@ class RHAC_ReassesmentInserterTest extends PHPUnit_Framework_TestCase {
                 'outdoor' => 'Y',
                 'category' => 'U12',
                 'reassessment' => 'end_of_season',
+                'gender' => 'M',
             ),
         );
         $this->assertEquals($expected, $results);

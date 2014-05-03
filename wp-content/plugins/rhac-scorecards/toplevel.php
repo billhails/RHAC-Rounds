@@ -147,7 +147,11 @@ class RHAC_Scorecards {
     }
 
     public function getRound($round_name) {
-        return GNAS_Round::getInstanceByName($round_name);
+        $round = GNAS_Round::getInstanceByName($round_name);
+        if ($round instanceof GNAS_UnrecognisedRound) {
+            die("unrecognised round: $round_name");
+        }
+        return $round;
     }
 
     public function fetch($query, $params = array()) {
@@ -384,6 +388,14 @@ class RHAC_Scorecards {
         $category = $this->categoryAt($_POST['archer'], $date);
         $classification = $this->getClassification($_POST['round'], $gender, $category,
                                                    $_POST['bow'], $_POST['total-total']);
+        $next_age_group = $this->getNextAgeGroup($category);
+        if ($next_age_group) {
+            $next_age_group_classification = $this->getClassification($_POST['round'],
+                                                                      $gender,
+                                                                      $next_age_group,
+                                                                      $_POST['bow'],
+                                                                      $_POST['total-total']);
+        }
         $outdoor = $this->getIsOutdoor($_POST['round']);
         $tens = $this->countTens();
         $params = array(
@@ -399,6 +411,7 @@ class RHAC_Scorecards {
             $handicap_ranking,
             $_POST['has_ends'],
             $classification,
+            $next_age_group_classification,
             $outdoor,
             $category,
             $gender,
@@ -420,6 +433,7 @@ class RHAC_Scorecards {
                  . " handicap_ranking = ?,"
                  . " has_ends = ?,"
                  . " classification = ?,"
+                 . " next_age_group_classification = ?,"
                  . " outdoor = ?,"
                  . " category = ?,"
                  . " gender = ?,"
@@ -441,14 +455,22 @@ class RHAC_Scorecards {
         $category = $this->categoryAt($_POST['archer'], $date);
         $classification = $this->getClassification($_POST['round'], $gender, $category,
                                                    $_POST['bow'], $_POST['total-total']);
+        $next_age_group = $this->getNextAgeGroup($category);
+        if ($next_age_group) {
+            $next_age_group_classification = $this->getClassification($_POST['round'],
+                                                                      $gender,
+                                                                      $next_age_group,
+                                                                      $_POST['bow'],
+                                                                      $_POST['total-total']);
+        }
         $outdoor = $this->getIsOutdoor($_POST['round']);
         $tens = $this->countTens();
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
                  . "(archer, venue_id, date, round, bow, hits, xs, golds, score, has_ends, handicap_ranking, "
-                 . "gender, category, classification, outdoor, tens)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 . "gender, category, classification, next_age_group_classification, outdoor, tens)"
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
                        $_POST['venue_id'],
                        $date,
@@ -463,6 +485,7 @@ class RHAC_Scorecards {
                        $gender,
                        $category,
                        $classification,
+                       $next_age_group_classification,
                        $outdoor,
                        $tens));
         if (!$status) {
@@ -655,7 +678,8 @@ class RHAC_Scorecards {
         $text []= '<th>Tens</th>';
         $text []= '<th>Score</th>';
         $text []= '<th>Handicap</th>';
-        $text []= '<th>Classification</th>';
+        $text []= '<th>Cfn</th>';
+        $text []= '<th>Nxt Cfn</th>';
         $text []= '<th>Record</th>';
         $text []= '<th>PB</th>';
         $text []= '<th>HCI</th>';
@@ -693,6 +717,7 @@ class RHAC_Scorecards {
                 $result['score'] = '';
                 $result['handicap_ranking'] = '';
                 $result['classification'] = '';
+                $result['next_age_group_classification'] = '';
                 $result['club_record'] = '';
                 $result['personal_best'] = '';
                 $result['two_five_two'] = '';
@@ -714,6 +739,7 @@ class RHAC_Scorecards {
             $text []= "<td>$result[score]</td>";
             $text []= "<td>$result[handicap_ranking]</td>";
             $text []= "<td>$result[classification]</td>";
+            $text []= "<td>$result[next_age_group_classification]</td>";
             $text []= "<td>$result[club_record]</td>";
             $text []= "<td>$result[personal_best]</td>";
             $text []= "<td>$result[handicap_improvement]</td>";
@@ -813,6 +839,11 @@ class RHAC_Scorecards {
                     array($classification, $scorecard_id));
     }
 
+    private function updateNextAgeGroupClassification($scorecard_id, $classification) {
+        $this->exec("UPDATE scorecards SET next_age_group_classification = ? WHERE scorecard_id = ?",
+                    array($classification, $scorecard_id));
+    }
+
     private function updateOutdoor($scorecard_id, $outdoor) {
         $this->exec("UPDATE scorecards SET outdoor = ? WHERE scorecard_id = ?",
                     array($outdoor, $scorecard_id));
@@ -864,12 +895,37 @@ class RHAC_Scorecards {
     private function reCalculateClassifications() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
+            if ($scorecard['reassessment'] != "N") {
+                continue;
+            }
             $classification = $this->getClassification($scorecard['round'],
                                                        $scorecard['gender'],
                                                        $scorecard['category'],
                                                        $scorecard['bow'],
                                                        $scorecard['score']);
             $this->updateClassification($scorecard['scorecard_id'], $classification);
+            $next_age_group = $this->getNextAgeGroup($scorecard['category']);
+            if ($next_age_group) {
+                $classification = $this->getClassification($scorecard['round'],
+                                                           $scorecard['gender'],
+                                                           $next_age_group,
+                                                           $scorecard['bow'],
+                                                           $scorecard['score']);
+                $this->updateNextAgeGroupClassification($scorecard['scorecard_id'], $classification);
+            }
+        }
+    }
+
+    private function getNextAgeGroup($category) {
+        switch ($category) {
+            case 'U12': return 'U14';
+            case 'U14': return 'U16';
+            case 'U16': return 'U18';
+            case 'U18': return 'adult';
+            case 'adult': return ''; # false
+            default:
+                error_log("unrecognised category: $category");
+                return '';
         }
     }
 
@@ -1457,14 +1513,6 @@ EOT
 
     private function venueAsSelect() {
         $venue_map = $this->getVenueMap();
-        # print "<pre>\n";
-        # print "venue_map:\n";
-        # print_r($venue_map);
-        # print "_POST:\n";
-        # print_r($_POST);
-        # print "scorecard_data:\n";
-        # print_r($this->scorecard_data);
-        # print "</pre>\n";
         $text = array("<select name='venue_id' id='venue_id'>");
         foreach ($venue_map as $id => $name) {
             $text []= "<option value='$id'"

@@ -1,10 +1,6 @@
 <?php
 
-function plugin_dir_path($file) {
-    return './';
-}
-
-include_once('RHAC_ScorecardAccumulator.php');
+include_once 'setupTests.php';
 
 class RHAC_ScorecardAccumulatorTest extends PHPUnit_Framework_TestCase {
 

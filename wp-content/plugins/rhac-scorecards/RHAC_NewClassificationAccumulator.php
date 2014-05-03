@@ -25,6 +25,7 @@
  */
 class RHAC_NewClassificationAccumulator extends RHAC_ScorecardAccumulator {
     private $children;
+    private $debug = false;
 
     public function __construct() {
         $this->children = array();
@@ -33,9 +34,13 @@ class RHAC_NewClassificationAccumulator extends RHAC_ScorecardAccumulator {
     public function accept($row) {
         $key = $this->makeKey($row, array('archer', 'bow', 'outdoor'));
         if (!isset($this->children[$key])) {
-            $this->children[$key] = new RHAC_NewClassificationAccumulatorLeaf();
+            $this->children[$key] = new RHAC_NewClassificationAccumulatorLeaf($this->debug);
         }
         $this->children[$key]->accept($row);
+    }
+
+    public function setDebug($debug) {
+        $this->debug = $debug;
     }
 
     protected function getChildren() {
@@ -45,31 +50,49 @@ class RHAC_NewClassificationAccumulator extends RHAC_ScorecardAccumulator {
 
 
 class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
+    private $debug;
     private $classification_this_season;
     private $current_classification = 'archer';
     private $classifications_this_season;
+    private $next_age_group_classifications_this_season;
     private $classifications_last_twelve_months = array();
     protected $proposed_changes = array();
     protected $current_db_values = array();
 
     private static $classification_order = array(
-        'archer' => 0, 'unclassified' => 1, 'third' => 2, 'second' => 3, 'first' => 4,
+        'archer' => 1, 'unclassified' => 0, 'third' => 2, 'second' => 3, 'first' => 4,
         'bm' => 5, 'mbm' => 6, 'gmbm' => 7,
         'H' => 2, 'G' => 3, 'F' => 4, 'E' => 5, 'D' => 6, 'C' => 7, 'B' => 8, 'A' => 9,
     );
 
-    public function __construct() {
+    public function __construct($debug) {
+        $this->debug = $debug;
         $this->resetClassificationsThisSeason();
     }
 
+    private function debug($msg) {
+        if ($this->debug) {
+            error_log("# $msg");
+        }
+    }
+
     private function resetClassificationsThisSeason() {
+        $this->debug("current_classification is " . $this->current_classification);
         if ($this->current_classification == 'archer') {
+            $this->debug("resetting current classification this season to archer");
             $this->classification_this_season = 'archer';
         }
         else {
+            $this->debug("resetting current classification this season to unclassified");
             $this->classification_this_season = 'unclassified';
         }
         $this->classifications_this_season = array(
+            'archer' => 0,
+            'third' => 0, 'second' => 0, 'first' => 0, 'bm' => 0, 'mbm' => 0, 'gmbm' => 0,
+            'A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0, 'F' => 0, 'G' => 0, 'H' => 0,
+        );
+        $this->next_age_group_classifications_this_season = array(
+            'archer' => 0,
             'third' => 0, 'second' => 0, 'first' => 0, 'bm' => 0, 'mbm' => 0, 'gmbm' => 0,
             'A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0, 'F' => 0, 'G' => 0, 'H' => 0,
         );
@@ -78,29 +101,54 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
     public function accept($row) {
         $row = $this->wrap($row);
         if ($row->isAgeGroupReassessment()) {
-            $this->current_classification = $this->bestLastYear();
+            $this->debug("row is age group reassessment");
+            $this->setCurrentClassification($this->bestLastYear());
+            $this->setClassificationThisSeason($this->current_classification);
+            $this->rewriteClassificationsThisSeason();
             $this->noteClassificationChange($row);
         } elseif ($row->isEndOfSeasonReassessment()) {
-            $this->current_classification = $this->classification_this_season;
+            $this->debug("row is end of season reassessment");
+            $this->setCurrentClassification($this->classification_this_season);
             $this->noteClassificationChange($row);
             $this->resetClassificationsThisSeason();
         }
         else {
+            $this->debug("row is normal score");
             $classification = $row->classification();
             if ($this->addAndReportCount($classification) == 3) {
-                $this->rememberForAgeChange($classification, $row->date());
+                $this->debug("saw three '$classification' classifications");
                 if ($this->better($classification, $this->classification_this_season)) {
-                    $this->classification_this_season = $classification;
+                    $this->setClassificationThisSeason($classification);
                 }
                 if ($this->better($classification, $this->current_classification)) {
-                    $this->current_classification = $classification;
+                    $this->setCurrentClassification($classification);
                     $this->noteClassificationChange($row);
                 }
                 elseif ($this->equal($classification, $this->current_classification)) {
                     $this->noteClassificationConfirmed($row);
                 }
             }
+            $next_age_group_classification = $row->nextAgeGroupClassification();
+            if ($this->addAndReportNextAgeGroupCount($next_age_group_classification) == 3) {
+                $this->debug("saw three '$next_age_group_classification' next age group classifications");
+                $this->rememberForAgeChange($next_age_group_classification, $row->date());
+            }
         }
+    }
+
+    private function rewriteClassificationsThisSeason() {
+        $this->debug("rewriting this season's classifications to be the new age group");
+        $this->classifications_this_season = $this->next_age_group_classifications_this_season;
+    }
+
+    private function setClassificationThisSeason($classification) {
+        $this->debug("setting classification this season to $classification");
+        $this->classification_this_season = $classification;
+    }
+
+    private function setCurrentClassification($classification) {
+        $this->debug("setting current classification to $classification");
+        $this->current_classification = $classification;
     }
 
     private function wrap($row) {
@@ -128,7 +176,7 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
     }
 
     private function bestLastYear() {
-        $result = 'archer';
+        $result = 'unclassified';
         foreach ($this->classifications_last_twelve_months as $classification) {
             if ($this->better($classification, $result)) {
                 $result = $classification;
@@ -138,7 +186,7 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
     }
 
     private function addAndReportCount($classification) {
-        if ($classification && $classification != 'archer') {
+        if ($classification) {
             if (isset($this->classifications_this_season[$classification])) {
                 return ++$this->classifications_this_season[$classification];
             }
@@ -151,14 +199,32 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         }
     }
 
+    private function addAndReportNextAgeGroupCount($classification) {
+        if ($classification) {
+            if (isset($this->next_age_group_classifications_this_season[$classification])) {
+                return ++$this->next_age_group_classifications_this_season[$classification];
+            }
+            else {
+                die("unrecognised classification: $classification\n");
+            }
+        }
+        else {
+            return 0;
+        }
+    }
+
     private function better($classification_a, $classification_b) {
-        return self::$classification_order[$classification_a]
-             > self::$classification_order[$classification_b];
+        $better = self::$classification_order[$classification_a]
+                > self::$classification_order[$classification_b];
+        $this->debug("$classification_a is " . ($better ? 'better' : 'not better') . " than $classification_b");
+        return $better;
     }
 
     private function equal($classification_a, $classification_b) {
-        return self::$classification_order[$classification_a]
-             == self::$classification_order[$classification_b];
+        $equal = self::$classification_order[$classification_a]
+               == self::$classification_order[$classification_b];
+        $this->debug("$classification_a is " . ($equal ? 'equal' : 'not equal') . " to $classification_b");
+        return $equal;
     }
 
     protected function keyToChange() {
@@ -198,6 +264,10 @@ class RHAC_NewClassificationAccumulatorRow {
 
     public function classification() {
         return $this->row['classification'];
+    }
+
+    public function nextAgeGroupClassification() {
+        return $this->row['next_age_group_classification'];
     }
 
     public function newClassification() {
