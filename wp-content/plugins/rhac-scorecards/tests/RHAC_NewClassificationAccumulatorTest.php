@@ -222,17 +222,19 @@ class RHAC_NewClassificationAccumulatorTest extends PHPUnit_Framework_TestCase {
             array( 'date' => '2013/01/07', 'classification' => 'second' ),
             array( 'date' => '2013/06/01', 'reassessment' => 'end_of_season' ),
         );
+        $this->setDebug(false);
         $results = $this->feedIt($scores);
         $expected = array(
             2 => array( 'new_classification' => 'archer' ),
             5 => array( 'new_classification' => 'second' ),
             6 => array( 'new_classification' => 'third' ),
+            8 => array( 'new_classification' => 'second' ),
             9 => array( 'new_classification' => 'third' ),
         );
         $this->assertEquals($expected, $results);
     }
 
-    # when an end of season reassessment is followed by an age chane reassessment,
+    # when an end of season reassessment is followed by an age change reassessment,
     # the entire previous year's worth of scores are available for the age change reassessment.
     public function testJuniorEndOfSeasonFollowedByAgeChange() {
         $scores = array(
@@ -242,7 +244,7 @@ class RHAC_NewClassificationAccumulatorTest extends PHPUnit_Framework_TestCase {
             array( 'date' => '2012/07/02', 'classification' => 'second', 'next_age_group_classification' => 'third' ),
             array( 'date' => '2012/07/03', 'reassessment' => 'age_group' ),
         );
-        $this->setDebug(true);
+        $this->setDebug(false);
         $results = $this->feedIt($scores);
         $expected = array(
             2 => array( 'new_classification' => 'archer' ),
