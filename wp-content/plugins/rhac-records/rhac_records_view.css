@@ -38,8 +38,24 @@ span.h-class {
     border-radius: 8px;
 }
 
+div.scorecard-table {
+    padding-left: 12em;
+    padding-right: 12em;
+}
+
+div.scorecard-graph {
+    padding-left: 18em;
+    padding-right: 18em;
+}
+
 td.rhac-re-archer-row, td.rhac-re-score-row {
     font-weight: bold;
+}
+
+td.rhac-re-score-with-ends {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 span.archer-class, span.unclassified-class {

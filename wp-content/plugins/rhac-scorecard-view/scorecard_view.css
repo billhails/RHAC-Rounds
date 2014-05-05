@@ -96,6 +96,19 @@ div.arrow-miss {
 
 td.bar {
     vertical-align: bottom;
+    padding: 0px !important;
+}
+
+div.bar {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 3px;
+    margin-right: 3px;
+    box-shadow: 2px 2px 2px 0px gray;
+}
+
+div.scorecard-graph table {
+    border-bottom: 0px;
 }
 
 div.scorecard td.arrow {

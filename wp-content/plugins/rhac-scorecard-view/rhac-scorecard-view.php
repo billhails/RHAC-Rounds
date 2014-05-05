@@ -243,7 +243,7 @@ class RHAC_Bar_XTen extends RHAC_Bar {
         if ($ten_height > 1 && $x_height > 1) {
             $ten_height--;
             $x_height--;
-            $ten_border_top = ' border-top: 2px solid white;';
+            $ten_border_top = ' margin-top: 2px;';
         }
         $width = 100
                * $this->getWidth()

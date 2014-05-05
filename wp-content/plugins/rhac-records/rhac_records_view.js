@@ -4,7 +4,6 @@ function rhacRecordsExplorer() {
 
     var version = "rhac-records-v1.0", persistance;
 
-    // TODO - no hard-coded dates
     var predefined_reports = {
 
         'Personal Bests': {
@@ -336,11 +335,40 @@ function rhacRecordsExplorer() {
             function(results) {
                 jQuery('#rhac-re-results').removeClass('rhac-re');
                 jQuery('#rhac-re-results').html(results);
-                jQuery('#rhac-re-results-table').dataTable(
+                var table = jQuery('#rhac-re-results-table').DataTable(
                     {
                         "bJQueryUI": true
                     }
                 );
+
+                jQuery('#rhac-re-results-table tbody').on('click', 'td.rhac-re-score-with-ends', function () {
+                    var jQthis = jQuery(this);
+                    var scorecard_id = jQthis.data('scorecard-id');
+                    var tr = jQthis.parents('tr');
+                    var row = table.row( tr );
+                    if ( row.child.isShown() ) {
+                        row.child.hide();
+                    } else {
+                        if (row.child() === undefined) {
+                            row.child('<div class="rhac-re-scorecard" id="rhac-re-scorecard-' + scorecard_id + '">Please wait...</div>');
+                            jQuery.ajax(
+                                {
+                                    'url': rhacRoundExplorerData.ajaxurl,
+                                    'type': 'GET',
+                                    'timeout': 60000,
+                                    'data': {
+                                        'action': "rhac_get_one_scorecard",
+                                        'scorecard_id': scorecard_id,
+                                    },
+                                    'error': function(obj, stat, err) { alert("error: [" + stat + "] [" + err + "]"); },
+                                }
+                            ).done(function(result) {
+                                jQuery('#rhac-re-scorecard-' + scorecard_id).html(result.html);
+                            });
+                        }
+                        row.child.show();
+                    }
+                });
             }
         );
     }

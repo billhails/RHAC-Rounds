@@ -31,6 +31,9 @@ function rhac_re_load_deps() {
                       array('jquery-ui-datepicker', 'jquery-ui-tooltip', 'jquery-ui-accordion'));
 
     wp_enqueue_script('rhac_datatables', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/jquery.dataTables.min.js', array('jquery-ui-core'));
+    wp_enqueue_script('rhac_datatables_jquery', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/dataTables.jqueryui.js', array('jquery-ui-core'));
+    wp_enqueue_style('rhac_datatables', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/jquery.dataTables.min.css');
+    wp_enqueue_style('rhac_datatables_jquery', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/dataTables.jqueryui.css');
     wp_enqueue_style('rhac_records_view',
                      plugins_url('rhac_records_view.css', __FILE__));
  

@@ -823,11 +823,18 @@ EOHTML;
         $text []= '<tbody>';
         foreach ($rows as $row) {
             $tr_class = '';
-            if ($row['reassessment'] != "N") {
+            $score_class = '';
+            $score_data = '';
+            if ($row['reassessment'] == "N") {
+                if ($row['has_ends'] == "Y") {
+                    $score_class = ' rhac-re-score-with-ends';
+                    $score_data = "data-scorecard-id='$row[scorecard_id]'";
+                }
+            } else {
                 $row['score'] = '';
                 $row['handicap_ranking'] = '';
                 $row['venue_id'] = 0;
-                $tr_class = ' class="rhac-re-reassessment-row"';
+                $tr_class = 'class="rhac-re-reassessment-row"';
             }
             $text []= "<tr$tr_class id='card-$row[scorecard_id]'>";
             $text []= "<td>$row[date]</td>";
@@ -837,7 +844,7 @@ EOHTML;
             $text []= "<td>" . $this->venue_map[$row[venue_id]] . "</td>";
             $text []= "<td>$row[handicap_ranking]</td>";
             $text []= "<td>$row[classification]</td>";
-            $text []= "<td class='rhac-re-score-row'>$row[score]</td>";
+            $text []= "<td class='rhac-re-score-row $score_class' $score_data>$row[score]</td>";
             $text []= "<td>";
             $text []= "<span style='display: inline-block;'>";
             $text []= $this->classification_map[$row[new_classification]];
