@@ -222,23 +222,32 @@ class RHAC_NewClassificationAccumulatorTest extends PHPUnit_Framework_TestCase {
     public function testJuniorReassessmentPlusEndOfSeasonPlusPreviousOld() {
         $scores = array(
             1 => array( 'date' => '2012/05/01', 'classification' => 'second', 'next_age_group_classification' => 'second' ),
-            2 => array( 'date' => '2012/06/01', 'reassessment' => 'end_of_season' ),
+            2 => array( 'date' => '2012/07/01', 'reassessment' => 'end_of_season' ),
             3 => array( 'date' => '2013/01/01', 'classification' => 'second', 'next_age_group_classification' => 'third' ),
             4 => array( 'date' => '2013/01/02', 'classification' => 'second', 'next_age_group_classification' => 'third' ),
-            5 => array( 'date' => '2013/01/03', 'classification' => 'second', 'next_age_group_classification' => 'third' ),
+            5 => array( 'date' => '2013/01/03', 'classification' => 'second', 'next_age_group_classification' => 'second' ),
             6 => array( 'date' => '2013/01/05', 'reassessment' => 'age_group' ),
             7 => array( 'date' => '2013/01/06', 'classification' => 'second' ),
             8 => array( 'date' => '2013/01/07', 'classification' => 'second' ),
-            9 => array( 'date' => '2013/06/01', 'reassessment' => 'end_of_season' ),
+            9 => array( 'date' => '2013/07/01', 'reassessment' => 'end_of_season' ),
         );
         $this->setDebug(false);
         $results = $this->feedIt($scores);
         $expected = array(
-            2 => array( 'new_classification' => 'archer' ),
+          # 1 - 1st May 2012 second / second
+          # 2 - 1st July 2012 end of season
+            2 => array( 'new_classification' => 'archer' ), 
+          # 3 - 1st Jan 2013 second / third
+          # 4 - 2nd Jan 2013 second / third
+          # 5 - 3rd Jan 2013 second / second
             5 => array( 'new_classification' => 'second' ),
+          # 6 - 5th Jan 2014 age change
             6 => array( 'new_classification' => 'third' ),
+          # 7 - 6th Jan 2013 second
+          # 8 - 7th Jan 2013 second
             8 => array( 'new_classification' => 'second' ),
-            9 => array( 'new_classification' => 'third' ),
+          # 9 - 1st July 2013 end of season
+            9 => array( 'new_classification' => 'second' ),
         );
         $this->assertEquals($expected, $results);
     }

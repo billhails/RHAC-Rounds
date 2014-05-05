@@ -88,11 +88,12 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
             $this->debug("resetting current classification this season to unclassified");
             $this->classification_this_season = 'unclassified';
         }
+        $this->debug("clearing previous season's records");
         $this->classifications_this_season = new RHAC_NewClassificationAccumulator_Counter($this->debug);
     }
 
     public function accept($row) {
-        $this->debug('################## accept #########################');
+        $this->debug("################## accept $row[scorecard_id] #########################");
         $row = $this->wrap($row);
         if ($row->isAgeGroupReassessment()) {
             $this->debug("row is age group reassessment");
@@ -290,6 +291,8 @@ class RHAC_NewClassificationAccumulator_Counter {
         'H' => 0,
         'archer' => 0,
     );
+    private $id;
+    private static $id_counter = 0;
 
     private static $classification_trail = array(
         'gmbm' => array('gmbm', 'mbm', 'bm', 'first', 'second', 'third', 'archer'),
@@ -312,10 +315,14 @@ class RHAC_NewClassificationAccumulator_Counter {
     public function __construct($debug) {
         $this->counters = array();
         $this->debug = $debug;
+        $this->id = ++self::$id_counter;
+        $this->debug("created counters");
     }
 
     protected function addCounter($date, $counter=null) {
+        $this->debug("addCounter($date, ...)");
         if (!$this->earliest_date) {
+            $this->debug("addCounter setting earliest date to '$date'");
             $this->earliest_date = $date;
         }
         if (!isset($this->counters[$date])) {
@@ -381,6 +388,7 @@ class RHAC_NewClassificationAccumulator_Counter {
             }
         }
         else {
+            $this->debug("addAndReport returning ''");
             return '';
         }
     }
@@ -400,7 +408,7 @@ class RHAC_NewClassificationAccumulator_Counter {
     }
 
     public function copyBackTo($after_date) {
-        $this->debug("copy back to $after_date");
+        $this->debug("copy back to '$after_date'");
         if (!isset($after_date)) {
             return $this;
         }
@@ -415,7 +423,7 @@ class RHAC_NewClassificationAccumulator_Counter {
 
     private function debug($msg) {
         if ($this->debug) {
-            error_log("* $msg");
+            error_log("* (" . $this->id . ") $msg");
         }
     }
 
