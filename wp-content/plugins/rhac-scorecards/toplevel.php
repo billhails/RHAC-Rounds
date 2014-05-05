@@ -408,6 +408,7 @@ class RHAC_Scorecards {
             $_POST['total-xs'],
             $_POST['total-golds'],
             $_POST['total-total'],
+            $_POST['medal'],
             $handicap_ranking,
             $_POST['has_ends'],
             $classification,
@@ -430,6 +431,7 @@ class RHAC_Scorecards {
                  . " xs = ?,"
                  . " golds = ?,"
                  . " score = ?,"
+                 . " medal = ?,"
                  . " handicap_ranking = ?,"
                  . " has_ends = ?,"
                  . " classification = ?,"
@@ -468,9 +470,9 @@ class RHAC_Scorecards {
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
-                 . "(archer, venue_id, date, round, bow, hits, xs, golds, score, has_ends, handicap_ranking, "
+                 . "(archer, venue_id, date, round, bow, hits, xs, golds, score, medal, has_ends, handicap_ranking, "
                  . "gender, category, classification, next_age_group_classification, outdoor, tens)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
                        $_POST['venue_id'],
                        $date,
@@ -480,6 +482,7 @@ class RHAC_Scorecards {
                        $_POST['total-xs'],
                        $_POST['total-golds'],
                        $_POST['total-total'],
+                       $_POST['medal'],
                        $_POST['has_ends'],
                        $handicap_ranking,
                        $gender,
@@ -1525,7 +1528,24 @@ EOT
         return implode("\n", $text);
     }
 
+    private function archerIsArchived($archer) {
+        $row = RHAC_Scorecards::getInstance()->fetch(
+            "SELECT archived FROM archer where name = ?",
+            array($archer)
+        );
+        if (count($row) == 0) {
+            return false;
+        }
+        if ($row[0]['archived'] == 'N') {
+            return false;
+        }
+        return true;
+    }
+
     public function archersAsSelect($id = 'archer', $include_archived = false) {
+        if ($this->scorecard_data["archer"] && $this->archerIsArchived($this->scorecard_data["archer"])) {
+            $include_archived = true;
+        }
         $text = array("<select name='$id' id='$id'>");
         $text []= "<option value=''>- - -</option>\n";
         if ($include_archived) {
@@ -1560,6 +1580,21 @@ EOT
                 $text []= " checked='1'";
             }
             $text []= " value='$bow'>$initial&nbsp;&nbsp;</input>\n";
+        }
+        return implode($text);
+    }
+
+    private function medalsAsRadio() {
+        $text = array();
+        foreach(array('N' => '',
+                      'B' => 'bronze',
+                      'S' => 'silver',
+                      'G' => 'gold') as $initial => $medal) {
+            $text []= '<input type="radio" name="medal" id="medal"';
+            if ($this->scorecard_data['medal'] == $medal) {
+                $text []= " checked='1'";
+            }
+            $text []= " value='$medal'>$initial&nbsp;&nbsp;</input>\n";
         }
         return implode($text);
     }
@@ -1797,8 +1832,12 @@ EOT
         $text []= '</tr>';
         $text []= '<tr>';
         $text []= '<th colspan="4">Venue</th>';
-        $text []= '<td colspan="16">';
+        $text []= '<td colspan="7">';
         $text []= $this->venueAsSelect();
+        $text []= '</td>';
+        $text []= '<th colspan="3">Medal</th>';
+        $text []= '<td colspan="6">';
+        $text []= $this->medalsAsRadio();
         $text []= '</td>';
         $text []= '</tr>';
         $text []= $this->scorecardHeaderRow();
@@ -1861,11 +1900,12 @@ EOT
         $text []= '<th>Golds</th>';
         $text []= '<th>Tens</th>';
         $text []= '<th>Score</th>';
+        $text []= '<th>Medal</th>';
         $text []= '</tr>';
         $text []= '</thead>';
         $text []= '<tbody>';
         $text []= '<tr>';
-        $text []= '<td>' . $this->archersAsSelect() . '</td>';
+        $text []= '<td>' . $this->archersAsSelect('archer', true) . '</td>';
         $text []= '<td>' . $this->bowsAsRadio() . '</td>';
         $text []= '<td>' . $this->roundDataAsSelect() . '</td>';
         $text []= '<td>' . $this->dateAsInput() . '</td>';
@@ -1875,6 +1915,7 @@ EOT
         $text []= '<td><input type="text" name="total-golds" size="4" value="' . $this->scorecard_data['golds'] . '" /></td>';
         $text []= '<td><input type="text" name="total-tens" size="4" value="' . $this->scorecard_data['tens'] . '" /></td>';
         $text []= '<td><input type="text" name="total-total" size="6" value="' . $this->scorecard_data['score'] . '" /></td>';
+        $text []= '<td>' . $this->medalsAsRadio() . '</td>';
         $text []= '</tr>';
         $text []= '</tbody>';
         $text []= '</table>';

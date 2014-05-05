@@ -110,23 +110,27 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         else {
             $this->debug("row is normal score");
             $classification = $row->classification();
-            if ($this->addAndReportCount($classification, $row->date()) == 3) {
-                $this->debug("saw three '$classification' classifications");
-                if ($this->better($classification, $this->classification_this_season)) {
-                    $this->setClassificationThisSeason($classification);
+            if ($new_classification = $this->addAndReport($classification, $row->date())) {
+                $this->debug("saw three '$new_classification' classifications");
+                if ($this->better($new_classification, $this->classification_this_season)) {
+                    $this->setClassificationThisSeason($new_classification);
                 }
-                if ($this->better($classification, $this->current_classification)) {
-                    $this->setCurrentClassification($classification);
+                if ($this->better($new_classification, $this->current_classification)) {
+                    $this->setCurrentClassification($new_classification);
                     $this->noteClassificationChange($row);
                 }
-                elseif ($this->equal($classification, $this->current_classification)) {
+                elseif ($this->equal($new_classification, $this->current_classification)) {
                     $this->noteClassificationConfirmed($row);
+                }
+            } else {
+                if ($row->newClassification()) {
+                    $this->noteClassificationWrong($row);
                 }
             }
             $next_age_group_classification = $row->nextAgeGroupClassification();
-            if ($this->addAndReportNextAgeGroupCount($next_age_group_classification, $row->date()) == 3) {
-                $this->debug("saw three '$next_age_group_classification' next age group classifications");
-                $this->rememberForAgeChange($next_age_group_classification, $row->date());
+            if ($new_classification = $this->addAndReportNextAgeGroup($next_age_group_classification, $row->date())) {
+                $this->debug("saw three '$new_classification' next age group classifications");
+                $this->rememberForAgeChange($new_classification, $row->date());
             }
         }
     }
@@ -134,7 +138,6 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
     private function rewriteClassificationsThisSeason($start_of_last_season) {
         $this->debug("rewriting this season's classifications to be the new age group");
         $this->classifications_this_season = $this->next_age_group_classifications_this_year->copyBackTo($start_of_last_season);
-        # $this->next_age_group_classifications_this_year = new RHAC_NewClassificationAccumulator_Counter($this->debug);
         $this->classification_this_season = $this->classifications_this_season->bestClassification();
     }
 
@@ -184,12 +187,12 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         return $result;
     }
 
-    private function addAndReportCount($classification, $date) {
-        return $this->classifications_this_season->addAndReportCount($classification, $date);
+    private function addAndReport($classification, $date) {
+        return $this->classifications_this_season->addAndReport($classification, $date);
     }
 
-    private function addAndReportNextAgeGroupCount($classification, $date) {
-        return $this->next_age_group_classifications_this_year->addAndReportCount($classification, $date);
+    private function addAndReportNextAgeGroup($classification, $date) {
+        return $this->next_age_group_classifications_this_year->addAndReport($classification, $date);
     }
 
     private function better($classification_a, $classification_b) {
@@ -208,6 +211,12 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
 
     protected function keyToChange() {
         return 'new_classification';
+    }
+
+    private function noteClassificationWrong($row) {
+        $this->debug("noting classification wrong");
+        $this->proposed_changes[$row->id()] = '';
+        $this->current_db_values[$row->id()] = $row->newClassification();
     }
 
     private function noteClassificationChange($row) {
@@ -263,7 +272,7 @@ class RHAC_NewClassificationAccumulator_Row {
 class RHAC_NewClassificationAccumulator_Counter {
     private $debug;
     private $counters;
-    private $earliest_date;
+    private $earliest_date = '';
     private static $recognised_classifications = array( # decreasing order
         'gmbm' => 0,
         'mbm' => 0,
@@ -282,13 +291,31 @@ class RHAC_NewClassificationAccumulator_Counter {
         'archer' => 0,
     );
 
+    private static $classification_trail = array(
+        'gmbm' => array('gmbm', 'mbm', 'bm', 'first', 'second', 'third', 'archer'),
+        'mbm' => array('mbm', 'bm', 'first', 'second', 'third', 'archer'),
+        'bm' => array('bm', 'first', 'second', 'third', 'archer'),
+        'first' => array('first', 'second', 'third', 'archer'),
+        'second' => array('second', 'third', 'archer'),
+        'third' => array('third', 'archer'),
+        'A' => array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'archer'),
+        'B' => array('B', 'C', 'D', 'E', 'F', 'G', 'H', 'archer'),
+        'C' => array('C', 'D', 'E', 'F', 'G', 'H', 'archer'),
+        'D' => array('D', 'E', 'F', 'G', 'H', 'archer'),
+        'E' => array('E', 'F', 'G', 'H', 'archer'),
+        'F' => array('F', 'G', 'H', 'archer'),
+        'G' => array('G', 'H', 'archer'),
+        'H' => array('H', 'archer'),
+        'archer' => array('archer'),
+    );
+
     public function __construct($debug) {
         $this->counters = array();
         $this->debug = $debug;
     }
 
     protected function addCounter($date, $counter=null) {
-        if (!isset($this->earliest_date)) {
+        if (!$this->earliest_date) {
             $this->earliest_date = $date;
         }
         if (!isset($this->counters[$date])) {
@@ -301,22 +328,52 @@ class RHAC_NewClassificationAccumulator_Counter {
             }
             $this->counters[$date] = $counter;
         }
+        $this->deleteBefore($date);
     }
 
-    private function incrementAllCounters($classification) {
+    private function deleteBefore($date) {
+        $year_ago = $this->subtractOneYear($date);
+        $this->earliest_date = '';
         foreach (array_keys($this->counters) as $date) {
-            $this->counters[$date][$classification]++;
+            if ($date <= $year_ago) {
+                unset($this->counters[$date]);
+            } else {
+                $this->earliest_date = $date;
+                break;
+            }
         }
     }
 
-    public function addAndReportCount($classification, $date) {
-        $this->debug("addAndReportCount($classification, $date)");
+    private function subtractOneYear($date) {
+        $year = substr($date, 0, 4);
+        $rest = substr($date, 4);
+        $year--;
+        return $year . $rest;
+    }
+
+    private function incrementAllCountersAndReturnBest($classification) {
+        $first = true;
+        $best = '';
+        foreach (array_keys($this->counters) as $date) {
+            foreach (self::$classification_trail[$classification] as $cfn) {
+                ++$this->counters[$date][$cfn];
+                if ($first && $this->counters[$date][$cfn] == 3 && !$best) {
+                    $best = $cfn;
+                }
+            }
+            $first = false;
+        }
+        return $best;
+    }
+
+    public function addAndReport($classification, $date) {
+        $this->debug("addAndReport($classification, $date)");
+
         if ($classification) {
             if (isset(self::$recognised_classifications[$classification])) {
                 $this->addCounter($date);
-                $this->incrementAllCounters($classification);
-                $best = $this->best($classification);
-                $this->debug("addAndReportCount returning $best");
+                $best = $this->incrementAllCountersAndReturnBest($classification);
+                $this->debug("addAndReport returning $best");
                 return $best;
             }
             else {
@@ -324,7 +381,7 @@ class RHAC_NewClassificationAccumulator_Counter {
             }
         }
         else {
-            return 0;
+            return '';
         }
     }
 

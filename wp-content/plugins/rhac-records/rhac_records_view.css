@@ -38,6 +38,10 @@ span.h-class {
     border-radius: 8px;
 }
 
+td.rhac-re-archer-row, td.rhac-re-score-row {
+    font-weight: bold;
+}
+
 span.archer-class, span.unclassified-class {
     border: 1px solid black;
     font-weight: normal;

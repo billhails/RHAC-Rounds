@@ -764,7 +764,7 @@ EOHTML;
             $params []= 'old';
         }
         if ($_GET['medals']) {
-            $subfields []= "medal IN = (?,?,?)";
+            $subfields []= "medal IN (?,?,?)";
             $params []= 'bronze';
             $params []= 'silver';
             $params []= 'gold';
@@ -831,13 +831,13 @@ EOHTML;
             }
             $text []= "<tr$tr_class id='card-$row[scorecard_id]'>";
             $text []= "<td>$row[date]</td>";
-            $text []= "<td>$row[archer]</td>";
+            $text []= "<td class='rhac-re-archer-row'>$row[archer]</td>";
             $text []= "<td>" . $this->category($row) . "</td>";
             $text []= "<td>$row[round]</td>";
             $text []= "<td>" . $this->venue_map[$row[venue_id]] . "</td>";
             $text []= "<td>$row[handicap_ranking]</td>";
             $text []= "<td>$row[classification]</td>";
-            $text []= "<td>$row[score]</td>";
+            $text []= "<td class='rhac-re-score-row'>$row[score]</td>";
             $text []= "<td>";
             $text []= "<span style='display: inline-block;'>";
             $text []= $this->classification_map[$row[new_classification]];

@@ -34,11 +34,11 @@ class RHAC_ScorecardAccumulatorTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testFourClassifications() {
-        $this->acc->accept($this->makeRow(array('classification' => 'third')));
-        $this->acc->accept($this->makeRow(array('classification' => 'third', 'scorecard_id' => 2)));
-        $this->acc->accept($this->makeRow(array('classification' => 'third', 'scorecard_id' => 3)));
-        $this->acc->accept($this->makeRow(array('classification' => 'second', 'scorecard_id' => 4)));
-        $this->acc->accept($this->makeRow(array('reassessment' => 'end_of_season', 'scorecard_id' => 5)));
+        $this->acc->accept($this->makeRow(array('date' => '2010/01/02', 'classification' => 'third')));
+        $this->acc->accept($this->makeRow(array('date' => '2010/01/03', 'classification' => 'third', 'scorecard_id' => 2)));
+        $this->acc->accept($this->makeRow(array('date' => '2010/01/04', 'classification' => 'third', 'scorecard_id' => 3)));
+        $this->acc->accept($this->makeRow(array('date' => '2010/01/05', 'classification' => 'second', 'scorecard_id' => 4)));
+        $this->acc->accept($this->makeRow(array('date' => '2010/01/06', 'reassessment' => 'end_of_season', 'scorecard_id' => 5)));
         $results = $this->acc->results();
         $expected = array(
             1 => array(
