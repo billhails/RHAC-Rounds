@@ -103,8 +103,8 @@ class RHAC_RecordsViewer {
         $this->classification_map['F'] = '<span class="f-class">F</span>';
         $this->classification_map['G'] = '<span class="g-class">G</span>';
         $this->classification_map['H'] = '<span class="h-class">H</span>';
-        $this->classification_map['(archer)'] = '<span class="archer-class">(Archer)</span>';
-        $this->classification_map['(unclassified)'] = '<span class="unclassified-class">(Unclassified)</span>';
+        $this->classification_map['(archer)'] = '';
+        $this->classification_map['(unclassified)'] = '';
         $this->classification_map['(third)'] = '<span class="third-class">(Third Class)</span>';
         $this->classification_map['(second)'] = '<span class="second-class">(Second Class)</span>';
         $this->classification_map['(first)'] = '<span class="first-class">(First Class)</span>';
