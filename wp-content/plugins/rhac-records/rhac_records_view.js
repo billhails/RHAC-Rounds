@@ -549,6 +549,10 @@ function rhacRecordsExplorer() {
     jQuery('#rhac-re-include-lapsed').change(toggleArcherList);
     jQuery('.rhac-re-date').datepicker({ dateFormat: "yy/mm/dd" });
     jQuery('#rhac-re-run-report').click(doSearch);
+    jQuery('.rhac-re-button').button();
+    jQuery('a.rhac-re-help').button();
+    jQuery('.rhac-re-radios').buttonset();
+    jQuery('.rhac-re-checkbox').button();
     populateReportMenu();
     setForm();
     jQuery('#rhac-re-report').change(setForm);

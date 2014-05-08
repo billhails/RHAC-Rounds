@@ -69,6 +69,12 @@ img.badge {
     padding: 4px;
 }
 
+/*
+span.rhac-re-badges {
+    white-space: nowrap;
+}
+*/
+
 span.third-class {
     border: 1px solid gray;
     text-shadow: 1px 1px black;
@@ -219,12 +225,6 @@ div.rhac-re {
     clear: both;
 }
 
-#rhac-re-help-toggle, #rhac-re-more-toggle {
-    background-color: #4cd7ff;
-    padding-top: 0.2em;
-    padding-bottom: 0.2em;
-}
-
 #rhac-re-help {
     background-color: white;
 }
@@ -238,8 +238,8 @@ div.rhac-re-reports-section {
     margin-right: 1em;
 }
 
-input {
-    background-color: #c9fcff;
+div.rhac-re input {
+    background-color: #bed0dc;
 }
 
 div.rhac-re-section {
@@ -247,11 +247,11 @@ div.rhac-re-section {
 }
 
 div.rhac-re-reports-section {
-    background-color: #4cd7ff;
+    background-color: #1e73be;
 }
 
 #rhac-re-simpleform, #rhac-re-moreform {
-    background-color: #c9fcff;
+    background-color: #bed0dc;
 }
 
 #rhac-re-moreform {
@@ -271,10 +271,20 @@ label.rhac-re-label {
     font-size: 110%;
 }
 
-#rhac-re-results {
-    padding-bottom: 2em;
-}
-
 #rhac-re-report-name {
     width: 50%;
+}
+
+label.rhac-re-label-save {
+    color: white;
+}
+
+tr.rhac-re-reassessment-row td {
+    background-color: #bed0dc;
+}
+
+span.rhac-re-span-limit {
+    display: inline-block;
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
 }

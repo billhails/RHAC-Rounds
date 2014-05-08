@@ -594,7 +594,6 @@ class RHACScorecardViewer {
         $div []= "</tr>\n";
         $div []= "</tbody>\n";
         $div []= "</table>\n";
-        $div []= "<p>Handicap rating: " . $this->getHandicapForScore($scorecard) . "</p>";
         $div []= "</div>\n";
 
         return implode('', $div);
@@ -693,9 +692,11 @@ function rhac_load_deps() {
  
     $ui = $wp_scripts->query('jquery-ui-core');
  
+    /*
     $protocol = is_ssl() ? 'https' : 'http';
     $url = "$protocol://ajax.googleapis.com/ajax/libs/jqueryui/{$ui->ver}/themes/redmond/jquery-ui.min.css";
     wp_enqueue_style('jquery-ui-redmond', $url, false, null);
+    */
     wp_localize_script('rhac_scorecard_view', 'rhacScorecardData',
                        rhac_get_scorecard_data());
 }

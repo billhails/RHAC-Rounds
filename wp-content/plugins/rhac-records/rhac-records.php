@@ -28,7 +28,7 @@ function rhac_re_load_deps() {
  
     wp_enqueue_script('rhac_records_view',
                       plugins_url('rhac_records_view.js', __FILE__),
-                      array('jquery-ui-datepicker', 'jquery-ui-tooltip', 'jquery-ui-accordion'));
+                      array('jquery-ui-button', 'jquery-ui-datepicker', 'jquery-ui-tooltip', 'jquery-ui-accordion'));
 
     wp_enqueue_script('rhac_datatables', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/jquery.dataTables.min.js', array('jquery-ui-core'));
     wp_enqueue_script('rhac_datatables_jquery', RHAC_PLUGINS_URL_ROOT . 'gnas-archery-rounds/dataTables.jqueryui.js', array('jquery-ui-core'));
@@ -37,11 +37,14 @@ function rhac_re_load_deps() {
     wp_enqueue_style('rhac_records_view',
                      plugins_url('rhac_records_view.css', __FILE__));
  
+    /*
     $ui = $wp_scripts->query('jquery-ui-core');
- 
     $protocol = is_ssl() ? 'https' : 'http';
     $url = "$protocol://ajax.googleapis.com/ajax/libs/jqueryui/{$ui->ver}/themes/redmond/jquery-ui.min.css";
     wp_enqueue_style('jquery-ui-redmond', $url, false, null);
+    */
+    wp_enqueue_style('jquery-ui-rhac', RHAC_RE_PLUGIN_URL_ROOT . 'jquery-ui-1.10.4.custom.min.css', false, null);
+ 
     wp_localize_script('rhac_records_view', 'rhacRoundExplorerData', rhac_get_data());
 }
 
