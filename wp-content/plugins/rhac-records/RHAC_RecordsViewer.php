@@ -495,19 +495,19 @@ $outdoor_seasons
       <div class="rhac-re-section">
         <label class="rhac-re-label" title="limit the search to scores with any of these attributes">Limit to</label>
         <div class="rhac-re-checklist">
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-current-records" value="Y" name="current-records"/><label for="rhac-re-current-records" title="scores which are cuurent club records">Current Records</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-current-records" value="Y" name="current-records"/><label for="rhac-re-current-records">Current Records</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-old-records" value="Y" name="old-records"/><label for="rhac-re-old-records" title="scores which are old club records">Old Records</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-old-records" value="Y" name="old-records"/><label for="rhac-re-old-records" >Old Records</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-medals" value="Y" name="medals"/><label for="rhac-re-medals" title="scores which were awarded a medal">Medals</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-medals" value="Y" name="medals"/><label for="rhac-re-medals" >Medals</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-252" value="Y" name="medals"/><label for="rhac-re-252" title="qualifying 252 scores">252 awards</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-252" value="Y" name="medals"/><label for="rhac-re-252" >252 awards</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests"/><label for="rhac-re-personal-bests" title="scores which are personal bests">Personal Bests</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests"/><label for="rhac-re-personal-bests" >Personal Bests</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements"/><label for="rhac-re-handicap-improvements" title="scores which resulted in a new handicap or handicap improvement">Handicap Improvements</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements"/><label for="rhac-re-handicap-improvements" >Handicap Improvements</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications"/><label for="rhac-re-new-classifications" title="scores which resulted in a new classification">New Classifications</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications"/><label for="rhac-re-new-classifications" >New Classifications</label></span>
 
           <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-reassessments" value="Y" name="reassessments" /><label for="rhac-re-reassessments" title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Reassessments</label></span>
 
