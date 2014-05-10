@@ -4,11 +4,12 @@ jQuery(document).ready( function () {
             // "iDisplayLength": 5,
             // "aLengthMenu": [[1, 5, 10, 25, -1], [1, 5, 10, 25, "All"]],
             // "sScrollX": "100%",
-            "sScrollY": "200px",
-            "bScrollCollapse": true,
-            "sDom": 'lfrtp',
-            "bPaginate": false,
-            "bSort": false
+            // "sScrollY": "200px",
+            // "bScrollCollapse": true,
+            // "sDom": 'lfrtp',
+            "bPaginate": true,
+            // "bSort": false,
+            "bJQueryUI": true
         }
     );
     // new FixedColumns(oTable);
