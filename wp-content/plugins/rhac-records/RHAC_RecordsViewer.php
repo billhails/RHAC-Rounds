@@ -533,6 +533,37 @@ $outdoor_seasons
   <div id="rhac-re-results" class="rhac-re">
     Results
   </div>
+  <div id="rhac-re-cannot-save" class="rhac-re-simple-dialog">
+    <p>You can't change a predefined report, try editing the report name first.</p>
+  </div>
+  <div id="rhac-re-cannot-delete" class="rhac-re-simple-dialog">
+    <p>You can't delete a predefined report.</p>
+  </div>
+  <div id="rhac-re-enter-name" class="rhac-re-simple-dialog">
+    <p>Please enter a report name first.</p>
+  </div>
+  <div id="rhac-re-confirm-replace">
+    <p>Are you sure you want to replace your "<span class="rhac-re-report-name"></span>" report?</p>
+  </div>
+  <div id="rhac-re-confirm-saved" class="rhac-re-simple-dialog">
+    <p>Report "<span class="rhac-re-report-name"></span>" saved.</p>
+    <p>You should now see it in your list of reports.</p>
+  </div>
+  <div id="rhac-re-confirm-delete">
+    <p>Are you sure you want to delete your "<span class="rhac-re-report-name"></span>" report?</p>
+  </div>
+  <div id="rhac-re-report-nonexistant" class="rhac-re-simple-dialog">
+    <p>Report "<span class="rhac-re-report-name"></span>" does not exist!</p>
+  </div>
+  <div id="rhac-re-confirm-deleted" class="rhac-re-simple-dialog">
+    <p>Report "<span class="rhac-re-report-name"></span>" deleted.</p>
+  </div>
+  <div id="rhac-re-quota-exceeded" class="rhac-re-simple-dialog">
+    <p>Quota Exceeded, please delete some old reports first.</p>
+  </div>
+  <div id="rhac-re-old-browser" class="rhac-re-simple-dialog">
+    <p>You seem to have a very old browser that does not support saving reports, please upgrade!</p>
+  </div>
 </div>
 EOHTML;
     }
@@ -857,7 +888,7 @@ EOHTML;
                 if ($row['has_ends'] == "Y") {
                     $score_class = ' rhac-re-score-with-ends';
                     $score_data = "data-scorecard-id='$row[scorecard_id]'";
-                    $score_title = 'title="Click to see score card"';
+                    $score_title = 'title="click to show score card"';
                 }
             } else {
                 $row['score'] = '';
