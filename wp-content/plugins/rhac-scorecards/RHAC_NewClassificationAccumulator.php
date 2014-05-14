@@ -216,7 +216,7 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
 
     private function noteClassificationWrong($row) {
         $this->debug("noting classification wrong");
-        $this->proposed_changes[$row->id()] = '';
+        $this->proposed_changes[$row->id()] = null;
         $this->current_db_values[$row->id()] = $row->newClassification();
     }
 

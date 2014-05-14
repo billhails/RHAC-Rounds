@@ -509,7 +509,7 @@ $outdoor_seasons
 
           <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications"/><label for="rhac-re-new-classifications" >New Classifications</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-reassessments" value="Y" name="reassessments" /><label for="rhac-re-reassessments" title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Reassessments</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-reassessments" value="Y" name="reassessments" /><label for="rhac-re-reassessments" title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Include Reassessments</label></span>
 
         </div>
       </div>
@@ -866,6 +866,11 @@ EOHTML;
 
     private function formatResults($rows) {
         $this->initDisplayMaps();
+        $classification_sort = array(
+            'A' => 10, 'B' => 9, 'C' => 8, 'D' => 7, 'E' => 6, 'F' => 5, 'G' => 4, 'H' => 3,
+            'gmbm' => 8, 'mbm' => 7, 'bm' => 6, 'first' => 5, 'second' => 4, 'third' => 3,
+            'unclassified' => 2, 'archer' => 1, '' => 0,
+        );
         $text = array();
         $headers = array(
             'Date', 'Archer', 'Category', 'Round', 'Place Shot',
@@ -903,20 +908,40 @@ EOHTML;
             $text []= "<td>$row[round]</td>";
             $text []= "<td>" . $this->venue_map[$row[venue_id]] . "</td>";
             $text []= "<td>$row[handicap_ranking]</td>";
-            $text []= "<td>$row[classification]</td>";
+            $classification_order = $classification_sort[$row['classification']];
+            $text []= "<td data-sort='$classification_order'>$row[classification]</td>";
             $text []= "<td class='rhac-re-score-row $score_class' $score_title $score_data>$row[score]</td>";
-            $text []= "<td>";
-            $text []= "<span class='rhac-re-badges'>";
-            $text []= $this->classification_map[$row[new_classification]];
-            $text []= ' ';
+            $data_icon_search = array();
+            $badges = array("<span class='rhac-re-badges'>");
+            $badges []= $this->classification_map[$row[new_classification]];
             if (strlen($row[handicap_improvement])) {
-                $text []= '<span title="New or improved handicap" class="handicap-improvement">' . $row[handicap_improvement] . '</span>';
+                $badges []= '<span title="New or improved handicap" class="handicap-improvement">' . $row[handicap_improvement] . '</span>';
             }
-            $text []= $this->medal_map[$row[medal]];
-            $text []= $this->cr_map[$row[club_record]];
-            $text []= $this->tft_map[$row[two_five_two]];
-            $text []= $this->pb_map[$row[personal_best]];
-            $text []= "</span>";
+            if ($row['medal']) {
+                $data_icon_search []= $row['medal'];
+                $data_icon_search []= 'medal';
+            }
+            $badges []= $this->medal_map[$row[medal]];
+            if ($row['club_record'] != "N") {
+                $data_icon_search []= "$row[club_record] record";
+            }
+            $badges []= $this->cr_map[$row[club_record]];
+            $badges []= $this->tft_map[$row[two_five_two]];
+            if ($row[personal_best] == "Y") {
+                $data_icon_search []= "personal best";
+            }
+            $badges []= $this->pb_map[$row[personal_best]];
+            if (0) {
+                $badges []= 'new_classification=[' . $row[new_classification] . ']';
+                $badges []= 'handicap_improvement=[' . $row[handicap_improvement] . ']';
+                $badges []= 'medal=[' . $row[medal] . ']';
+                $badges []= 'club_record=[' . $row[club_record] . ']';
+                $badges []= 'two_five_two=[' . $row[two_five_two] . ']';
+                $badges []= 'personal_best=[' . $row[personal_best] . ']';
+            }
+            $badges []= "</span>";
+            $text []= "<td data-search='" . implode(' ', $data_icon_search) . "'>";
+            $text []= implode(' ', $badges);
             $text []= "</td>";
             $text []= '</tr>';
         }

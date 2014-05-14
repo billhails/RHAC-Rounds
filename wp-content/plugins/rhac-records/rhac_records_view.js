@@ -337,7 +337,10 @@ function rhacRecordsExplorer() {
                 jQuery('#rhac-re-results').html(results);
                 var table = jQuery('#rhac-re-results-table').DataTable(
                     {
-                        "bJQueryUI": true
+                        "bJQueryUI": true,
+                        "columnDefs": [
+                            { "orderable": false, "targets": 8 }
+                        ]
                     }
                 );
 
