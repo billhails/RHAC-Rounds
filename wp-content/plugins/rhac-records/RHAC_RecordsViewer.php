@@ -109,13 +109,13 @@ class RHAC_RecordsViewer {
         }
         $this->classification_map['archer'] = '<span class="archer-class">Archer</span>';
         $this->classification_map['unclassified'] = '<span class="unclassified-class">Unclassified</span>';
-        $this->classification_map['third'] = '<span title="New outdoor classification" class="third-class">Third Class</span>';
-        $this->classification_map['second'] = '<span title="New outdoor classification" class="second-class">Second Class</span>';
-        $this->classification_map['first'] = '<span title="New outdoor classification" class="first-class">First Class</span>';
+        $this->classification_map['third'] = '<span title="New outdoor classification" class="third-class">Third&nbsp;Class</span>';
+        $this->classification_map['second'] = '<span title="New outdoor classification" class="second-class">Second&nbsp;Class</span>';
+        $this->classification_map['first'] = '<span title="New outdoor classification" class="first-class">First&nbsp;Class</span>';
         $this->classification_map['bm'] = '<span title="New outdoor classification" class="bowman-class">Bowman</span>';
-        $this->classification_map['mbm'] = '<span title="New outdoor classification" class="master-bowman-class">Master Bowman</span>';
+        $this->classification_map['mbm'] = '<span title="New outdoor classification" class="master-bowman-class">Master&nbsp;Bowman</span>';
         $this->classification_map['gmbm'] =
-                                '<span title="New outdoor classification" class="grand-master-bowman-class">Grand Master Bowman</span>';
+                                '<span title="New outdoor classification" class="grand-master-bowman-class">Grand&nbsp;Master&nbsp;Bowman</span>';
         $this->classification_map['A'] = '<span title="New indoor classification" class="a-class">A</span>';
         $this->classification_map['B'] = '<span title="New indoor classification" class="b-class">B</span>';
         $this->classification_map['C'] = '<span title="New indoor classification" class="c-class">C</span>';
@@ -126,13 +126,13 @@ class RHAC_RecordsViewer {
         $this->classification_map['H'] = '<span title="New indoor classification" class="h-class">H</span>';
         $this->classification_map['(archer)'] = '';
         $this->classification_map['(unclassified)'] = '';
-        $this->classification_map['(third)'] = '<span title="confirmed outdoor classification" class="third-class">(Third Class)</span>';
-        $this->classification_map['(second)'] = '<span title="confirmed outdoor classification" class="second-class">(Second Class)</span>';
-        $this->classification_map['(first)'] = '<span title="confirmed outdoor classification" class="first-class">(First Class)</span>';
+        $this->classification_map['(third)'] = '<span title="confirmed outdoor classification" class="third-class">(Third&nbsp;Class)</span>';
+        $this->classification_map['(second)'] = '<span title="confirmed outdoor classification" class="second-class">(Second&nbsp;Class)</span>';
+        $this->classification_map['(first)'] = '<span title="confirmed outdoor classification" class="first-class">(First&nbsp;Class)</span>';
         $this->classification_map['(bm)'] = '<span title="confirmed outdoor classification" class="bowman-class">(Bowman)</span>';
-        $this->classification_map['(mbm)'] = '<span title="confirmed outdoor classification" class="master-bowman-class">(Master Bowman)</span>';
+        $this->classification_map['(mbm)'] = '<span title="confirmed outdoor classification" class="master-bowman-class">(Master&nbsp;Bowman)</span>';
         $this->classification_map['(gmbm)'] =
-                                '<span title="confirmed outdoor classification" class="grand-master-bowman-class">(Grand Master Bowman)</span>';
+                        '<span title="confirmed outdoor classification" class="grand-master-bowman-class">(Grand&nbsp;Master&nbsp;Bowman)</span>';
         $this->classification_map['(A)'] = '<span title="Confirmed indoor classification" class="a-class">(A)</span>';
         $this->classification_map['(B)'] = '<span title="Confirmed indoor classification" class="b-class">(B)</span>';
         $this->classification_map['(C)'] = '<span title="Confirmed indoor classification" class="c-class">(C)</span>';
