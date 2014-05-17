@@ -339,7 +339,7 @@ function rhacRecordsExplorer() {
                     {
                         "columnDefs": [
                             { "orderable": false, "targets": 8 }
-                        ],
+                        ]
                     }
                 );
                 var colvis = new jQuery.fn.dataTable.ColVis( table );
