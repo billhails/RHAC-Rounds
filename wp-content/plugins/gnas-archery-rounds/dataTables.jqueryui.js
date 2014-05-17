@@ -1,12 +1,12 @@
 
 (function(){
 
-var DataTable = $.fn.dataTable;
+var DataTable = jQuery.fn.dataTable;
 var sort_prefix = 'css_right ui-icon ui-icon-';
 var toolbar_prefix = 'fg-toolbar ui-toolbar ui-widget-header ui-helper-clearfix ui-corner-';
 
 /* Set the defaults for DataTables initialisation */
-$.extend( true, DataTable.defaults, {
+jQuery.extend( true, DataTable.defaults, {
 	dom:
 		'<"'+toolbar_prefix+'tl ui-corner-tr"lfr>'+
 		't'+
@@ -15,7 +15,7 @@ $.extend( true, DataTable.defaults, {
 } );
 
 
-$.extend( DataTable.ext.classes, {
+jQuery.extend( DataTable.ext.classes, {
 	/* Full numbers paging buttons */
 	"sPageButton":         "fg-button ui-button ui-state-default",
 	"sPageButtonActive":   "ui-state-disabled",
@@ -44,11 +44,11 @@ $.extend( DataTable.ext.classes, {
 } );
 
 
-$.fn.DataTable.ext.renderer.header.jqueryui = function ( settings, cell, column, classes ) {
+jQuery.fn.DataTable.ext.renderer.header.jqueryui = function ( settings, cell, column, classes ) {
 	// Calculate what the unsorted class should be
 	var noSortAppliedClass = sort_prefix+'carat-2-n-s';
-	var asc = $.inArray('asc', column.asSorting) !== -1;
-	var desc = $.inArray('desc', column.asSorting) !== -1;
+	var asc = jQuery.inArray('asc', column.asSorting) !== -1;
+	var desc = jQuery.inArray('desc', column.asSorting) !== -1;
 
 	if ( !column.bSortable || (!asc && !desc) ) {
 		noSortAppliedClass = '';
@@ -61,16 +61,16 @@ $.fn.DataTable.ext.renderer.header.jqueryui = function ( settings, cell, column,
 	}
 
 	// Setup the DOM structure
-	$('<div/>')
+	jQuery('<div/>')
 		.addClass( 'DataTables_sort_wrapper' )
 		.append( cell.contents() )
-		.append( $('<span/>')
+		.append( jQuery('<span/>')
 			.addClass( classes.sSortIcon+' '+noSortAppliedClass )
 		)
 		.appendTo( cell );
 
 	// Attach a sort listener to update on sort
-	$(settings.nTable).on( 'order.dt', function ( e, settings, sorting, columns ) {
+	jQuery(settings.nTable).on( 'order.dt', function ( e, settings, sorting, columns ) {
 		var colIdx = column.idx;
 
 		cell
@@ -104,7 +104,7 @@ $.fn.DataTable.ext.renderer.header.jqueryui = function ( settings, cell, column,
  * Required TableTools 2.1+
  */
 if ( DataTable.TableTools ) {
-	$.extend( true, DataTable.TableTools.classes, {
+	jQuery.extend( true, DataTable.TableTools.classes, {
 		"container": "DTTT_container ui-buttonset ui-buttonset-multi",
 		"buttons": {
 			"normal": "DTTT_button ui-button ui-state-default"

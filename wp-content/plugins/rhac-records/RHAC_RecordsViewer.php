@@ -874,7 +874,7 @@ EOHTML;
         $text = array();
         $headers = array(
             'Date', 'Archer', 'Category', 'Round', 'Place Shot',
-            'H/C', 'Class', 'Score', '&nbsp;');
+            'H/C', 'Class', 'Score', 'Badges');
         $text []= '<table id="rhac-re-results-table">';
         $text []= '<thead>';
         $text []= '<tr>';
