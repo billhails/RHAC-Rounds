@@ -346,6 +346,7 @@ function rhacRecordsExplorer() {
                 jQuery('#rhac-re-results-table_length').css('width', 'auto');
                 jQuery('#rhac-re-results-table_filter').css('width', 'auto');
                 jQuery( colvis.button() ).insertAfter('#rhac-re-results-table_filter').css({ 'float': 'right', 'margin-right': '1em' });
+                colvis.rebuild();
 
                 jQuery('#rhac-re-results-table tbody').on('click', 'td.rhac-re-score-with-ends', function () {
                     var jQthis = jQuery(this);
