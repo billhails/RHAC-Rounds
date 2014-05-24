@@ -207,9 +207,6 @@ tr.rhac-re-reassessment-row {
     display: none;
 }
 
-#rhac-re-main {
-}
-
 div.rhac-re {
     border: 1px solid black;
     border-radius: 4px;
@@ -239,7 +236,7 @@ div.rhac-re-reports-section {
 }
 
 div.rhac-re input {
-    background-color: #bed0dc;
+    background-color: white;
 }
 
 div.rhac-re-section {
@@ -250,7 +247,11 @@ div.rhac-re-reports-section {
     background-color: #1e73be;
 }
 
-#rhac-re-simpleform, #rhac-re-moreform {
+#rhac-re-simpleform {
+    background-color: white;
+}
+
+#rhac-re-moreform {
     background-color: #bed0dc;
 }
 
