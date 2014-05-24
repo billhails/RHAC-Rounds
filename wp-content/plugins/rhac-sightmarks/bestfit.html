@@ -1,0 +1,196 @@
+
+<html>
+<head>
+<title>Line of Best Fit</title>
+<script src="jquery-2.0.2.min.js"></script>
+<script>
+function cons(a, b) { return function(k) { return k(a, b); } }
+function car(l) { return l(function(a, b) { return a }) }
+function cdr(l) { return l(function(a, b) { return b }) }
+
+function list(arr) {
+    function $list(arr, i) {
+        if (i == arr.length) {
+            return null;
+        } else {
+            return cons(arr[i], $list(arr, i + 1));
+        }
+    }
+    return $list(arr, 0);
+}
+
+function lineOfBestFit(ax, ay) {
+    var xs = list(ax);
+    var ys = list(ay);
+
+    function sum(l) {
+        if (l === null) { return 0; }
+        return car(l) + sum(cdr(l));
+    }
+
+    function length(l) {
+        if (l === null) { return 0; }
+        return 1 + length(cdr(l));
+    }
+
+    function mean(a) {
+        return sum(a) / length(a);
+    }
+
+    function sumOfProducts(xs, ys) {
+        if (xs === null) { return 0; }
+        return car(xs) * car(ys) + sumOfProducts(cdr(xs), cdr(ys));
+    }
+
+    function square(x) {
+        return x * x;
+    }
+
+    function sumOfSquares(xs) {
+        if (xs === null) {
+            return 0;
+        }
+        return square(car(xs)) + sumOfSquares(cdr(xs));
+    }
+
+    var n = length(xs);
+
+    if (n < 1 || n != length(ys)) {
+        return function(x) { return 0; }
+    }
+
+    var sumX = sum(xs);
+    var sumY = sum(ys);
+    var m = (sumOfProducts(xs, ys) - (sumX * sumY) / n)
+            /
+            (sumOfSquares(xs) - (sumX * sumX) / n);
+    var c = sumY / n - m * sumX / n;
+
+    return function(x) {
+        return m * x + c;
+    }
+}
+
+// x from 0 to 100m
+// x axis is fixed
+// y from f(0) to f(100)
+// y axis is minimum increments > given spacing (or just integer ticks with numerals every 10).
+// could wrap ctx with transform.
+// would need to update transform with f() whenever it changed.
+
+function canvasWrapper(id) {
+}
+
+</script>
+</head>
+<body>
+<h1>Sight Marks</h1>
+<p>Mock up.</p>
+<table>
+<thead>
+<tr><th>Sight Mark</th><th>Distance</th><th>Units</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><input type="text" id="rhac-sightmark-1"/></td>
+<td><input type="text" id="rhac-distance-1"/></td>
+<td>
+<input type="radio" name="rhac-units-1" id="rhac-units-y-1" value="y"/>
+<label for="rhac-units-y-1">y</label>
+<input type="radio" name="rhac-units-1" id="rhac-units-m-1" value="m"/>
+<label for="rhac-units-m-1">m</label>
+</td>
+<tr>
+<td><input type="text" id="rhac-sightmark-1"/></td>
+<td><input type="text" id="rhac-distance-1"/></td>
+<td>
+<input type="radio" name="rhac-units-1" id="rhac-units-y-1" value="y"/>
+<label for="rhac-units-y-1">y</label>
+<input type="radio" name="rhac-units-1" id="rhac-units-m-1" value="m"/>
+<label for="rhac-units-m-1">m</label>
+</td>
+</tr>
+</tbody>
+</table>
+<canvas id="myCanvas" width="400" height="400" style="border:1px solid #000000;"></canvas>
+<table>
+<thead>
+<tr><th>Distance</th><th>Sight Mark</th></tr>
+</thead>
+<tbody>
+<tr><td>15y</td><td>80.45</td></tr>
+<tr><td>20y</td><td>82.63</td></tr>
+</tbody>
+</table>
+</body>
+<script>
+jQuery(function() {
+    function canvas(ctx) {
+        var height = 400;
+        var width = 400;
+        var lMargin = 40;
+        var bMargin = 80;
+        var adjustedWidth = width - lMargin;
+        var adjustedHeight = height = bMargin;
+        // This object must deal with *all* the
+        // transformations to fit points on the graph.
+        // It also draws its own axes.
+        // That's all that it does.
+        //
+        // this.setYScale(min, max);
+        //   does a full redraw.
+        // this.addPoint(id, x, y, color);
+        //   replaces point with id if it already exists.
+        //   does a full redraw.
+        // this.removePoint(id);
+        //   does a full redraw.
+        // this.reset();
+        //   factory reset.
+    }
+    var height = 400;
+    function meters(x) {
+        return x;
+    }
+    function yards(x) {
+        return x / 0.9;
+    }
+
+    function invert(y) {
+        return height - y;
+    }
+
+    function distance(x) {
+        return x * 1;
+    }
+
+    function point(ctx, x, y, color) {
+        ctx.lineWidth = 1;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(distance(x),invert(y),5,0,2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    function line(ctx, x1, y1, x2, y2) {
+        ctx.lineWidth = 2;
+        ctx.moveTo(distance(x1), invert(y1));
+        ctx.lineTo(distance(x2), invert(y2));
+        ctx.stroke();
+    }
+
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    var sightmarks = [80, 102, 180, 200];
+    var distances = [15, 30, 60, 80];
+    var colors = ['#ffffff', '#ffff00', '#ffffff', '#ffff00'];
+    for (var i = 0; i < sightmarks.length; ++i) {
+        point(ctx, sightmarks[i], distances[i], colors[i]);
+    }
+
+    var linefn = lineOfBestFit(sightmarks, distances);
+
+    line(ctx, 0, linefn(0), 400, linefn(400));
+});
+</script>
+</html>
