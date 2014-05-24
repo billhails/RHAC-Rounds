@@ -4,7 +4,6 @@ function rhacRecordsExplorer() {
 
     var version = "rhac-records-v1.0", persistance;
 
-    // TODO - no hard-coded dates
     var predefined_reports = {
 
         'Personal Bests': {
@@ -229,7 +228,7 @@ function rhacRecordsExplorer() {
                 localStorage.setItem(prefix, JSON.stringify(cache));
             } catch (e) {
                 if (e === QUOTA_EXCEEDED_ERR) {
-                    alert('Quota Exceeded, please delete some old reports first');
+                    jQuery('#rhac-re-quota-exceeded').dialog( 'opem' );
                 }
             }
         }
@@ -283,7 +282,7 @@ function rhacRecordsExplorer() {
 
 
     if (Storage === undefined) {
-        alert("You seem to have a very old browser that does not support saving reports, please upgrade!");
+        jQuery('#rhac-re-old-browser').dialog( "open" );
         persistance = new Semi_persist();
     }
     else {
@@ -336,11 +335,48 @@ function rhacRecordsExplorer() {
             function(results) {
                 jQuery('#rhac-re-results').removeClass('rhac-re');
                 jQuery('#rhac-re-results').html(results);
-                jQuery('#rhac-re-results-table').dataTable(
+                var table = jQuery('#rhac-re-results-table').DataTable(
                     {
-                        "bJQueryUI": true
+                        "columnDefs": [
+                            { "orderable": false, "targets": 8 }
+                        ]
                     }
                 );
+                var colvis = new jQuery.fn.dataTable.ColVis( table );
+                jQuery('#rhac-re-results-table_length').css('width', 'auto');
+                jQuery('#rhac-re-results-table_filter').css('width', 'auto');
+                jQuery( colvis.button() ).insertAfter('#rhac-re-results-table_filter').css({ 'float': 'right', 'margin-right': '1em' });
+
+                jQuery('#rhac-re-results-table tbody').on('click', 'td.rhac-re-score-with-ends', function () {
+                    var jQthis = jQuery(this);
+                    var scorecard_id = jQthis.data('scorecard-id');
+                    var tr = jQthis.parents('tr');
+                    var row = table.row(tr);
+                    if (row.child.isShown()) {
+                        row.child.hide();
+                        jQthis.tooltip({content: "click to show scorecard"});
+                    } else {
+                        if (row.child() === undefined) {
+                            row.child('<div class="rhac-re-scorecard" id="rhac-re-scorecard-' + scorecard_id + '">Please wait...</div>');
+                            jQuery.ajax(
+                                {
+                                    'url': rhacRoundExplorerData.ajaxurl,
+                                    'type': 'GET',
+                                    'timeout': 60000,
+                                    'data': {
+                                        'action': "rhac_get_one_scorecard",
+                                        'scorecard_id': scorecard_id,
+                                    },
+                                    'error': function(obj, stat, err) { alert("error: [" + stat + "] [" + err + "]"); },
+                                }
+                            ).done(function(result) {
+                                jQuery('#rhac-re-scorecard-' + scorecard_id).html(result.html);
+                            });
+                        }
+                        row.child.show();
+                        jQthis.tooltip({content: "click to hide scorecard"});
+                    }
+                });
             }
         );
     }
@@ -393,50 +429,57 @@ function rhacRecordsExplorer() {
         jQuery('#rhac-re-report').html(html);
     }
 
+    function dialog_param(selector, report_name) {
+        jQuery(selector + ' span.rhac-re-report-name').html(report_name);
+        jQuery(selector).dialog( "open" );
+    }
+
+    function getSafeReportName() {
+        return jQuery('#rhac-re-report-name').val().trim().replace(/[<>]/ig,"");
+    }
+
     function saveReport() {
-        var report_name = jQuery('#rhac-re-report-name').val().trim();
+        var report_name = getSafeReportName();
         if (report_name === "") {
-            alert("please enter a report name first");
+            jQuery('#rhac-re-enter-name').dialog( "open" );
             return;
         }
         if (predefined_reports.hasOwnProperty(report_name)) {
-            alert("You can't change a predefined report, edit the report name first and try again.");
+            jQuery('#rhac-re-cannot-save').dialog( "open" );
             return;
         }
         if (persistance.has(report_name)) {
-            if (!confirm("are you sure you want to replace your \"" + report_name + "\" report?")) {
-                return;
-            }
+            dialog_param('#rhac-re-confirm-replace', report_name);
         }
+        else {
+            do_saveReport(report_name);
+        }
+    }
+
+    function do_saveReport(report_name) {
         var report_data = getCurrentReportSettings();
         persistance.set(report_name, report_data);
         populateReportMenu();
         jQuery('#rhac-re-report').val(report_name);
         jQuery('#rhac-re-report').change();
-        alert("report \"" + report_name + "\" saved");
+        dialog_param('#rhac-re-confirm-saved', report_name);
     }
 
     function deleteReport() {
-        var report_name = jQuery('#rhac-re-report-name').val().trim();
+        var report_name = getSafeReportName();
         if (report_name === "") {
-            alert("please enter a report name first");
+            jQuery('#rhac-re-enter-name').dialog( "open" );
             return;
         }
         if (predefined_reports.hasOwnProperty(report_name)) {
-            alert("You can't delete a predefined report.");
+            jQuery('#rhac-re-cannot-delete').dialog( "open" );
             return;
         }
-        if (persistance.has(report_name)) {
-            if (!confirm("are you sure you want to delete your \"" + report_name + "\" report?")) {
-                return;
-            }
-        } else {
-            alert("That report doesn't exist");
+        if (!persistance.has(report_name)) {
+            dialog_param('#rhac-re-report-nonexistant', report_name);
             return;
         }
-        persistance.remove(report_name);
-        populateReportMenu();
-        alert("report \"" + report_name + "\" deleted");
+        dialog_param('#rhac-re-confirm-delete', report_name);
     }
 
     function changeDates() {
@@ -512,6 +555,47 @@ function rhacRecordsExplorer() {
         jQuery('#rhac-re-report-name').val(name);
     }
 
+    jQuery('.rhac-re-simple-dialog').dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            OK: function () {
+                jQuery(this).dialog( "close" );
+            }
+        }
+    });
+    jQuery('#rhac-re-confirm-replace').dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            Confirm: function() {
+                jQuery(this).dialog( "close" );
+                // this is horrible
+                var report_name = jQuery(this).find('span.rhac-re-report-name').html();
+                do_saveReport(report_name);
+            },
+            Cancel: function() {
+                jQuery(this).dialog( "close" );
+            }
+        }
+    });
+    jQuery('#rhac-re-confirm-delete').dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: {
+            Confirm: function() {
+                jQuery(this).dialog( "close" );
+                // this is horrible
+                var report_name = jQuery(this).find('span.rhac-re-report-name').html();
+                persistance.remove(report_name);
+                populateReportMenu();
+                dialog_param('#rhac-re-confirm-deleted', report_name);
+            },
+            Cancel: function() {
+                jQuery(this).dialog( "close" );
+            }
+        }
+    });
     jQuery('#rhac-re-save-report').click(saveReport);
     jQuery('#rhac-re-delete-report').click(deleteReport);
     jQuery('#rhac-re-seasons').change(changeDates);
@@ -521,17 +605,43 @@ function rhacRecordsExplorer() {
     jQuery('#rhac-re-include-lapsed').change(toggleArcherList);
     jQuery('.rhac-re-date').datepicker({ dateFormat: "yy/mm/dd" });
     jQuery('#rhac-re-run-report').click(doSearch);
+    jQuery('#rhac-re-run-report').button( { icons: { primary: "ui-icon-search" } } );
+    jQuery('#rhac-re-edit-report').button( { icons: { primary: "ui-icon-triangle-1-e" } } );
+    jQuery('#rhac-re-save-report').button( { icons: { primary: "ui-icon-disk" } } );
+    jQuery('#rhac-re-delete-report').button( { icons: { primary: "ui-icon-trash" } } );
+    jQuery('a.rhac-re-help').button( { icons: { primary: "ui-icon-help" } } );
+    jQuery('.rhac-re-radios').buttonset();
+    jQuery('.rhac-re-checkbox').button( { icons: { primary: "ui-icon-pin-w" } } );
+    jQuery('.rhac-re-checkbox').change( function () {
+        var b = jQuery(this);
+        var icons = { primary: "" };
+        if (b.prop("checked")) {
+            icons.primary = "ui-icon-pin-s";
+        } else {
+            icons.primary = "ui-icon-pin-w";
+        }
+        b.button("option", "icons", icons);
+    });
     populateReportMenu();
     setForm();
     jQuery('#rhac-re-report').change(setForm);
-    jQuery('#rhac-re-edit-report').click(function () { jQuery('#rhac-re-moreform').toggle(0); });
+    jQuery('#rhac-re-edit-report').click(function () {
+        jQuery('#rhac-re-moreform').toggle(0);
+        var b = jQuery(this);
+        var icons = b.button("option", "icons");
+        if (icons.primary == "ui-icon-triangle-1-e") {
+            icons.primary = "ui-icon-triangle-1-s";
+        } else {
+            icons.primary = "ui-icon-triangle-1-e";
+        }
+        b.button("option", "icons", icons);
+    });
 }
 
 jQuery(
     function () {
         "use strict";
         jQuery('#rhac-re-main').tooltip();
-        jQuery('.accordion').accordion({ heightStyle: "content", collapsible: true });
         if (jQuery('#rhac-re-results')[0]) {
             rhacRecordsExplorer();
         }

@@ -532,7 +532,11 @@ jQuery(
                 new RHAC_Scorer();
             }
             jQuery( "#date" ).datepicker(
-                    { dateFormat: "D, d M yy" }
+                    {
+                        dateFormat: "D, d M yy",
+                        changeMonth: true,
+                        changeYear: true
+                    }
                 );
         }
         if (jQuery('#datepicker-lower')) {

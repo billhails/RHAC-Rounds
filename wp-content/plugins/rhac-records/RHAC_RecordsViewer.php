@@ -4,7 +4,6 @@ include_once(RHAC_PLUGINS_ROOT . 'gnas-archery-rounds/rounds.php');
 class RHAC_RecordsViewer {
     private $pdo;
     private $gender_map = array("M" => "Gents", "F" => "Ladies");
-    private $ends_map;
     private $venue_map;
     private $pb_map;
     private $cr_map;
@@ -33,23 +32,50 @@ class RHAC_RecordsViewer {
 
     private function initIcons() {
         $this->icons = array();
-        foreach(array('scorecard', 'personal-best', 'current-club-record', 'old-club-record') as $icon) {
-            $this->icons[$icon] = "<img class='badge no-shadow' src='"
+        $titles = array(
+            'personal-best' => 'Personal Best',
+            'current-club-record' => 'Current Club Record',
+            'old-club-record' => 'Old Club Record',
+            'green-252' => 'Second qualifying Green 252 score and award',
+            'half-green-252' => 'First qualifying Green 252 score',
+            'white-252' => 'Second qualifying White 252 score and award',
+            'half-white-252' => 'First qualifying White 252 score',
+            'black-252' => 'Second qualifying Black 252 score and award',
+            'half-black-252' => 'First qualifying Black 252 score',
+            'blue-252' => 'Second qualifying Blue 252 score and award',
+            'half-blue-252' => 'First qualifying Blue 252 score',
+            'red-252' => 'Second qualifying Red 252 score and award',
+            'half-red-252' => 'First qualifying Red 252 score',
+            'bronze-252' => 'Second qualifying Bronze 252 score and award',
+            'half-bronze-252' => 'First qualifying Bronze 252 score',
+            'silver-252' => 'Second qualifying Silver 252 score and award',
+            'half-silver-252' => 'First qualifying Silver 252 score',
+            'gold-252' => 'Second qualifying Gold 252 score and award',
+            'half-gold-252' => 'First qualifying Gold 252 score',
+            'medal-bronze' => 'Bronze medal in competition',
+            'medal-silver' => 'Silver medal in competition',
+            'medal-gold' => 'Gold medal in competition',
+        );
+        foreach(array('personal-best', 'current-club-record', 'old-club-record') as $icon) {
+            $this->icons[$icon] = "<img class='badge no-shadow' title='$titles[$icon]' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
                                 . "icons/$icon.png'/>";
         }
         foreach(array('green', 'white', 'black', 'blue', 'red', 'bronze', 'silver', 'gold') as $icon) {
-            $this->icons["$icon-252"] = "<img class='badge no-shadow' src='"
+            $key = "$icon-252";
+            $halfkey = "half-$icon-252";
+            $this->icons[$key] = "<img class='badge no-shadow' title='$titles[$key]' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
-                                . "icons/$icon-252.png'/>";
-            $this->icons["half-$icon-252"] = "<img class='badge no-shadow' src='"
+                                . "icons/$key.png'/>";
+            $this->icons[$halfkey] = "<img class='badge no-shadow' title='$titles[$halfkey]' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
-                                . "icons/half-$icon-252.png'/>";
+                                . "icons/$halfkey.png'/>";
         }
         foreach(array('bronze', 'silver', 'gold') as $icon) {
-            $this->icons["medal-$icon"] = "<img class='badge no-shadow' src='"
+            $key = "medal-$icon";
+            $this->icons[$key] = "<img class='badge no-shadow' title='$titles[$key]' src='"
                                 . RHAC_RE_PLUGIN_URL_ROOT
-                                . "icons/medal-$icon.png'/>";
+                                . "icons/$key.png'/>";
         }
     }
 
@@ -63,11 +89,6 @@ class RHAC_RecordsViewer {
         foreach($venues as $venue) {
             $this->venue_map[$venue['venue_id']] = $venue['name'];
         }
-        
-        $this->ends_map = array(
-            'Y' => $this->icons['scorecard'],
-            'N' => '',
-        );
         $this->pb_map = array(
             'Y' => $this->icons['personal-best'],
             'N' => '',
@@ -88,38 +109,38 @@ class RHAC_RecordsViewer {
         }
         $this->classification_map['archer'] = '<span class="archer-class">Archer</span>';
         $this->classification_map['unclassified'] = '<span class="unclassified-class">Unclassified</span>';
-        $this->classification_map['third'] = '<span class="third-class">Third Class</span>';
-        $this->classification_map['second'] = '<span class="second-class">Second Class</span>';
-        $this->classification_map['first'] = '<span class="first-class">First Class</span>';
-        $this->classification_map['bm'] = '<span class="bowman-class">Bowman</span>';
-        $this->classification_map['mbm'] = '<span class="master-bowman-class">Master Bowman</span>';
+        $this->classification_map['third'] = '<span title="New outdoor classification" class="third-class">Third&nbsp;Class</span>';
+        $this->classification_map['second'] = '<span title="New outdoor classification" class="second-class">Second&nbsp;Class</span>';
+        $this->classification_map['first'] = '<span title="New outdoor classification" class="first-class">First&nbsp;Class</span>';
+        $this->classification_map['bm'] = '<span title="New outdoor classification" class="bowman-class">Bowman</span>';
+        $this->classification_map['mbm'] = '<span title="New outdoor classification" class="master-bowman-class">Master&nbsp;Bowman</span>';
         $this->classification_map['gmbm'] =
-                                '<span class="grand-master-bowman-class">Grand Master Bowman</span>';
-        $this->classification_map['A'] = '<span class="a-class">A</span>';
-        $this->classification_map['B'] = '<span class="b-class">B</span>';
-        $this->classification_map['C'] = '<span class="c-class">C</span>';
-        $this->classification_map['D'] = '<span class="d-class">D</span>';
-        $this->classification_map['E'] = '<span class="e-class">E</span>';
-        $this->classification_map['F'] = '<span class="f-class">F</span>';
-        $this->classification_map['G'] = '<span class="g-class">G</span>';
-        $this->classification_map['H'] = '<span class="h-class">H</span>';
-        $this->classification_map['(archer)'] = '<span class="archer-class">(Archer)</span>';
-        $this->classification_map['(unclassified)'] = '<span class="unclassified-class">(Unclassified)</span>';
-        $this->classification_map['(third)'] = '<span class="third-class">(Third Class)</span>';
-        $this->classification_map['(second)'] = '<span class="second-class">(Second Class)</span>';
-        $this->classification_map['(first)'] = '<span class="first-class">(First Class)</span>';
-        $this->classification_map['(bm)'] = '<span class="bowman-class">(Bowman)</span>';
-        $this->classification_map['(mbm)'] = '<span class="master-bowman-class">(Master Bowman)</span>';
+                                '<span title="New outdoor classification" class="grand-master-bowman-class">Grand&nbsp;Master&nbsp;Bowman</span>';
+        $this->classification_map['A'] = '<span title="New indoor classification" class="a-class">A</span>';
+        $this->classification_map['B'] = '<span title="New indoor classification" class="b-class">B</span>';
+        $this->classification_map['C'] = '<span title="New indoor classification" class="c-class">C</span>';
+        $this->classification_map['D'] = '<span title="New indoor classification" class="d-class">D</span>';
+        $this->classification_map['E'] = '<span title="New indoor classification" class="e-class">E</span>';
+        $this->classification_map['F'] = '<span title="New indoor classification" class="f-class">F</span>';
+        $this->classification_map['G'] = '<span title="New indoor classification" class="g-class">G</span>';
+        $this->classification_map['H'] = '<span title="New indoor classification" class="h-class">H</span>';
+        $this->classification_map['(archer)'] = '';
+        $this->classification_map['(unclassified)'] = '';
+        $this->classification_map['(third)'] = '<span title="confirmed outdoor classification" class="third-class">(Third&nbsp;Class)</span>';
+        $this->classification_map['(second)'] = '<span title="confirmed outdoor classification" class="second-class">(Second&nbsp;Class)</span>';
+        $this->classification_map['(first)'] = '<span title="confirmed outdoor classification" class="first-class">(First&nbsp;Class)</span>';
+        $this->classification_map['(bm)'] = '<span title="confirmed outdoor classification" class="bowman-class">(Bowman)</span>';
+        $this->classification_map['(mbm)'] = '<span title="confirmed outdoor classification" class="master-bowman-class">(Master&nbsp;Bowman)</span>';
         $this->classification_map['(gmbm)'] =
-                                '<span class="grand-master-bowman-class">(Grand Master Bowman)</span>';
-        $this->classification_map['(A)'] = '<span class="a-class">(A)</span>';
-        $this->classification_map['(B)'] = '<span class="b-class">(B)</span>';
-        $this->classification_map['(C)'] = '<span class="c-class">(C)</span>';
-        $this->classification_map['(D)'] = '<span class="d-class">(D)</span>';
-        $this->classification_map['(E)'] = '<span class="e-class">(E)</span>';
-        $this->classification_map['(F)'] = '<span class="f-class">(F)</span>';
-        $this->classification_map['(G)'] = '<span class="g-class">(G)</span>';
-        $this->classification_map['(H)'] = '<span class="h-class">(H)</span>';
+                        '<span title="confirmed outdoor classification" class="grand-master-bowman-class">(Grand&nbsp;Master&nbsp;Bowman)</span>';
+        $this->classification_map['(A)'] = '<span title="Confirmed indoor classification" class="a-class">(A)</span>';
+        $this->classification_map['(B)'] = '<span title="Confirmed indoor classification" class="b-class">(B)</span>';
+        $this->classification_map['(C)'] = '<span title="Confirmed indoor classification" class="c-class">(C)</span>';
+        $this->classification_map['(D)'] = '<span title="Confirmed indoor classification" class="d-class">(D)</span>';
+        $this->classification_map['(E)'] = '<span title="Confirmed indoor classification" class="e-class">(E)</span>';
+        $this->classification_map['(F)'] = '<span title="Confirmed indoor classification" class="f-class">(F)</span>';
+        $this->classification_map['(G)'] = '<span title="Confirmed indoor classification" class="g-class">(G)</span>';
+        $this->classification_map['(H)'] = '<span title="Confirmed indoor classification" class="h-class">(H)</span>';
         $this->classification_map[''] = '';
     }
 
@@ -199,7 +220,6 @@ class RHAC_RecordsViewer {
         return $this->tft_map['gold/1'];
     }
 
-
     public function bronzeMedalIcon() {
         return $this->medal_map['bronze'];
     }
@@ -211,7 +231,6 @@ class RHAC_RecordsViewer {
     public function goldMedalIcon() {
         return $this->medal_map['gold'];
     }
-
 
     public function archerClassificationIcon() {
         return $this->classification_map['archer'];
@@ -394,9 +413,9 @@ class RHAC_RecordsViewer {
   <div id="rhac-re-simpleform" class="rhac-re">
     <select id="rhac-re-report" title="select a report to run">
     </select>
-    <button type="button" title="run the selected report" id="rhac-re-run-report">Run Report</button>
-    <button type="button" title="edit the selected report" id="rhac-re-edit-report">Edit Report</button>
-    <a href="$help_page_url" target="_blank" title="see help (in a new window)">Help</a>
+    <button type="button" title="run the selected report" class="rhac-re-button" id="rhac-re-run-report">Run Report</button>
+    <button type="button" title="edit the selected report" class="rhac-re-button" id="rhac-re-edit-report">Edit Report</button>
+    <a href="$help_page_url" target="_blank" class="rhac-re-help" title="see help (in a new window)">Help</a>
   </div>
   <div id="rhac-re-moreform" class="rhac-re">
     <div id="rhac-re-more-left">
@@ -404,16 +423,16 @@ class RHAC_RecordsViewer {
       <div class="rhac-re-section">
         <label class="rhac-re-label" title="select a season type" for="seasons">Seasons</label>
         <div class="rhac-re-radios">
-          <input type="radio" name="season" class="rhac-re-outdoor" value="Y">Outdoor</input>
-          <input type="radio" name="season" class="rhac-re-outdoor" value="N">Indoor</input>
-          <input type="radio" name="season" class="rhac-re-outdoor" checked="Y" value="">Both</input>
+          <input type="radio" name="season" class="rhac-re-outdoor" value="Y" id="rhac-re-outdoor-y"/><label for="rhac-re-outdoor-y">Outdoor</label>
+          <input type="radio" name="season" class="rhac-re-outdoor" value="N" id="rhac-re-outdoor-n"/><label for="rhac-re-outdoor-n">Indoor</label>
+          <input type="radio" name="season" class="rhac-re-outdoor" checked="checked" value="" id="rhac-re-outdoor-both"/><label for="rhac-re-outdoor-both">Both</label>
         </div>
       </div>
 
       <div class="rhac-re-section">
         <label class="rhac-re-label" title="select an archer" for="archer">Archer</label>
         <div>
-          <div><input type="checkbox" value="Y" title="allows you to select lapsed archers in the dropdown below" id="rhac-re-include-lapsed">Include lapsed members</input></div>
+          <div><input type="checkbox" class="rhac-re-checkbox" value="Y" title="allows you to select lapsed archers in the dropdown below" id="rhac-re-include-lapsed"/><label for="rhac-re-include-lapsed">Include lapsed members</label></div>
           <div>
             <select id="rhac-re-archer" name="archer">
 $current_archers
@@ -451,8 +470,8 @@ $current_archers
       <div class="rhac-re-section">
         <label class="rhac-re-label" title="restrict the search to a particular round or round family" for="round">Round</label>
         <div class="rhac-re-radios">
-          <input type="radio" title="select from individual rounds" class="rhac-re-single-round" value="Y" name="single-round" checked="1">Round</input>
-          <input type="radio" title="select from round families (like 252s)" class="rhac-re-single-round" value="N" name="single-round">Round Family</input>
+          <input type="radio" title="select from individual rounds" class="rhac-re-single-round" value="Y" name="single-round" checked="checked" id="rhac-re-single-round-y"/><label for="rhac-re-single-round-y">Round</label>
+          <input type="radio" title="select from round families (like 252s)" class="rhac-re-single-round" value="N" name="single-round" id="rhac-re-single-round-n"/><label for="rhac-re-single-round-n">Round Family</label>
         </div>
         <select id="rhac-re-round" name="round">
 $outdoor_rounds
@@ -476,27 +495,35 @@ $outdoor_seasons
       <div class="rhac-re-section">
         <label class="rhac-re-label" title="limit the search to scores with any of these attributes">Limit to</label>
         <div class="rhac-re-checklist">
-          <div><input type="checkbox" id="rhac-re-current-records" value="Y" name="current-records" title="scores which are cuurent club records">Current Records</input></div>
-          <div><input type="checkbox" id="rhac-re-old-records" value="Y" name="old-records" title="scores which are old club records">Old Records</input></div>
-          <div><input type="checkbox" id="rhac-re-medals" value="Y" name="medals" title="scores which were awarded a medal">Medals</input></div>
-          <div><input type="checkbox" id="rhac-re-252" value="Y" name="medals" title="qualifying 252 scores">252 awards</input></div>
-          <div><input type="checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests" title="scores which are personal bests">Personal Bests</input></div>
-          <div><input type="checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements" title="scores which resulted in a new handicap or handicap improvement">Handicap Improvements</input></div>
-          <div><input type="checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications" title="scores which resulted in a new classification">New Classifications</input></div>
-          <div><input type="checkbox" id="rhac-re-reassessments" value="Y" name="reassessments" title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Reassessments</input></div>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-current-records" value="Y" name="current-records"/><label for="rhac-re-current-records">Current Records</label></span>
+
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-old-records" value="Y" name="old-records"/><label for="rhac-re-old-records" >Old Records</label></span>
+
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-medals" value="Y" name="medals"/><label for="rhac-re-medals" >Medals</label></span>
+
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-252" value="Y" name="medals"/><label for="rhac-re-252" >252 awards</label></span>
+
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests"/><label for="rhac-re-personal-bests" >Personal Bests</label></span>
+
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements"/><label for="rhac-re-handicap-improvements" >Handicap Improvements</label></span>
+
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications"/><label for="rhac-re-new-classifications" >New Classifications</label></span>
+
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-reassessments" value="Y" name="reassessments" /><label for="rhac-re-reassessments" title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Include Reassessments</label></span>
+
         </div>
       </div>
 
       <div class="rhac-re-reports-section">
-        <label class="rhac-re-label" title="save or delete personal reports">Save Report</label>
+        <label class="rhac-re-label rhac-re-label-save" title="save or delete personal reports">Save Report</label>
         <div>
           <input type="text" id="rhac-re-report-name" value="" name="report-name"/>
         </div>
         <div>
-          <button type="button" id="rhac-re-save-report">Save This Report</button>
+          <button type="button" class="rhac-re-button" id="rhac-re-save-report">Save This Report</button>
         </div>
         <div>
-          <button type="button" id="rhac-re-delete-report">Delete This Report</button>
+          <button type="button" class="rhac-re-button" id="rhac-re-delete-report">Delete This Report</button>
         </div>
       </div>
 
@@ -505,6 +532,37 @@ $outdoor_seasons
   </div>
   <div id="rhac-re-results" class="rhac-re">
     Results
+  </div>
+  <div id="rhac-re-cannot-save" class="rhac-re-simple-dialog">
+    <p>You can't change a predefined report, try editing the report name first.</p>
+  </div>
+  <div id="rhac-re-cannot-delete" class="rhac-re-simple-dialog">
+    <p>You can't delete a predefined report.</p>
+  </div>
+  <div id="rhac-re-enter-name" class="rhac-re-simple-dialog">
+    <p>Please enter a report name first.</p>
+  </div>
+  <div id="rhac-re-confirm-replace">
+    <p>Are you sure you want to replace your "<span class="rhac-re-report-name"></span>" report?</p>
+  </div>
+  <div id="rhac-re-confirm-saved" class="rhac-re-simple-dialog">
+    <p>Report "<span class="rhac-re-report-name"></span>" saved.</p>
+    <p>You should now see it in your list of reports.</p>
+  </div>
+  <div id="rhac-re-confirm-delete">
+    <p>Are you sure you want to delete your "<span class="rhac-re-report-name"></span>" report?</p>
+  </div>
+  <div id="rhac-re-report-nonexistant" class="rhac-re-simple-dialog">
+    <p>Report "<span class="rhac-re-report-name"></span>" does not exist!</p>
+  </div>
+  <div id="rhac-re-confirm-deleted" class="rhac-re-simple-dialog">
+    <p>Report "<span class="rhac-re-report-name"></span>" deleted.</p>
+  </div>
+  <div id="rhac-re-quota-exceeded" class="rhac-re-simple-dialog">
+    <p>Quota Exceeded, please delete some old reports first.</p>
+  </div>
+  <div id="rhac-re-old-browser" class="rhac-re-simple-dialog">
+    <p>You seem to have a very old browser that does not support saving reports, please upgrade!</p>
   </div>
 </div>
 EOHTML;
@@ -764,7 +822,7 @@ EOHTML;
             $params []= 'old';
         }
         if ($_GET['medals']) {
-            $subfields []= "medal IN = (?,?,?)";
+            $subfields []= "medal IN (?,?,?)";
             $params []= 'bronze';
             $params []= 'silver';
             $params []= 'gold';
@@ -808,10 +866,15 @@ EOHTML;
 
     private function formatResults($rows) {
         $this->initDisplayMaps();
+        $classification_sort = array(
+            'A' => 10, 'B' => 9, 'C' => 8, 'D' => 7, 'E' => 6, 'F' => 5, 'G' => 4, 'H' => 3,
+            'gmbm' => 8, 'mbm' => 7, 'bm' => 6, 'first' => 5, 'second' => 4, 'third' => 3,
+            'unclassified' => 2, 'archer' => 1, '' => 0,
+        );
         $text = array();
         $headers = array(
             'Date', 'Archer', 'Category', 'Round', 'Place Shot',
-            'H/C', 'Class', 'Score', '&nbsp;');
+            'H/C', 'Class', 'Score', 'Badges');
         $text []= '<table id="rhac-re-results-table">';
         $text []= '<thead>';
         $text []= '<tr>';
@@ -823,33 +886,62 @@ EOHTML;
         $text []= '<tbody>';
         foreach ($rows as $row) {
             $tr_class = '';
-            if ($row['reassessment'] != "N") {
+            $score_class = '';
+            $score_data = '';
+            $score_title = '';
+            if ($row['reassessment'] == "N") {
+                if ($row['has_ends'] == "Y") {
+                    $score_class = ' rhac-re-score-with-ends';
+                    $score_data = "data-scorecard-id='$row[scorecard_id]'";
+                    $score_title = 'title="click to show score card"';
+                }
+            } else {
                 $row['score'] = '';
                 $row['handicap_ranking'] = '';
                 $row['venue_id'] = 0;
-                $tr_class = ' class="rhac-re-reassessment-row"';
+                $tr_class = 'class="rhac-re-reassessment-row"';
             }
-            $text []= "<tr$tr_class id='card-$row[scorecard_id]'>";
+            $text []= "<tr $tr_class id='card-$row[scorecard_id]'>";
             $text []= "<td>$row[date]</td>";
-            $text []= "<td>$row[archer]</td>";
+            $text []= "<td class='rhac-re-archer-row'>$row[archer]</td>";
             $text []= "<td>" . $this->category($row) . "</td>";
             $text []= "<td>$row[round]</td>";
             $text []= "<td>" . $this->venue_map[$row[venue_id]] . "</td>";
             $text []= "<td>$row[handicap_ranking]</td>";
-            $text []= "<td>$row[classification]</td>";
-            $text []= "<td>$row[score]</td>";
-            $text []= "<td>";
-            $text []= "<span style='display: inline-block;'>";
-            $text []= $this->classification_map[$row[new_classification]];
-            $text []= ' ';
+            $classification_order = $classification_sort[$row['classification']];
+            $text []= "<td data-sort='$classification_order'>$row[classification]</td>";
+            $text []= "<td class='rhac-re-score-row $score_class' $score_title $score_data>$row[score]</td>";
+            $data_icon_search = array();
+            $badges = array("<span class='rhac-re-badges'>");
+            $badges []= $this->classification_map[$row[new_classification]];
             if (strlen($row[handicap_improvement])) {
-                $text []= '<span class="handicap-improvement">' . $row[handicap_improvement] . '</span>';
+                $badges []= '<span title="New or improved handicap" class="handicap-improvement">' . $row[handicap_improvement] . '</span>';
             }
-            $text []= $this->medal_map[$row[medal]];
-            $text []= $this->cr_map[$row[club_record]];
-            $text []= $this->tft_map[$row[two_five_two]];
-            $text []= $this->pb_map[$row[personal_best]];
-            $text []= "</span>";
+            if ($row['medal']) {
+                $data_icon_search []= $row['medal'];
+                $data_icon_search []= 'medal';
+            }
+            $badges []= $this->medal_map[$row[medal]];
+            if ($row['club_record'] != "N") {
+                $data_icon_search []= "$row[club_record] record";
+            }
+            $badges []= $this->cr_map[$row[club_record]];
+            $badges []= $this->tft_map[$row[two_five_two]];
+            if ($row[personal_best] == "Y") {
+                $data_icon_search []= "personal best";
+            }
+            $badges []= $this->pb_map[$row[personal_best]];
+            if (0) {
+                $badges []= 'new_classification=[' . $row[new_classification] . ']';
+                $badges []= 'handicap_improvement=[' . $row[handicap_improvement] . ']';
+                $badges []= 'medal=[' . $row[medal] . ']';
+                $badges []= 'club_record=[' . $row[club_record] . ']';
+                $badges []= 'two_five_two=[' . $row[two_five_two] . ']';
+                $badges []= 'personal_best=[' . $row[personal_best] . ']';
+            }
+            $badges []= "</span>";
+            $text []= "<td data-search='" . implode(' ', $data_icon_search) . "'>";
+            $text []= implode(' ', $badges);
             $text []= "</td>";
             $text []= '</tr>';
         }
