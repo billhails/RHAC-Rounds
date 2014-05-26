@@ -690,13 +690,6 @@ function rhac_load_deps() {
     wp_enqueue_style('scorecard_view',
                      plugins_url('scorecard_view.css', __FILE__));
  
-    $ui = $wp_scripts->query('jquery-ui-core');
- 
-    /*
-    $protocol = is_ssl() ? 'https' : 'http';
-    $url = "$protocol://ajax.googleapis.com/ajax/libs/jqueryui/{$ui->ver}/themes/redmond/jquery-ui.min.css";
-    wp_enqueue_style('jquery-ui-redmond', $url, false, null);
-    */
     wp_localize_script('rhac_scorecard_view', 'rhacScorecardData',
                        rhac_get_scorecard_data());
 }

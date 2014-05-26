@@ -41,12 +41,8 @@ function rhac_scorecards_toplevel() {
 function rhac_admin_css() {
     wp_enqueue_style('rhac_scorecard_style',
                      plugins_url('scorecard.css', __FILE__));
-    wp_enqueue_style('rhac_jquery_ui',
-                     plugins_url('jquery-ui.css', __FILE__));
-    wp_enqueue_style('rhac_jquery_ui_all',
-                     plugins_url('jquery.ui.all.css', __FILE__));
-    wp_enqueue_style('rhac_jquery_ui_core',
-                     plugins_url('jquery.ui.core.css', __FILE__));
-    wp_enqueue_style('rhac_jquery_ui_datepicker',
-                     plugins_url('jquery.ui.datepicker.min.css', __FILE__));
+    wp_enqueue_style('jquery_ui');
+    wp_enqueue_style('jquery_ui_all');
+    wp_enqueue_style('jquery_ui_core');
+    wp_enqueue_style('jquery_ui_datepicker');;
 }

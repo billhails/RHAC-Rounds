@@ -13,7 +13,7 @@ define('RHAC_CHARTS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 add_action( 'wp_enqueue_scripts', 'register_rhac_charts');
 
 function register_rhac_charts() {
-    wp_enqueue_script('chart_js', plugins_url('Chart.min.js', __FILE__), array());
+    wp_enqueue_script('chart_js');
 }
 
 $rhac_datasets = array();
