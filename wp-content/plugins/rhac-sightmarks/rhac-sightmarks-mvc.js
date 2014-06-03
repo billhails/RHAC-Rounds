@@ -12,6 +12,15 @@ jQuery(function() {
             var name = '';
             var bestFit = function() { return 0; };
             var _this = this;
+            var modified = false;
+
+            this.isModified = function() {
+                return modified;
+            }
+
+            this.setModified = function(val) {
+                modified = val;
+            }
 
             this.setItems = function(data, dataName) {
                 console.log("model.setItems(%o, %s)", data, dataName);
@@ -163,6 +172,7 @@ jQuery(function() {
                                 'measure': distanceMeasure[0],
                                 'sightmark': Number(sightmark.val())
                             });
+                            model.setModified(true);
                         }
                     },
                     Cancel: function() {
@@ -192,6 +202,7 @@ jQuery(function() {
                 if (index !== undefined && index !== null && !jQuery.isArray(index)) {
                     console.log("index is %o", index);
                     model.deleteItem(index);
+                    model.setModified(true);
                 }
             });
         }
@@ -206,6 +217,31 @@ jQuery(function() {
             var saveButton = items.saveButton.button();
             var restoreButton = items.restoreButton.button();
             var title = items.title;
+            var confirmed = false;
+            var confirmDialog = items.confirmDialog.dialog({
+                autoOpen: false,
+                modal: true,
+                buttons: {
+                    Confirm: function() {
+                        confirmed = true;
+                        jQuery(this).dialog("close");
+                    Cancel: function() {
+                        confirmed = false;
+                        jQuery(this).dialog("close");
+                    }
+                }
+            });
+            var currentName = '';
+
+            function confirmChange() {
+                if (model.isModified()) {
+                    confirmDialog.open();
+                    return confirmed;
+                }
+                else {
+                    return true;
+                }
+            }
 
             function updateTips( t ) {
                 tips.text( t )
@@ -234,8 +270,11 @@ jQuery(function() {
             }
 
             function removeFromStorage(name) {
-                storage.remove(name);
-                populateSelect();
+                if (confirmChange()) {
+                    storage.remove(name);
+                    populateSelect();
+                    model.setModified(false);
+                }
             }
 
             function populateSelect(newName) {
@@ -254,6 +293,7 @@ jQuery(function() {
                         if (name == newName) {
                             html = html.concat('<option', selected,
                                 ' value="', name, '">', name, '</option>');
+                            currentName = name;
                         }
                         else {
                             html = html.concat('<option',
@@ -263,6 +303,9 @@ jQuery(function() {
                     else {
                         html = html.concat('<option', selected,
                             ' value="', name, '">', name, '</option>');
+                        if (selected.length > 0) {
+                            currentName = name;
+                        }
                         selected = '';
                     }
                 }
@@ -307,6 +350,10 @@ jQuery(function() {
             });
 
             select.change(function() {
+                if (!confirmChange()) {
+                    items.select.val(currentName);
+                    return;
+                }
                 var name = items.select.val();
                 console.log("select.change: " + name);
                 if (name && name.length > 0) {
@@ -318,6 +365,8 @@ jQuery(function() {
                     model.setItems([], '');
                     title.html('');
                 }
+                currentName = name;
+                model.setModified(false);
             });
 
             this.start = function() {
@@ -566,7 +615,8 @@ jQuery(function() {
             dialog: jQuery('#sightmarks-save-dialog'),
             name: jQuery('#sightmarks-name'),
             validateTips: jQuery('#sightmarks-tip'),
-            title: jQuery('.sightmarks-title')
+            title: jQuery('.sightmarks-title'),
+            confirmDialog: jQuery('#sightmarks-confirm-dialog')
         });
 
         var itemsView = new ItemsView({
