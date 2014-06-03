@@ -550,5 +550,6 @@ jQuery(
         if (jQuery('#merge-archers')) {
             jQuery('#merge-archers').submit(confirm_merge);
         }
+        jQuery('#rhac-admin-accordion').accordion();
     }
 );

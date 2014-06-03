@@ -22,9 +22,16 @@ define('RHAC_PLUGINS_URL_ROOT',
 
 
 include_once RHAC_RE_DIR . 'RHAC_RecordsViewer.php';
+include_once RHAC_PLUGINS_ROOT . 'rhac-3p-deps/rhac-3p-deps.php';
+
+$rhac_scripts_dump = '';
 
 function rhac_re_load_deps() {
     global $wp_scripts;
+    global $rhac_scripts_dump;
+    //$rhac_scripts_dump = '<pre>' . print_r($wp_scripts, true) . '</pre>';
+    rhac_register_3p_scripts();
+    rhac_register_3p_styles();
  
     wp_enqueue_script('rhac_datatables');
     wp_enqueue_script('rhac_datatables_jquery');
@@ -40,7 +47,7 @@ function rhac_re_load_deps() {
     wp_enqueue_style('jquery-datatables-colvis-ui');
     wp_enqueue_script('rhac_records_view',
                       plugins_url('rhac_records_view.js', __FILE__),
-                      array('jquery-ui-button', 'jquery-ui-datepicker', 'jquery-ui-tooltip', 'jquery-ui-dialog'));
+                      array('jquery-ui-button', 'jquery-ui-datepicker', 'jquery-ui-tooltip', 'jquery-ui-dialog', 'rhac_persist'));
 
  
     wp_localize_script('rhac_records_view', 'rhacRoundExplorerData', rhac_get_data());
@@ -52,7 +59,7 @@ function rhac_get_data() {
     return $data;
 }
 
-add_action('init', 'rhac_re_load_deps');
+add_action('wp_enqueue_scripts', 'rhac_re_load_deps');
 
 function rhac_ajax_display_results() {
     // error_log("rhac_ajax_display_results");
@@ -66,9 +73,10 @@ add_action('wp_ajax_nopriv_rhac_display_results', 'rhac_ajax_display_results');
 
 function rhac_records_viewer($atts) {
     // error_log("rhac_records_viewer");
+    global $rhac_scripts_dump;
     extract( shortcode_atts( array('help_page_id' => ''), $atts ) );
     $viewer = RHAC_RecordsViewer::getInstance();
-    return $viewer->view($help_page_id);
+    return $rhac_scripts_dump . $viewer->view($help_page_id);
 }
 
 add_shortcode('records_viewer', 'rhac_records_viewer');

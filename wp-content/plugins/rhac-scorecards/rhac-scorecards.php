@@ -15,7 +15,7 @@ include_once RHAC_PLUGIN_DIR . 'toplevel.php';
 
 wp_enqueue_script('rhac_scorecards',
                   plugins_url('scorecard.js', __FILE__),
-                  array('jquery', 'jquery-ui-datepicker'));
+                  array('jquery', 'jquery-ui-datepicker', 'jquery-ui-accordion'));
 
 add_action('admin_menu', 'rhac_scorecards_hook');
 
@@ -39,10 +39,11 @@ function rhac_scorecards_toplevel() {
 }
 
 function rhac_admin_css() {
+    wp_enqueue_script('jquery-ui-accordion');
     wp_enqueue_style('rhac_scorecard_style',
                      plugins_url('scorecard.css', __FILE__));
     wp_enqueue_style('jquery_ui');
     wp_enqueue_style('jquery_ui_all');
     wp_enqueue_style('jquery_ui_core');
-    wp_enqueue_style('jquery_ui_datepicker');;
+    wp_enqueue_style('jquery_ui_datepicker');
 }

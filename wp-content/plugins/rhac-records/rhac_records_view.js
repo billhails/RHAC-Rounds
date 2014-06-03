@@ -215,79 +215,8 @@ function rhacRecordsExplorer() {
         year--;
     }
 
-    function Persist(prefix) {
-        var cache = localStorage.getItem(prefix);
-        if (cache === null) {
-            cache = {};
-        } else {
-            cache = JSON.parse(cache);
-        }
+    persistance = persist(version, '#rhac-re-quota-exceeded', '#rhac-re-old-browser');
 
-        function stash() {
-            try {
-                localStorage.setItem(prefix, JSON.stringify(cache));
-            } catch (e) {
-                if (e === QUOTA_EXCEEDED_ERR) {
-                    jQuery('#rhac-re-quota-exceeded').dialog( 'opem' );
-                }
-            }
-        }
-
-        this.set = function (key, value) {
-            cache[key] = value;
-            stash();
-        };
-
-        this.get = function (key) {
-            return cache[key];
-        };
-
-        this.has = function (key) {
-            return cache.hasOwnProperty(key);
-        };
-
-        this.data = function () {
-            return cache;
-        };
-
-        this.remove = function (key) {
-            delete cache[key];
-            stash();
-        };
-    }
-
-    function Semi_persist() {
-        var cache = {};
-
-        this.set = function (key, value) {
-            cache[key] = value;
-        };
-
-        this.get = function (key) {
-            return cache[key];
-        };
-
-        this.has = function (key) {
-            return cache.hasOwnProperty(key);
-        };
-
-        this.data = function () {
-            return cache;
-        };
-
-        this.remove = function (key) {
-            delete cache[key];
-        };
-    }
-
-
-    if (Storage === undefined) {
-        jQuery('#rhac-re-old-browser').dialog( "open" );
-        persistance = new Semi_persist();
-    }
-    else {
-        persistance = new Persist(version);
-    }
     function makeDate(lower, upper) {
         if (lower === '') {
             if (upper === '') { return ''; }
