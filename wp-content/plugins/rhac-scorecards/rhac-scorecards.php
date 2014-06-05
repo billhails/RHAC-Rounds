@@ -9,17 +9,16 @@ License: GPL
 */
 
 define('RHAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('RHAC_PLUGINS_ROOT_DIR',
+       preg_replace('/[^\/]+\/$/', '', RHAC_PLUGIN_DIR));
 
 include_once RHAC_PLUGIN_DIR . 'RHAC_Handicap.php';
 include_once RHAC_PLUGIN_DIR . 'toplevel.php';
-
-wp_enqueue_script('rhac_scorecards',
-                  plugins_url('scorecard.js', __FILE__),
-                  array('jquery', 'jquery-ui-datepicker', 'jquery-ui-accordion'));
+include_once RHAC_PLUGINS_ROOT_DIR . 'rhac-3p-deps/rhac-3p-deps.php';
 
 add_action('admin_menu', 'rhac_scorecards_hook');
 
-add_action('admin_enqueue_scripts', 'rhac_admin_css');
+add_action('admin_enqueue_scripts', 'rhac_admin_enqueue_scripts');
 
 function rhac_scorecards_hook() {
     add_users_page('Score Cards',
@@ -38,7 +37,13 @@ function rhac_scorecards_toplevel() {
     RHAC_Scorecards::getInstance()->topLevel();
 }
 
-function rhac_admin_css() {
+function rhac_admin_enqueue_scripts() {
+    rhac_register_3p_scripts();
+    rhac_register_3p_styles();
+    wp_enqueue_script('rhac_scorecards',
+                  plugins_url('scorecard.js', __FILE__),
+              array('jquery', 'jquery-ui-datepicker', 'jquery-ui-accordion'));
+
     wp_enqueue_script('jquery-ui-accordion');
     wp_enqueue_style('rhac_scorecard_style',
                      plugins_url('scorecard.css', __FILE__));
