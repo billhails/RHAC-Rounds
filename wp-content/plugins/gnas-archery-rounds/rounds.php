@@ -1011,8 +1011,12 @@ EOJS;
         return $this->getFamily()->getTableFooter();
     }
 
+    private function getOrder() {
+        return $this->getFamily()->getName() . '.' . $this->display_order;
+    }
+
     public function getTableRow() {
-        return '<tr><td>'
+        return '<tr><td data-order="' . $this->getOrder() . '">'
              . $this->getLink()
              . '</td>'
              . $this->getFamily()
