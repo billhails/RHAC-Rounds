@@ -855,6 +855,121 @@ EOHTML;
         return $this->debugQuery($query, $params) . $this->formatResults($rows);
     }
 
+    public function matchReport($date) {
+        $query = "* FROM scorecards where date = ? and reassessment = ?";
+        $params = array($date, 'N');
+        $rows = $this->select($query, $params);
+        $personal_bests = array();
+        $club_records = array();
+        $handicap_improvements = array();
+        $new_classifications = array();
+        $two_five_twos = array();
+        $text = array();
+        foreach ($rows as $row) {
+            if ($row['round'] == 'National') {
+                $row['round'] = ':National'; # for hover
+            }
+            if ($row['personal_best'] == 'Y') {
+                $personal_bests []= $row;
+            }
+            if ($row['club_record'] && $row['club_record'] != 'N') {
+                $club_records []= $row;
+            }
+            if ($row['handicap_improvement']) {
+                $handicap_improvements []= $row;
+            }
+            if (   $row['new_classification']
+                && $row['new_classification'] != 'archer'
+                && $row['new_classification'] != '(archer)') {
+                    $new_classifications []= $row;
+            }
+            if ($row['two_five_two'] != 'N'
+                && substr($row['two_five_two'], -1, 1) != '1') {
+                $two_five_twos []= $row;
+            }
+        }
+
+        if (count($personal_bests)) {
+            $text []= '<h2>Personal Bests</h2>';
+            $text []= '<ul>';
+            foreach ($personal_bests as $row) {
+                $text []= '<li>' . $row['archer'] . ' - '
+                        . $row['category'] . ' ' . $row['bow'] . ' - '
+                        . $row['round'] . '.</li>';
+            }
+            $text []= '<ul>';
+        }
+        if (count($handicap_improvements)) {
+            $text []= '<h2>Handicap Improvements</h2>';
+            $text []= '<ul>';
+            foreach ($handicap_improvements as $row) {
+                $text []= '<li>' . $row['archer'] . ' - '
+                        . $row['category'] . ' ' . $row['bow'] . ' - '
+                        . $row['handicap_improvement'] . '.</li>';
+            }
+            $text []= '<ul>';
+        }
+        if (count($club_records)) {
+            $text []= '<h2>Club Records</h2>';
+            $text []= '<ul>';
+            foreach ($club_records as $row) {
+                $text []= '<li>' . $row['archer'] . ' - '
+                        . $row['category'] . ' ' . $row['bow'] . ' - '
+                        . $row['round'] . '.</li>';
+            }
+            $text []= '<ul>';
+        }
+        if (count($two_five_twos)) {
+            $text []= '<h2>252 Awards</h2>';
+            $text []= '<ul>';
+            foreach ($two_five_twos as $row) {
+                $text []= '<li>' . $row['archer'] . ' - '
+                        . $row['category'] . ' ' . $row['bow'] . ' - '
+                        . $row['round'] . '.</li>';
+            }
+            $text []= '<ul>';
+        }
+        if (count($new_classifications)) {
+            $text []= '<h2>New Classifications</h2>';
+            $text []= '<ul>';
+            foreach ($new_classifications as $row) {
+                $classification =
+                    $this->mungeClassification($row['new_classification']);
+                $text []= '<li>' . $row['archer'] . ' - '
+                        . $row['category'] . ' ' . $row['bow'] . ' - '
+                        . $classification . '.</li>';
+            }
+            $text []= '<ul>';
+        }
+        return implode("\n", $text);
+    }
+
+    private function mungeClassification($classification) {
+        $ext = '';
+        $map = array(
+            'archer' => 'Archer',
+            'third' => 'Third Class',
+            'second' => 'Second Class',
+            'first' => 'First Class',
+            'bm' => 'Bowman',
+            'mbm' => 'Master Bowman',
+            'gmbm' => 'Grand Master Bowman',
+            'A' => 'A',
+            'B' => 'B',
+            'C' => 'C',
+            'D' => 'D',
+            'E' => 'E',
+            'F' => 'F',
+            'G' => 'G',
+            'H' => 'H',
+        );
+        if (substr($classification, 0, 1) == '(') {
+            $ext = ' (confirmed)';
+            $classification = substr($classification, 1, -1);
+        }
+        return $map[$classification] . $ext;
+    }
+
     private function debugQuery($query, $params) {
         return '';
         $text = "<pre>\n";

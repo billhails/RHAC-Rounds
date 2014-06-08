@@ -151,7 +151,7 @@ function rhacRecordsExplorer() {
     };
 
 
-    if (month >= 6) {
+    if (month >= 7) {
         predefined_reports["Indoor Scores " + String(year) + "-" + String(year + 1)] = {
             '.rhac-re-outdoor': ['N'],
             '#rhac-re-include-lapsed': [''],
@@ -161,7 +161,7 @@ function rhacRecordsExplorer() {
             '#rhac-re-bow': '',
             '.rhac-re-single-round': ['Y'],
             '#rhac-re-round': '',
-            '#rhac-re-seasons': String(year) + '/06/01-' + String(year + 1) + '/05/31',
+            '#rhac-re-seasons': String(year) + '/07/01-' + String(year + 1) + '/06/31',
             '#rhac-re-current-records': [''],
             '#rhac-re-old-records': [''],
             '#rhac-re-medals': [''],
@@ -202,7 +202,7 @@ function rhacRecordsExplorer() {
             '#rhac-re-bow': '',
             '.rhac-re-single-round': ['Y'],
             '#rhac-re-round': '',
-            '#rhac-re-seasons': String(year-1) + '/06/01-' + String(year) + '/05/31',
+            '#rhac-re-seasons': String(year-1) + '/07/01-' + String(year) + '/06/31',
             '#rhac-re-current-records': [''],
             '#rhac-re-old-records': [''],
             '#rhac-re-medals': [''],

@@ -521,3 +521,11 @@ function rhac_handicapImprovementIcon($atts) {
 }
 
 add_shortcode('handicap_improvement_icon', 'rhac_handicapImprovementIcon');
+
+function rhac_match_report($attrs) {
+    extract( shortcode_atts( array('date' => ''), $attrs ) );
+    $viewer = RHAC_RecordsViewer::getInstance();
+    return $viewer->matchReport($date);
+}
+
+add_shortcode('match_report', 'rhac_match_report');
