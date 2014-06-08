@@ -133,6 +133,10 @@ class RHAC_ReassesmentInserterLeaf {
                      'reassessment' => $reassessment);
     }
 
+    private function makeDelete($scorecard_id) {
+        return array('action' => 'delete', 'scorecard_id' => $scorecard_id);
+    }
+
     private function categoryAt($date) {
         return $this->age_helper->categoryAt($this->archer, $date);
     }
@@ -176,10 +180,10 @@ class RHAC_NextIndoorSeasonCalculator {
         $year = substr($date, 0, 4);
         $month = substr($date, 5, 2);
         $day = substr($date, 8, 2);
-        if ($month < 6) {
-            return sprintf('%04d/06/01', $year);
+        if ($month < 7) {
+            return sprintf('%04d/07/01', $year);
         }
-        return sprintf('%04d/06/01', $year + 1);
+        return sprintf('%04d/07/01', $year + 1);
     }
 }
 

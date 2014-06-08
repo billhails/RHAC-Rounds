@@ -1041,6 +1041,8 @@ class RHAC_Scorecards {
     }
 
     private function deleteReasessment($change) {
+        $this->exec("DELETE FROM scorecards WHERE scorecard_id = ?",
+                    array($change['scorecard_id']));
     }
 
     private function countTensFromTable($id) {
