@@ -30,7 +30,7 @@ class RHAC_PersonalBestAccumulatorLeaf extends RHAC_AccumulatorLeaf {
     private $unbeaten_records = array();
 
     public function accept($row) {
-        if ($row['reassessment'] != 'N') {
+        if ($this->isReassessment($row)) {
             return;
         }
         if ($row['score'] > $this->max) {
@@ -40,8 +40,12 @@ class RHAC_PersonalBestAccumulatorLeaf extends RHAC_AccumulatorLeaf {
             $this->handleEqualPB($row);
         }
         elseif ($row['personal_best'] != 'N') {
-            $this->handleInaccurateRecord($row);
+            $this->handleInaccuratePB($row);
         }
+    }
+
+    private function isReassessment($row) {
+        return $row['reassessment'] != 'N';
     }
 
     protected function keyToChange() {
