@@ -39,35 +39,55 @@ class RHAC_HandicapImprovementAccumulatorLeaf extends RHAC_AccumulatorLeaf {
 
     /*
      * order by date, handicap desc, score
-     * need new 'end_of_season text not null default "N"'
-     *  and those end of season records need a handicap of 101
-     *  so they show up before real scores.
      */
     public function accept($row) {
-        if ($row['reassessment'] == "age_group") {
+        if ($this->isAgeGroupReassessment($row)) {
             return;
-        } elseif ($row['reassessment'] == "end_of_season") {
-            if (count($this->handicaps_this_season) >= 3) {
-                $this->current_handicap = $this->averageBestThree();
-            }
-            $this->handicaps_this_season = array();
-            $this->noteHandicapChange($row);
+        } elseif ($this->isEndOfSeason($row)) {
+            $this->handleEndOfSeason($row);
+        } elseif ($this->scoreHasHandicapRanking($row)) {
+            $this->handleNormalScore($row);
         }
-        else {
-            if (isset($row['handicap_ranking'])) {
-                $this->handicaps_this_season []= $row['handicap_ranking'];
-                if (isset($this->current_handicap)) {
-                    $average = intval(ceil(($row['handicap_ranking'] + $this->current_handicap) / 2));
-                    if ($average < $this->current_handicap) {
-                        $this->noteHandicapChange($row, $average);
-                    }
-                } else {
-                    if (count($this->handicaps_this_season) == 3) {
-                        $this->noteHandicapChange($row, $this->averageBestThree());
-                    }
-                }
-            }
+    }
+
+    private function handleEndOfSeason($row) {
+        if (count($this->handicaps_this_season) >= 3) {
+            $this->current_handicap = $this->averageBestThree();
         }
+        $this->handicaps_this_season = array();
+        $this->noteHandicapChange($row);
+    }
+
+    private function handleNormalScore($row) {
+        $this->handicaps_this_season []= $row['handicap_ranking'];
+        if (isset($this->current_handicap)) {
+            $average = $this->averageWithCurrentHandicap($row);
+            if ($average < $this->current_handicap) {
+                $this->noteHandicapChange($row, $average);
+            } elseif (isset($row['handicap_improvement'])) {
+                $this->noteInaccurateHandicap($row);
+            }
+        } elseif (count($this->handicaps_this_season) == 3) {
+            $this->noteHandicapChange($row, $this->averageBestThree());
+        } elseif (isset($row['handicap_improvement'])) {
+            $this->noteInaccurateHandicap($row);
+        }
+    }
+
+    private function scoreHasHandicapRanking($row) {
+        return isset($row['handicap_ranking']);
+    }
+
+    private function isAgeGroupReassessment($row) {
+        return $row['reassessment'] == "age_group";
+    }
+
+    private function isEndOfSeason($row) {
+        return $row['reassessment'] == "end_of_season";
+    }
+
+    private function averageWithCurrentHandicap($row) {
+        return intval(ceil(($row['handicap_ranking'] + $this->current_handicap) / 2));
     }
 
     protected function keyToChange() {
@@ -80,6 +100,11 @@ class RHAC_HandicapImprovementAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         }
         $this->proposed_changes[$row['scorecard_id']] = $this->current_handicap;
         $this->current_db_values[$row['scorecard_id']] = $row['handicap_improvement'];
+    }
+
+    private function noteInaccurateHandicap($row) {
+        $this->current_db_values[$row['scorecard_id']] = $row['handicap_improvement'];
+        $this->proposed_changes[$row['scorecard_id']] = null;
     }
 
     private function averageBestThree() {

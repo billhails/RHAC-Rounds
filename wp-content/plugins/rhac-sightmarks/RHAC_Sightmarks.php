@@ -120,6 +120,10 @@ class RHAC_Sightmarks {
   <form>
   </div>
 
+  <div id="sightmarks-confirm-dialog" title="Change Sightmarks">
+    <p>You have unsaved changes. Are you sure you want to continue?</p>
+  </div>
+
 </div>
 EOHTML;
     }
