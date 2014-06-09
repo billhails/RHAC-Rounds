@@ -39,9 +39,6 @@ class RHAC_HandicapImprovementAccumulatorLeaf extends RHAC_AccumulatorLeaf {
 
     /*
      * order by date, handicap desc, score
-     * need new 'end_of_season text not null default "N"'
-     *  and those end of season records need a handicap of 101
-     *  so they show up before real scores.
      */
     public function accept($row) {
         if ($row['reassessment'] == "age_group") {
@@ -54,20 +51,28 @@ class RHAC_HandicapImprovementAccumulatorLeaf extends RHAC_AccumulatorLeaf {
             $this->noteHandicapChange($row);
         }
         else {
-            if (isset($row['handicap_ranking'])) {
+            if ($this->scoreHasHandicapRanking($row)) {
                 $this->handicaps_this_season []= $row['handicap_ranking'];
                 if (isset($this->current_handicap)) {
                     $average = intval(ceil(($row['handicap_ranking'] + $this->current_handicap) / 2));
                     if ($average < $this->current_handicap) {
                         $this->noteHandicapChange($row, $average);
+                    } elseif (isset($row['handicap_improvement'])) {
+                        $this->noteInaccurateHandicap($row);
                     }
                 } else {
                     if (count($this->handicaps_this_season) == 3) {
                         $this->noteHandicapChange($row, $this->averageBestThree());
+                    } elseif (isset($row['handicap_improvement'])) {
+                        $this->noteInaccurateHandicap($row);
                     }
                 }
             }
         }
+    }
+
+    private function scoreHasHandicapRanking($row) {
+        return isset($row['handicap_ranking']);
     }
 
     protected function keyToChange() {
@@ -80,6 +85,11 @@ class RHAC_HandicapImprovementAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         }
         $this->proposed_changes[$row['scorecard_id']] = $this->current_handicap;
         $this->current_db_values[$row['scorecard_id']] = $row['handicap_improvement'];
+    }
+
+    private function noteInaccurateHandicap($row) {
+        $this->current_db_values[$row['scorecard_id']] = $row['handicap_improvement'];
+        $this->proposed_changes[$row['scorecard_id']] = null;
     }
 
     private function averageBestThree() {
