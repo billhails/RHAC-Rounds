@@ -414,7 +414,7 @@ class RHAC_RecordsViewer {
     <select id="rhac-re-report" title="select a report to run">
     </select>
     <button type="button" title="run the selected report" class="rhac-re-button" id="rhac-re-run-report">Run Report</button>
-    <button type="button" title="edit the selected report" class="rhac-re-button" id="rhac-re-edit-report">Edit Report</button>
+    <button type="button" title="customize the selected report" class="rhac-re-button" id="rhac-re-edit-report">Customize Report</button>
     <a href="$help_page_url" target="_blank" class="rhac-re-help" title="see help (in a new window)">Help</a>
   </div>
   <div id="rhac-re-moreform" class="rhac-re">
@@ -705,14 +705,14 @@ EOHTML;
         $month_day = date('md', $time);
         $seasons = array();
         $seasons []= '<option value="-">Any Season</option>';
-        if ($month_day >= "0601") {
-            $seasons []= sprintf('<option value="%04d/06/01-%04d/05/31">%04d - %04d</option>',
+        if ($month_day >= "0701") {
+            $seasons []= sprintf('<option value="%04d/07/01-%04d/06/31">%04d - %04d</option>',
                                                             $year, $year + 1, $year, $year + 1);
         }
         while ($year >= 1996) {
             $seasons []= sprintf('<option value="%04d/01/01-%04d/12/31">%04d</option>',
                                                             $year, $year, $year);
-            $seasons []= sprintf('<option value="%04d/06/01-%04d/05/31">%04d - %04d</option>',
+            $seasons []= sprintf('<option value="%04d/07/01-%04d/06/31">%04d - %04d</option>',
                                                             $year - 1, $year, $year - 1, $year);
             $year--;
         }
@@ -738,12 +738,12 @@ EOHTML;
         $month_day = date('md', $time);
         $seasons = array();
         $seasons []= '<option value="-">Any Indoor Season</option>';
-        if ($month_day >= "0601") {
-            $seasons []= sprintf('<option value="%04d/06/01-%04d/05/31">%04d - %04d</option>',
+        if ($month_day >= "0701") {
+            $seasons []= sprintf('<option value="%04d/07/01-%04d/06/31">%04d - %04d</option>',
                                                             $year, $year + 1, $year, $year + 1);
         }
         while ($year >= 1996) {
-            $seasons []= sprintf('<option value="%04d/06/01-%04d/05/31">%04d - %04d</option>',
+            $seasons []= sprintf('<option value="%04d/07/01-%04d/06/31">%04d - %04d</option>',
                                                             $year - 1, $year, $year - 1, $year);
             $year--;
         }
@@ -897,7 +897,7 @@ EOHTML;
                         . $row['category'] . ' ' . $row['bow'] . ' - '
                         . $row['round'] . '.</li>';
             }
-            $text []= '<ul>';
+            $text []= '</ul>';
         }
         if (count($handicap_improvements)) {
             $text []= '<h2>Handicap Improvements</h2>';
@@ -907,7 +907,7 @@ EOHTML;
                         . $row['category'] . ' ' . $row['bow'] . ' - '
                         . $row['handicap_improvement'] . '.</li>';
             }
-            $text []= '<ul>';
+            $text []= '</ul>';
         }
         if (count($club_records)) {
             $text []= '<h2>Club Records</h2>';
@@ -917,7 +917,7 @@ EOHTML;
                         . $row['category'] . ' ' . $row['bow'] . ' - '
                         . $row['round'] . '.</li>';
             }
-            $text []= '<ul>';
+            $text []= '</ul>';
         }
         if (count($two_five_twos)) {
             $text []= '<h2>252 Awards</h2>';
@@ -927,7 +927,7 @@ EOHTML;
                         . $row['category'] . ' ' . $row['bow'] . ' - '
                         . $row['round'] . '.</li>';
             }
-            $text []= '<ul>';
+            $text []= '</ul>';
         }
         if (count($new_classifications)) {
             $text []= '<h2>New Classifications</h2>';
@@ -939,7 +939,7 @@ EOHTML;
                         . $row['category'] . ' ' . $row['bow'] . ' - '
                         . $classification . '.</li>';
             }
-            $text []= '<ul>';
+            $text []= '</ul>';
         }
         return implode("\n", $text);
     }
