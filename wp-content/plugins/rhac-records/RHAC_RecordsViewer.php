@@ -864,6 +864,14 @@ EOHTML;
         $handicap_improvements = array();
         $new_classifications = array();
         $two_five_twos = array();
+        $genders = array(
+            'M' => 'Gents',
+            'F' => 'Ladies',
+        );
+        $outdoors = array(
+            'Y' => 'outdoor',
+            'N' => 'indoor',
+        );
         $text = array();
         foreach ($rows as $row) {
             if ($row['round'] == 'National') {
@@ -894,8 +902,8 @@ EOHTML;
             $text []= '<ul>';
             foreach ($personal_bests as $row) {
                 $text []= '<li>' . $row['archer'] . ' - '
-                        . $row['category'] . ' ' . $row['bow'] . ' - '
-                        . $row['round'] . '.</li>';
+                        . $row['bow'] . ' - '
+                        . $row['round'] . '</li>';
             }
             $text []= '</ul>';
         }
@@ -904,8 +912,9 @@ EOHTML;
             $text []= '<ul>';
             foreach ($handicap_improvements as $row) {
                 $text []= '<li>' . $row['archer'] . ' - '
-                        . $row['category'] . ' ' . $row['bow'] . ' - '
-                        . $row['handicap_improvement'] . '.</li>';
+                        . $outdoors[$row['outdoor']] . ' '
+                        . $row['bow'] . ' - '
+                        . $row['handicap_improvement'] . '</li>';
             }
             $text []= '</ul>';
         }
@@ -914,8 +923,9 @@ EOHTML;
             $text []= '<ul>';
             foreach ($club_records as $row) {
                 $text []= '<li>' . $row['archer'] . ' - '
+                        . $genders[$row['gender']] . ' '
                         . $row['category'] . ' ' . $row['bow'] . ' - '
-                        . $row['round'] . '.</li>';
+                        . $row['round'] . '</li>';
             }
             $text []= '</ul>';
         }
@@ -924,8 +934,8 @@ EOHTML;
             $text []= '<ul>';
             foreach ($two_five_twos as $row) {
                 $text []= '<li>' . $row['archer'] . ' - '
-                        . $row['category'] . ' ' . $row['bow'] . ' - '
-                        . $row['round'] . '.</li>';
+                        . $row['bow'] . ' - '
+                        . $row['round'] . '</li>';
             }
             $text []= '</ul>';
         }
@@ -936,8 +946,9 @@ EOHTML;
                 $classification =
                     $this->mungeClassification($row['new_classification']);
                 $text []= '<li>' . $row['archer'] . ' - '
+                        . $genders[$row['gender']] . ' '
                         . $row['category'] . ' ' . $row['bow'] . ' - '
-                        . $classification . '.</li>';
+                        . $classification . '</li>';
             }
             $text []= '</ul>';
         }

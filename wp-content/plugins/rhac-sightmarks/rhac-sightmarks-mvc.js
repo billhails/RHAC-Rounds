@@ -218,30 +218,6 @@ jQuery(function() {
             var restoreButton = items.restoreButton.button();
             var title = items.title;
             var confirmed = false;
-            var confirmDialog = items.confirmDialog.dialog({
-                autoOpen: false,
-                modal: true,
-                buttons: {
-                    Confirm: function() {
-                        confirmed = true;
-                        jQuery(this).dialog("close");
-                    Cancel: function() {
-                        confirmed = false;
-                        jQuery(this).dialog("close");
-                    }
-                }
-            });
-            var currentName = '';
-
-            function confirmChange() {
-                if (model.isModified()) {
-                    confirmDialog.open();
-                    return confirmed;
-                }
-                else {
-                    return true;
-                }
-            }
 
             function updateTips( t ) {
                 tips.text( t )
@@ -270,11 +246,9 @@ jQuery(function() {
             }
 
             function removeFromStorage(name) {
-                if (confirmChange()) {
-                    storage.remove(name);
-                    populateSelect();
-                    model.setModified(false);
-                }
+                storage.remove(name);
+                populateSelect();
+                model.setModified(false);
             }
 
             function populateSelect(newName) {
@@ -293,7 +267,6 @@ jQuery(function() {
                         if (name == newName) {
                             html = html.concat('<option', selected,
                                 ' value="', name, '">', name, '</option>');
-                            currentName = name;
                         }
                         else {
                             html = html.concat('<option',
@@ -303,9 +276,6 @@ jQuery(function() {
                     else {
                         html = html.concat('<option', selected,
                             ' value="', name, '">', name, '</option>');
-                        if (selected.length > 0) {
-                            currentName = name;
-                        }
                         selected = '';
                     }
                 }
@@ -350,10 +320,6 @@ jQuery(function() {
             });
 
             select.change(function() {
-                if (!confirmChange()) {
-                    items.select.val(currentName);
-                    return;
-                }
                 var name = items.select.val();
                 console.log("select.change: " + name);
                 if (name && name.length > 0) {
@@ -365,7 +331,6 @@ jQuery(function() {
                     model.setItems([], '');
                     title.html('');
                 }
-                currentName = name;
                 model.setModified(false);
             });
 
