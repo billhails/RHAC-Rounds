@@ -19,7 +19,7 @@ function rhac_load_targets_deps() {
     rhac_register_3p_styles();
     wp_register_script('rhac_targets',
                        RHAC_TARGETS_URL . 'rhac-targets.js',
-                       array('jcanvas'));
+                       array('jcanvas', 'jquery-ui-button'));
     wp_enqueue_script('rhac_targets');
 }
 
@@ -28,5 +28,9 @@ add_action('wp_enqueue_scripts', 'rhac_load_targets_deps');
 add_shortcode('target_pictures', 'rhac_target_pictures');
 
 function rhac_target_pictures() {
-    return "<canvas width='600' height='1000' class='targets' style='border: 1px solid black;'></canvas>";
+    return <<<EOHTML
+<canvas width='600' height='1000' class='targets' style='border: 1px solid black;'></canvas>
+<br/>
+<button id="reset">Reset</button>
+EOHTML;
 }

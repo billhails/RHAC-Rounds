@@ -37,7 +37,7 @@ jQuery(function() {
             });
         });
         canvas.drawRect({
-            fillStyle: '#aaa',
+            fillStyle: '#eee',
             x: x,
             y: y + mainRadius + 8,
             width: 100,
@@ -62,34 +62,41 @@ jQuery(function() {
             dragGroups: [name]
         });
     }
-    var centerX = 300;
-    var centerY = 300;
-    var originalRadius = 100;
-    // 122cm in yards
-    var mainRadius = originalRadius;
-    [20, 30, 40, 50, 60, 80, 100].forEach(function(yards, index) {
-        var radius = mainRadius * 20.0 / yards;
-        var X = 110 + index * 70;
-        var Y = 20 + radius;
-        drawTarget(X, Y, radius, '122cm @ ' + yards + 'y');
-    });
+    function drawTargets() {
+        canvas.clearCanvas();
+        var centerX = 300;
+        var centerY = 300;
+        var originalRadius = 100;
+        // 122cm in yards
+        var mainRadius = originalRadius;
+        [20, 30, 40, 50, 60, 80, 100].forEach(function(yards, index) {
+            var radius = mainRadius * 20.0 / yards;
+            var X = 110 + index * 70;
+            var Y = 20 + radius;
+            drawTarget(X, Y, radius, '122cm @ ' + yards + 'y');
+        });
 
-    // 122cm in meters
-    var mainRadius = originalRadius * 0.94;
-    [20, 30, 40, 50, 60, 70, 90].forEach(function(meters, index) {
-        var radius = mainRadius * 20.0 / meters;
-        var X = 110 + index * 70;
-        var Y = 330 + radius;
-        drawTarget(X, Y, radius, '122cm @ ' + meters + 'm');
-    });
+        // 122cm in meters
+        var mainRadius = originalRadius * 0.94;
+        [20, 30, 40, 50, 60, 70, 90].forEach(function(meters, index) {
+            var radius = mainRadius * 20.0 / meters;
+            var X = 110 + index * 70;
+            var Y = 330 + radius;
+            drawTarget(X, Y, radius, '122cm @ ' + meters + 'm');
+        });
 
-    // 80cm in meters
-    mainRadius = originalRadius * (80 / 122) * 2 * 0.94;
-    [10, 15, 20, 30, 40, 50 ].forEach(function(meters, index) {
-        var radius = mainRadius * 10.0 / meters;
-        var X = 150 + index * 70;
-        var Y = 590 + radius;
-        drawTarget(X, Y, radius, '80cm @ ' + meters + 'm');
-    });
+        // 80cm in meters
+        mainRadius = originalRadius * (80 / 122) * 2 * 0.94;
+        [10, 15, 20, 30, 40, 50 ].forEach(function(meters, index) {
+            var radius = mainRadius * 10.0 / meters;
+            var X = 150 + index * 70;
+            var Y = 590 + radius;
+            drawTarget(X, Y, radius, '80cm @ ' + meters + 'm');
+        });
+    }
+
+    jQuery('#reset').button().click(drawTargets);
+
+    drawTargets();
 
 });
