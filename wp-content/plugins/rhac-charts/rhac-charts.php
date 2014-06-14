@@ -9,10 +9,16 @@ License: GPL
 */
 
 define('RHAC_CHARTS_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('RHAC_CHARTS_ROOT', preg_replace('/[^\/]+\/$/', '', RHAC_CHARTS_PLUGIN_DIR));
+
+include_once RHAC_CHARTS_ROOT . 'rhac-3p-deps/rhac-3p-deps.php';
+
 
 add_action( 'wp_enqueue_scripts', 'register_rhac_charts');
 
 function register_rhac_charts() {
+    rhac_register_3p_scripts();
+    rhac_register_3p_styles();
     wp_enqueue_script('chart_js');
 }
 

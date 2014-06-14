@@ -9,10 +9,10 @@ License: GPL
 */
 
 define('RHAC_SCORECARD_VIEW_DIR', plugin_dir_path(__FILE__));
-define('RHAC_PLUGINS_ROOT',
+define('RHAC_SCORECARD_VIEW_ROOT',
        preg_replace('/[^\/]+\/$/', '', RHAC_SCORECARD_VIEW_DIR));
-define('RHAC_SCORECARD_DIR', RHAC_PLUGINS_ROOT . 'rhac-scorecards/');
-define('RHAC_ROUNDS_DIR', RHAC_PLUGINS_ROOT . 'gnas-archery-rounds/');
+define('RHAC_SCORECARD_DIR', RHAC_SCORECARD_VIEW_ROOT . 'rhac-scorecards/');
+define('RHAC_ROUNDS_DIR', RHAC_SCORECARD_VIEW_ROOT . 'gnas-archery-rounds/');
 
 include_once RHAC_ROUNDS_DIR . 'rounds.php';
 
