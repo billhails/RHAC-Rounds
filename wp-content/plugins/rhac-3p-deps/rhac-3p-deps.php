@@ -23,6 +23,7 @@ function rhac_register_3p_scripts() {
         wp_register_script('chart_js', RHAC_3P_PLUGIN_URL_ROOT . 'Chart.min.js');
         wp_register_script('rhac_persist', RHAC_3P_PLUGIN_URL_ROOT . 'persist.js');
         wp_register_script('rhac_datatables_tabletools', RHAC_3P_PLUGIN_URL_ROOT . 'dataTables.tableTools.min.js', array('rhac_datatables'));
+        wp_register_script('jcanvas', RHAC_3P_PLUGIN_URL_ROOT . 'jcanvas.min.js', array('jquery'));
         $rhac_3p_scripts_loaded = true;
     }
 }
