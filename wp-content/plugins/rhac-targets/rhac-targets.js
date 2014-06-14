@@ -63,9 +63,8 @@ jQuery(function() {
         });
     }
     function drawTargets() {
-        canvas.clearCanvas();
-        var centerX = 300;
-        var centerY = 300;
+        canvas.removeLayers();
+        canvas.drawLayers();
         var originalRadius = 100;
         // 122cm in yards
         var mainRadius = originalRadius;
@@ -93,9 +92,54 @@ jQuery(function() {
             var Y = 590 + radius;
             drawTarget(X, Y, radius, '80cm @ ' + meters + 'm');
         });
+
+        // sight
+        canvas.drawArc({
+            layer: true,
+            groups: ['sight'],
+            name: 'ring',
+            fillStyle: 'transparent',
+            dragGroups: ['sight'],
+            draggable: true,
+            strokeStyle: 'green',
+            strokeWidth: 10,
+            x: 150,
+            y: 900,
+            radius: 20,
+        })
+        .drawArc({
+            layer: true,
+            groups: ['sight'],
+            name: 'pin',
+            dragGroups: ['sight'],
+            draggable: true,
+            fillColor: 'green',
+            fillStyle: 'green',
+            strokeWidth: 0,
+            x: 150,
+            y: 900,
+            radius: 4,
+        });
     }
 
-    jQuery('#reset').button().click(drawTargets);
+    var slider = jQuery('#slider-range').slider({
+        range: true,
+        min: 0,
+        max: 50,
+        values: [4, 20],
+        slide: function( event, ui ) {
+            canvas.setLayer('pin', {
+                radius: ui.values[0]
+            }).setLayer('ring', {
+                radius: ui.values[1]
+            }).drawLayers();
+        }
+    });
+
+    jQuery('#reset').button().click(function() {
+        drawTargets();
+        slider.slider("option", "values", [4, 20 ]);
+    });
 
     drawTargets();
 

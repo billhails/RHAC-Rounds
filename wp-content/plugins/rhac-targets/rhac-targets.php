@@ -19,7 +19,8 @@ function rhac_load_targets_deps() {
     rhac_register_3p_styles();
     wp_register_script('rhac_targets',
                        RHAC_TARGETS_URL . 'rhac-targets.js',
-                       array('jcanvas', 'jquery-ui-button'));
+                       array('jcanvas', 'jquery-ui-button',
+                                        'jquery-ui-slider'));
     wp_enqueue_script('rhac_targets');
 }
 
@@ -30,7 +31,7 @@ add_shortcode('target_pictures', 'rhac_target_pictures');
 function rhac_target_pictures() {
     return <<<EOHTML
 <canvas width='600' height='1000' class='targets' style='border: 1px solid black;'></canvas>
-<br/>
+<div id="slider-range"></div>
 <button id="reset">Reset</button>
 EOHTML;
 }
