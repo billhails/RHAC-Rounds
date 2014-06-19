@@ -47,7 +47,8 @@ function rhac_re_load_deps() {
     wp_enqueue_style('jquery-datatables-colvis-ui');
     wp_enqueue_script('rhac_records_view',
                       plugins_url('rhac_records_view.js', __FILE__),
-                      array('jquery-ui-button', 'jquery-ui-datepicker', 'jquery-ui-tooltip', 'jquery-ui-dialog', 'rhac_persist'));
+                      array('jquery-ui-button', 'jquery-ui-datepicker', 'jquery-ui-tooltip',
+                           'jquery-ui-dialog', 'rhac_persist'));
 
  
     wp_localize_script('rhac_records_view', 'rhacRoundExplorerData', rhac_get_data());
