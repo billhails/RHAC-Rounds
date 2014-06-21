@@ -2,7 +2,7 @@
 function rhacRecordsExplorer() {
     'use strict';
 
-    var version = "rhac-records-v1.0", persistance;
+    var version = "rhac-records-v1.0", persistance, tableStatePersistance, currentTableState;
 
     var predefined_reports = {
 
@@ -109,6 +109,7 @@ function rhacRecordsExplorer() {
     };
 
     var all_reports = {};
+    var all_states = {};
 
     var d = new Date();
     var year = d.getFullYear();
@@ -216,6 +217,8 @@ function rhacRecordsExplorer() {
     }
 
     persistance = persist(version, '#rhac-re-quota-exceeded', '#rhac-re-old-browser');
+    tableStatePersistance = persist(version.concat("-state"), '#rhac-re-quota-exceeded', '#rhac-re-old-browser');
+
 
     function makeDate(lower, upper) {
         if (lower === '') {
@@ -268,7 +271,16 @@ function rhacRecordsExplorer() {
                     {
                         "columnDefs": [
                             { "orderable": false, "targets": 8 }
-                        ]
+                        ],
+                        stateSave: true,
+                        stateSaveCallback: function(settings, data) {
+                            // console.log("stateSaveCallback setting current table state to %o", data);
+                            currentTableState = data;
+                        },
+                        stateLoadCallback: function(settings) {
+                            // console.log("stateLoadCallback returning current table state %o", currentTableState);
+                            return currentTableState;
+                        }
                     }
                 );
                 var colvis = new jQuery.fn.dataTable.ColVis( table );
@@ -338,8 +350,10 @@ function rhacRecordsExplorer() {
     function populateReportMenu() {
         var names = [];
         var values = {};
+        var states = {};
         var name;
         var cache = persistance.data();
+        var stateCache = tableStatePersistance.data();
         var html = '';
         var index;
         for (name in predefined_reports) {
@@ -349,6 +363,10 @@ function rhacRecordsExplorer() {
         for (name in cache) {
             values[name] = cache[name];
             names.push(name);
+        }
+        for (name in stateCache) {
+            // console.log("populateReportMenu set all_states[%s] = %o", name, all_states[name]);
+            all_states[name] = stateCache[name];
         }
         names.sort();
         for (index in names) {
@@ -389,6 +407,8 @@ function rhacRecordsExplorer() {
     function do_saveReport(report_name) {
         var report_data = getCurrentReportSettings();
         persistance.set(report_name, report_data);
+        // console.log("do_saveReport persisting table state for [%s] as %o", report_name, currentTableState);
+        tableStatePersistance.set(report_name, currentTableState);
         populateReportMenu();
         jQuery('#rhac-re-report').val(report_name);
         jQuery('#rhac-re-report').change();
@@ -477,6 +497,8 @@ function rhacRecordsExplorer() {
     function setForm() {
         var name = jQuery('#rhac-re-report').val();
         var report = all_reports[name];
+        currentTableState = all_states[name];
+        // console.log("setForm setting currentTableState from all_states[%s] to %o", name, currentTableState);
         var selector;
         for (selector in report) {
             jQuery(selector).val(report[selector]);
@@ -518,6 +540,7 @@ function rhacRecordsExplorer() {
                 // this is horrible
                 var report_name = jQuery(this).find('span.rhac-re-report-name').html();
                 persistance.remove(report_name);
+                tableStatePersistance.remove(report_name);
                 populateReportMenu();
                 dialog_param('#rhac-re-confirm-deleted', report_name);
             },
