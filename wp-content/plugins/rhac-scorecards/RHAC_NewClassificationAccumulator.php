@@ -110,6 +110,12 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         }
         else {
             $this->debug("row is normal score");
+            if ($row->isGuest()) {
+                if ($row->newClassification()) {
+                    $this->noteClassificationWrong($row);
+                }
+                return;
+            }
             $classification = $row->classification();
             if ($new_classification = $this->addAndReport($classification, $row->date())) {
                 $this->debug("saw three '$new_classification' classifications");
@@ -247,6 +253,10 @@ class RHAC_NewClassificationAccumulator_Row {
 
     public function isEndOfSeasonReassessment() {
         return ($this->row['reassessment'] == "end_of_season");
+    }
+
+    public function isGuest() {
+        return ($this->row['guest'] == "Y");
     }
 
     public function date() {

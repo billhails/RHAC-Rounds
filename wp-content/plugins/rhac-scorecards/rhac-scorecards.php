@@ -42,7 +42,10 @@ function rhac_admin_enqueue_scripts() {
     rhac_register_3p_styles();
     wp_enqueue_script('rhac_scorecards',
                   plugins_url('scorecard.js', __FILE__),
-              array('jquery', 'jquery-ui-datepicker', 'jquery-ui-accordion'));
+              array('jquery',
+                    'jquery-ui-datepicker',
+                    'jquery-ui-tooltip',
+                    'jquery-ui-accordion'));
 
     wp_enqueue_script('jquery-ui-accordion');
     wp_enqueue_style('rhac_scorecard_style',

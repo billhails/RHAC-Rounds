@@ -70,6 +70,9 @@ class RHAC_ReassesmentInserterLeaf {
     }
 
     private function suggestReasessments($row) {
+        if ($row['guest'] == 'Y') {
+            return;
+        }
         $this->end_of_season_suggestions[$this->nextSeason($row['date'])] = 1;
         if ($row['category'] != 'adult') {
             $this->age_change_suggestions[$this->nextAgeChange($row['date'])] = 1;

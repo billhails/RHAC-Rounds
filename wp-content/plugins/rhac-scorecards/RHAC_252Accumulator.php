@@ -59,7 +59,8 @@ class RHAC_252AccumulatorLeaf extends RHAC_AccumulatorLeaf {
         $bow = $row['bow'];
         $round = $row['round'];
         $score = $row['score'];
-        if ($this->belowRequiredScore($bow, $round, $score)) {
+        $guest = $row['guest'];
+        if ($guest == "Y" || $this->belowRequiredScore($bow, $round, $score)) {
             if ($row['two_five_two'] != "N") {
                 $this->handleWrong($row);
             }

@@ -59,6 +59,12 @@ class RHAC_HandicapImprovementAccumulatorLeaf extends RHAC_AccumulatorLeaf {
     }
 
     private function handleNormalScore($row) {
+        if ($row['guest'] == 'Y') {
+            if (isset($row['handicap_improvement'])) {
+                $this->noteInaccurateHandicap($row);
+            }
+            return;
+        }
         $this->handicaps_this_season []= $row['handicap_ranking'];
         if (isset($this->current_handicap)) {
             $average = $this->averageWithCurrentHandicap($row);

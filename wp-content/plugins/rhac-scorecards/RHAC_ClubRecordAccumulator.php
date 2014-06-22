@@ -30,7 +30,12 @@ class RHAC_ClubRecordAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         if ($row['reassessment'] != 'N') {
             return;
         }
-        if ($row['score'] > $this->max) {
+        if ($row['guest'] == "Y") {
+            if  ($row['club_record'] != 'N') {
+                $this->handleInaccurateRecord($row);
+            }
+        }
+        elseif ($row['score'] > $this->max) {
             $this->handleNewRecord($row);
         }
         elseif ($row['score'] == $this->max) {

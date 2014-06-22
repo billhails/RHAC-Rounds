@@ -245,7 +245,7 @@ class RHAC_Scorecards {
             $this->addVenue($_POST['venue']);
             $this->homePage();
         } elseif (isset($_POST['add-archer'])) {
-            $this->addArcher($_POST['archer'], $_POST['dob'], $_POST['gender'], $_POST['archived']);
+            $this->addArcher($_POST['archer'], $_POST['dob'], $_POST['gender'], $_POST['guest'], $_POST['archived']);
             $this->homePage();
         } elseif (isset($_POST['rebuild-round-handicaps'])) {
             $this->rebuildRoundHandicaps();
@@ -258,6 +258,9 @@ class RHAC_Scorecards {
             $this->homePage();
         } elseif (isset($_POST['recalculate-genders'])) {
             $this->reCalculateGenders();
+            $this->homePage();
+        } elseif (isset($_POST['recalculate-guest-status'])) {
+            $this->reCalculateGuestStatus();
             $this->homePage();
         } elseif (isset($_POST['recalculate-classifications'])) {
             $this->reCalculateClassifications();
@@ -305,10 +308,10 @@ class RHAC_Scorecards {
         }
     }
 
-    private function addArcher($archer, $dob, $gender, $archived) {
-        if ($archer && preg_match('#^\d\d\d\d/\d\d/\d\d$#', $dob) && $gender && $archived) {
-            $this->exec("INSERT INTO archer(name, date_of_birth, gender, archived) VALUES(?, ?, ?, ?)",
-                        array($archer, $dob, $gender, $archived));
+    private function addArcher($archer, $dob, $gender, $guest, $archived) {
+        if ($archer && preg_match('#^\d\d\d\d/\d\d/\d\d$#', $dob) && $gender && $guest && $archived) {
+            $this->exec("INSERT INTO archer(name, date_of_birth, gender, guest, archived) VALUES(?, ?, ?, ?, ?)",
+                        array($archer, $dob, $gender, $guest, $archived));
             echo "<p>Archer $archer added</p>";
         }
         else {
@@ -384,6 +387,7 @@ class RHAC_Scorecards {
         $id = $_POST['scorecard-id'];
         $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
         $gender = $this->getGender($_POST['archer']);
+        $guest = $this->getGuest($_POST['archer']);
         $date = $this->dateToStoredFormat($_POST['date']);
         $category = $this->categoryAt($_POST['archer'], $date);
         $classification = $this->getClassification($_POST['round'], $gender, $category,
@@ -400,6 +404,7 @@ class RHAC_Scorecards {
         $tens = $this->countTens();
         $params = array(
             $_POST['archer'],
+            $guest,
             $_POST['venue_id'],
             $date,
             $_POST['round'],
@@ -423,6 +428,7 @@ class RHAC_Scorecards {
         $this->pdo->beginTransaction();
         $this->exec("UPDATE scorecards"
                  . " SET archer = ?,"
+                 . " guest = ?,"
                  . " venue_id = ?,"
                  . " date = ?,"
                  . " round = ?,"
@@ -453,6 +459,7 @@ class RHAC_Scorecards {
     private function insert() {
         $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
         $gender = $this->getGender($_POST['archer']);
+        $guest = $this->getGuest($_POST['archer']);
         $date = $this->dateToStoredFormat($_POST['date']);
         $category = $this->categoryAt($_POST['archer'], $date);
         $classification = $this->getClassification($_POST['round'], $gender, $category,
@@ -470,10 +477,11 @@ class RHAC_Scorecards {
         $this->pdo->beginTransaction();
         // echo '<p>insert() inside transaction</p>';
         $status = $this->exec("INSERT INTO scorecards"
-                 . "(archer, venue_id, date, round, bow, hits, xs, golds, score, medal, has_ends, handicap_ranking, "
+                 . "(archer, guest, venue_id, date, round, bow, hits, xs, golds, score, medal, has_ends, handicap_ranking, "
                  . "gender, category, classification, next_age_group_classification, outdoor, tens)"
-                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 . " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                  array($_POST['archer'],
+                       $guest,
                        $_POST['venue_id'],
                        $date,
                        $_POST['round'],
@@ -837,6 +845,11 @@ class RHAC_Scorecards {
                     array($gender, $scorecard_id));
     }
 
+    private function updateGuestStatus($scorecard_id, $guest) {
+        $this->exec("UPDATE scorecards SET guest = ? WHERE scorecard_id = ?",
+                    array($guest, $scorecard_id));
+    }
+
     private function updateClassification($scorecard_id, $classification) {
         $this->exec("UPDATE scorecards SET classification = ? WHERE scorecard_id = ?",
                     array($classification, $scorecard_id));
@@ -888,6 +901,14 @@ class RHAC_Scorecards {
         foreach ($scorecards as $scorecard) {
             $gender = $this->getGender($scorecard['archer']);
             $this->updateGender($scorecard['scorecard_id'], $gender);
+        }
+    }
+
+    private function reCalculateGuestStatus() {
+        $scorecards = $this->getAllScoreCards();
+        foreach ($scorecards as $scorecard) {
+            $guest = $this->getGuest($scorecard['archer']);
+            $this->updateGuestStatus($scorecard['scorecard_id'], $guest);
         }
     }
 
@@ -1187,6 +1208,11 @@ class RHAC_Scorecards {
         return $archer_map[$archer]['gender'];
     }
 
+    private function getGuest($archer) {
+        $archer_map = $this->getArcherMap();
+        return $archer_map[$archer]['guest'];
+    }
+
     private function ageAt($archer, $date_string) {
         $dob_string = $this->getDoB($archer);
         $dob = $this->unixdate($dob_string);
@@ -1283,10 +1309,10 @@ class RHAC_Scorecards {
         $text []= '<input type="hidden" name="page" value="'
                     . $_GET[page] . '"/>';
         $text []= '<p>';
-        $text []= '<input type="submit" name="edit-scorecard" value="New Scorecard" />';
+        $text []= '<input type="submit" name="edit-scorecard" value="New Scorecard" title="enter new scorecards"/>';
         $text []= '</p>';
         $text []= '<p>';
-        $text []= '<input type="submit" name="edit-score" value="New Score" />';
+        $text []= '<input type="submit" name="edit-score" value="New Score" title="enter new scores (when you don\'t have the scorecard)"/>';
         $text []= '</p>';
         $text []= '</form>';
         return implode($text);
@@ -1296,7 +1322,7 @@ class RHAC_Scorecards {
         $text = array();
         $text []= '<form method="post" action="">';
 
-        $text []= '<label for="archer">Archer:</label>&nbsp;';
+        $text []= '<label for="archer" title="add a new archer">Archer:</label>&nbsp;';
         $text []= '<input type="text" name="archer"/>';
 
         $text []= '&nbsp;<label for="dob">DoB:&nbsp;</label>&nbsp;';
@@ -1305,6 +1331,10 @@ class RHAC_Scorecards {
         $text []= '&nbsp;<label for="gender">Gender:</label>&nbsp;';
         $text []= '<input type="radio" name="gender" checked="1" value="M">&nbsp;M&nbsp;</input>&nbsp;';
         $text []= '<input type="radio" name="gender" value="F">&nbsp;F&nbsp;</input>&nbsp;';
+
+        $text []= '&nbsp;<label for="guest">Guest:</label>&nbsp;';
+        $text []= '<input type="radio" name="guest" value="Y">&nbsp;Y&nbsp;</input>&nbsp;';
+        $text []= '<input type="radio" name="guest" checked="1" value="N">&nbsp;N&nbsp;</input>&nbsp;';
 
         $text []= '&nbsp;<label for="archived">Archived:</label>&nbsp;';
         $text []= '<input type="radio" name="archived" value="Y">&nbsp;Y&nbsp;</input>&nbsp;';
@@ -1324,7 +1354,7 @@ class RHAC_Scorecards {
         $text []= '<label for="venue">Venue:</label>&nbsp;';
         $text []= '<input type="text" name="venue"/>';
 
-        $text []= '&nbsp;<input type="submit" name="add-venue" value="Add Venue"/>';
+        $text []= '&nbsp;<input type="submit" name="add-venue" value="Add Venue" title="create a new venue"/>';
 
         $text []= '</form>';
         return implode($text);
@@ -1334,7 +1364,7 @@ class RHAC_Scorecards {
         $text = array();
         $text []= '<form method="post" action="">';
         $text []= $this->archersAsSelect('archer', true);
-        $text []= '<input type="submit" name="delete-archer" value="Delete Archer"/>';
+        $text []= '<input type="submit" name="delete-archer" value="Delete Archer" title="be careful"/>';
         $text []= '</form>';
         return implode($text);
     }
@@ -1346,27 +1376,28 @@ class RHAC_Scorecards {
         $text []= $this->archersAsSelect("from-archer", true);
         $text []= '<label for="to-archer">To</label>';
         $text []= $this->archersAsSelect("to-archer", true);
-        $text []= '<input type="submit" name="merge-archers" value="Merge Archers"/>';
+        $text []= '<input type="submit" name="merge-archers" value="Merge Archers" title="move all of the \'From\' archer\'s scores to the \'To\' archer and remove the \'From\' archer"/>';
         $text []= '</form>';
         return implode($text);
     }
 
     private function rebuildRoundHandicapsForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="rebuild-round-handicaps" action="">
-<input type="submit" name="rebuild-round-handicaps" value="Rebuild All Handicap Tables"/>
+<input type="submit" name="rebuild-round-handicaps" value="Rebuild All Handicap Tables"
+title="You only need do this if a new round has been added or a round definition changed"/>
 </form>
-You only need do this if a new round has been added or a round definition changed.
 </p>
 EOFORM;
     }
 
     private function reCalculateHandicapsForScoresForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="recalculate-score-handicaps" action="">
-<input type="submit" name="recalculate-score-handicaps" value="Recalculate All Score Handicaps"/>
+<input type="submit" name="recalculate-score-handicaps" value="Recalculate All Score Handicaps"
+title="only necessary if a round had the wrong handicaps and has been fixed"/>
 </form>
 </p>
 EOFORM;
@@ -1374,9 +1405,10 @@ EOFORM;
 
     private function reCalculateAgeGroupsForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="recalculate-age-groups" action="">
-<input type="submit" name="recalculate-age-groups" value="Recalculate All Age Groups"/>
+<input type="submit" name="recalculate-age-groups" value="Recalculate All Age Groups"
+title="only needed if you have corrected the age of an archer"/>
 </form>
 </p>
 EOFORM;
@@ -1384,9 +1416,21 @@ EOFORM;
 
     private function reCalculateGendersForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="recalculate-genders" action="">
-<input type="submit" name="recalculate-genders" value="Recalculate All Genders"/>
+<input type="submit" name="recalculate-genders" value="Recalculate All Genders"
+title="you only need to do this if you've corrected the gender of an archer with score cards"/>
+</form>
+</p>
+EOFORM;
+    }
+
+    private function reCalculateGuestStatusForm() {
+        return <<<EOFORM
+<p>
+<form method="post" id="recalculate-guest-status" action="">
+<input type="submit" name="recalculate-guest-status" value="Recalculate All Guest Statuses"
+title="you only need to do this if you've changed the guest status of an archer with score cards"/>
 </form>
 </p>
 EOFORM;
@@ -1394,9 +1438,10 @@ EOFORM;
 
     private function reCalculateClassificationsForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="recalculate-classifications" action="">
-<input type="submit" name="recalculate-classifications" value="Recalculate All Classifications"/>
+<input type="submit" name="recalculate-classifications" value="Recalculate All Classifications"
+title="only needed if a score had the wrong classification in the GNAS tables and has been corrected"/>
 </form>
 </p>
 EOFORM;
@@ -1404,9 +1449,10 @@ EOFORM;
 
     private function reCalculateOutdoorForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="recalculate-outdoor" action="">
-<input type="submit" name="recalculate-outdoor" value="Reassign Outdoor and Indoor Rounds"/>
+<input type="submit" name="recalculate-outdoor" value="Reassign Outdoor and Indoor Rounds"
+title="this would only be necessary if a round was wrongly designated indoor/outdoor and then fixed"/>
 </form>
 </p>
 EOFORM;
@@ -1414,9 +1460,10 @@ EOFORM;
 
     private function reCalculateTensForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="recalculate-tens" action="">
-<input type="submit" name="recalculate-tens" value="Recount all Tens"/>
+<input type="submit" name="recalculate-tens" value="Recount all Tens"
+title="probably useless now"/>
 </form>
 </p>
 EOFORM;
@@ -1424,9 +1471,10 @@ EOFORM;
 
     private function reCalculateRecordsForm() {
         return <<<EOFORM
-</p>
+<p>
 <form method="post" id="recalculate-records" action="">
-<input type="submit" name="recalculate-records" value="Recalculate Club Records"/>
+<input type="submit" name="recalculate-records" value="Recalculate Club Records"
+title="run this after entering a batch of scorecards"/>
 </form>
 </p>
 EOFORM;
@@ -1436,36 +1484,47 @@ EOFORM;
         $text = array();
         $text []= '<h1>Score Cards</h1>';
         $text []= '<div id="rhac-admin-accordion">';
-        $text []= '<h3>Scorecards</h3><div>';
+        $text []= '<h3 title="enter new scorecards and scores">Scorecards</h3><div>';
         $text []= $this->newScorecardForm();
         $text []= $this->reCalculateRecordsForm();
         $text []= "</div>";
-        $text []= '<h3>Search</h3><div>';
+        $text []= '<h3 title="search for scores and scorecards to edit">Search</h3><div>';
         $text []= $this->searchForm();
-        $text []= $this->twoFiveTwoLink();
         $text []= "</div>";
-        $text []= '<h3>Data</h3><div>';
+        $text []= '<h3 title="manage archers and venues">Data</h3><div>';
         $text []= $this->newArcherForm();
         $text []= $this->deleteArcherForm();
         $text []= $this->mergeArcherForm();
         $text []= $this->NewVenueForm();
         $text []= "</div>";
-        $text []= '<h3>Admin</h3><div>';
+        $text []= '<h3 title="manage saved data (you shouldn\'t need any of this very often)">Admin</h3><div>';
+        $text []= <<<EODESC
+<div style="max-width: 50em;">
+<p>Most of these actions were added to fix problems in the data due to bugs in the system while
+it was being developed, and which are now fixed.
+However some of the actions may still be useful, and none of them do any harm.</p>
+<p>For example if you've got the gender of an archer wrong, and entered score cards
+for them, you'd need
+to create a new temporary archer, merge the old archer to the temp one, re-create the old
+archer with the right gender then merge the temp archer to the fixed archer with the right gender.</p>
+<p>However that would still leave the categories of the original scorecards wrong, so you can run the
+"Recalculate All Genders" action to re-calculate the categories of all of the score sheets.</p>
+<p>The same argument applies for "Recalculate all Age Groups," and if you change the guest status of
+an archer you'll need to run the "Recalculate Guest Status" action for that to be reflected in their
+current score cards.</p>
+</div>
+EODESC;
         $text []= $this->reCalculateGendersForm();
+        $text []= $this->reCalculateGuestStatusForm();
         $text []= $this->reCalculateAgeGroupsForm();
         $text []= $this->reCalculateHandicapsForScoresForm();
         $text []= $this->reCalculateClassificationsForm();
         $text []= $this->reCalculateOutdoorForm();
-        $text []= $this->reCalculateTensForm();
         $text []= $this->rebuildRoundHandicapsForm();
         $text []= "<a href='" . $this->homeurl . 'scorecard.db' ."'>Download a backup</a> (click right and save as...)";
         $text []= "</div>";
         $text []= "</div>";
         return implode($text);
-    }
-
-    private function twoFiveTwoLink() {
-        return "<a href='" . $this->curPageURL() . "&two-five-two=y'>252 Results</a>";
     }
 
     private function curPageURL() {
