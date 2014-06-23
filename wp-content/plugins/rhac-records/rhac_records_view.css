@@ -38,6 +38,10 @@ span.h-class {
     border-radius: 8px;
 }
 
+#rhac-re-link {
+    width: 90%;
+}
+
 div.scorecard-table {
     padding-left: 12em;
     padding-right: 12em;

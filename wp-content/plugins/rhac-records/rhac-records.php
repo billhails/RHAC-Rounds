@@ -72,6 +72,14 @@ function rhac_ajax_display_results() {
 add_action('wp_ajax_rhac_display_results', 'rhac_ajax_display_results');
 add_action('wp_ajax_nopriv_rhac_display_results', 'rhac_ajax_display_results');
 
+function rhac_ajax_get_tinyurl() {
+    echo file_get_contents("http://tinyurl.com/api-create.php?url=" . $_GET['url']);
+    exit;
+}
+
+add_action('wp_ajax_rhac_get_tinyurl', 'rhac_ajax_get_tinyurl');
+add_action('wp_ajax_nopriv_rhac_get_tinyurl', 'rhac_ajax_get_tinyurl');
+
 function rhac_records_viewer($atts) {
     // error_log("rhac_records_viewer");
     global $rhac_scripts_dump;

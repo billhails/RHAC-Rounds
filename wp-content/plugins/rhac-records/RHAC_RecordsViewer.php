@@ -495,21 +495,30 @@ $outdoor_seasons
       <div class="rhac-re-section">
         <label class="rhac-re-label" title="limit the search to scores with any of these attributes">Limit to</label>
         <div class="rhac-re-checklist">
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-current-records" value="Y" name="current-records"/><label for="rhac-re-current-records">Current Records</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-current-records"
+          value="Y" name="current-records"/><label for="rhac-re-current-records">Current Records</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-old-records" value="Y" name="old-records"/><label for="rhac-re-old-records" >Old Records</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-old-records"
+          value="Y" name="old-records"/><label for="rhac-re-old-records" >Old Records</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-medals" value="Y" name="medals"/><label for="rhac-re-medals" >Medals</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-medals" value="Y"
+          name="medals"/><label for="rhac-re-medals" >Medals</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-252" value="Y" name="medals"/><label for="rhac-re-252" >252 awards</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-252" value="Y"
+          name="medals"/><label for="rhac-re-252" >252 awards</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-personal-bests" value="Y" name="personal-bests"/><label for="rhac-re-personal-bests" >Personal Bests</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-personal-bests" value="Y"
+          name="personal-bests"/><label for="rhac-re-personal-bests" >Personal Bests</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-handicap-improvements" value="Y" name="handicap-improvements"/><label for="rhac-re-handicap-improvements" >Handicap Improvements</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-handicap-improvements"
+          value="Y" name="handicap-improvements"/><label for="rhac-re-handicap-improvements" >Handicap Improvements</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-new-classifications" value="Y" name="new-classifications"/><label for="rhac-re-new-classifications" >New Classifications</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-new-classifications" value="Y"
+          name="new-classifications"/><label for="rhac-re-new-classifications" >New Classifications</label></span>
 
-          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-reassessments" value="Y" name="reassessments" /><label for="rhac-re-reassessments" title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Include Reassessments</label></span>
+          <span class="rhac-re-span-limit"><input type="checkbox" class="rhac-re-checkbox" id="rhac-re-reassessments" value="Y"
+          name="reassessments" /><label for="rhac-re-reassessments"
+          title="reassessments are not real scores, they happen at the end of each indoor and outdoor season, and whenever an archer changes age group. The only way to see these is to check this box.">Include Reassessments</label></span>
 
         </div>
       </div>
@@ -525,6 +534,11 @@ $outdoor_seasons
         <div>
           <button type="button" class="rhac-re-button" id="rhac-re-delete-report">Delete This Report</button>
         </div>
+      </div>
+
+      <div class="rhac-re-section">
+        <label class="rhac-re-label" title="a link to the current report that you camn paste into an e-mail">Link to the Current Report</label>
+        <button id="rhac-re-get-link">Get the Link</button>
       </div>
 
     </div>
@@ -563,6 +577,9 @@ $outdoor_seasons
   </div>
   <div id="rhac-re-old-browser" class="rhac-re-simple-dialog">
     <p>You seem to have a very old browser that does not support saving reports, please upgrade!</p>
+  </div>
+  <div id="rhac-re-tiny-url" class="rhac-re-simple-dialog">
+        <input type="text" readonly="readonly" id="rhac-re-link"></input>
   </div>
 </div>
 EOHTML;
