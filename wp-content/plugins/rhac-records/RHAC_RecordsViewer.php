@@ -537,8 +537,8 @@ $outdoor_seasons
       </div>
 
       <div class="rhac-re-section">
-        <label class="rhac-re-label" title="a link to the current report that you camn paste into an e-mail">Link to the Current Report</label>
-        <button id="rhac-re-get-link">Get the Link</button>
+        <label class="rhac-re-label" title="a link to the current report that you can paste into an e-mail or browser">Link to the Current Report</label>
+        <button id="rhac-re-get-link" title="wait for the popup">Get the Link</button>
       </div>
 
     </div>
@@ -579,6 +579,7 @@ $outdoor_seasons
     <p>You seem to have a very old browser that does not support saving reports, please upgrade!</p>
   </div>
   <div id="rhac-re-tiny-url" class="rhac-re-simple-dialog">
+        <div>Copy the url below</div>
         <input type="text" readonly="readonly" id="rhac-re-link"></input>
   </div>
 </div>

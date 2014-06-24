@@ -391,11 +391,8 @@ function rhacRecordsExplorer() {
     function runReportFromQuery() {
         var keys = searchKeys();
         if (keys.hasOwnProperty("report")) {
-            console.log("found report");
             stringToSettings(keys.report);
             doSearch();
-        } else {
-            console.log("no report found");
         }
     }
 
@@ -468,6 +465,7 @@ function rhacRecordsExplorer() {
             function(results) {
                 jQuery('#rhac-re-results').removeClass('rhac-re');
                 jQuery('#rhac-re-results').html(results);
+                var colVisInitialized = false;
                 var table = jQuery('#rhac-re-results-table').DataTable(
                     {
                         "columnDefs": [
@@ -475,11 +473,16 @@ function rhacRecordsExplorer() {
                         ],
                         stateSave: true,
                         stateSaveCallback: function(settings, data) {
-                            // console.log("stateSaveCallback setting current table state to %o", data);
-                            currentTableState = data;
+                            if (colVisInitialized) {
+                                console.log("stateSaveCallback setting current table state to %o", data);
+                                currentTableState = data;
+                            }
+                            else {
+                                console.log("stateSaveCallback ignoring current table state %o", data);
+                            }
                         },
                         stateLoadCallback: function(settings) {
-                            // console.log("stateLoadCallback returning current table state %o", currentTableState);
+                            console.log("stateLoadCallback returning current table state %o", currentTableState);
                             return currentTableState;
                         }
                     }
@@ -488,7 +491,14 @@ function rhacRecordsExplorer() {
                 jQuery('#rhac-re-results-table_length').css('width', 'auto');
                 jQuery('#rhac-re-results-table_filter').css('width', 'auto');
                 jQuery( colvis.button() ).insertAfter('#rhac-re-results-table_filter').css({ 'float': 'right', 'margin-right': '1em' });
-                colvis.rebuild();
+                if (currentTableState) {
+                    currentTableState.abVisCols.forEach( function (val, index) {
+                        table.column(index).visible(val);
+                    });
+                    colvis.rebuild();
+                }
+
+                colVisInitialized = true;
 
                 jQuery('#rhac-re-results-table tbody').on('click', 'td.rhac-re-score-with-ends', function () {
                     var jQthis = jQuery(this);
@@ -566,8 +576,8 @@ function rhacRecordsExplorer() {
             names.push(name);
         }
         for (name in stateCache) {
-            // console.log("populateReportMenu set all_states[%s] = %o", name, all_states[name]);
             all_states[name] = stateCache[name];
+            console.log("populateReportMenu set all_states[%s] = %o", name, all_states[name]);
         }
         names.sort();
         for (index in names) {
@@ -608,7 +618,7 @@ function rhacRecordsExplorer() {
     function do_saveReport(report_name) {
         var report_data = getCurrentReportSettings();
         persistance.set(report_name, report_data);
-        // console.log("do_saveReport persisting table state for [%s] as %o", report_name, currentTableState);
+        console.log("do_saveReport persisting table state for [%s] as %o", report_name, currentTableState);
         tableStatePersistance.set(report_name, currentTableState);
         populateReportMenu();
         jQuery('#rhac-re-report').val(report_name);
@@ -699,7 +709,7 @@ function rhacRecordsExplorer() {
         var name = jQuery('#rhac-re-report').val();
         var report = all_reports[name];
         currentTableState = all_states[name];
-        // console.log("setForm setting currentTableState from all_states[%s] to %o", name, currentTableState);
+        console.log("setForm setting currentTableState from all_states[%s] to %o", name, currentTableState);
         setFormFromReport(report);
         jQuery('#rhac-re-report-name').val(name);
     }
@@ -764,7 +774,7 @@ function rhacRecordsExplorer() {
     jQuery('#rhac-re-run-report').click(doSearch);
     jQuery('#rhac-re-get-link').click(copyReportToLink);
     jQuery('#rhac-re-run-report').button( { icons: { primary: "ui-icon-search" } } );
-    jQuery('#rhac-re-get-link').button( { icons: { primary: "ui-icon-search" } } );
+    jQuery('#rhac-re-get-link').button( { icons: { primary: "ui-icon-link" } } );
     jQuery('#rhac-re-edit-report').button( { icons: { primary: "ui-icon-triangle-1-e" } } );
     jQuery('#rhac-re-save-report').button( { icons: { primary: "ui-icon-disk" } } );
     jQuery('#rhac-re-delete-report').button( { icons: { primary: "ui-icon-trash" } } );
