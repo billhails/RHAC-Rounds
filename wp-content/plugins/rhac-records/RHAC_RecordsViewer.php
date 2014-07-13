@@ -873,6 +873,13 @@ EOHTML;
         return $this->debugQuery($query, $params) . $this->formatResults($rows);
     }
 
+    private function categoryTitle($row) {
+        if ($row['category'] == 'adult') {
+            return '';
+        }
+        return $row['category'] . ' ';
+    }
+
     public function matchReport($date) {
         $query = "* FROM scorecards where date = ? and reassessment = ?";
         $params = array($date, 'N');
@@ -942,7 +949,7 @@ EOHTML;
             foreach ($club_records as $row) {
                 $text []= '<li>' . $row['archer'] . ' - '
                         . $genders[$row['gender']] . ' '
-                        . $row['category'] . ' ' . $row['bow'] . ' - '
+                        . $this->categoryTitle($row) . $row['bow'] . ' - '
                         . $row['round'] . '</li>';
             }
             $text []= '</ul>';
@@ -958,14 +965,14 @@ EOHTML;
             $text []= '</ul>';
         }
         if (count($new_classifications)) {
-            $text []= '<h2>New Classifications</h2>';
+            $text []= '<h2>New or Confirmed Classifications</h2>';
             $text []= '<ul>';
             foreach ($new_classifications as $row) {
                 $classification =
                     $this->mungeClassification($row['new_classification']);
                 $text []= '<li>' . $row['archer'] . ' - '
                         . $genders[$row['gender']] . ' '
-                        . $row['category'] . ' ' . $row['bow'] . ' - '
+                        . $this->categoryTitle($row) . $row['bow'] . ' - '
                         . $classification . '</li>';
             }
             $text []= '</ul>';
