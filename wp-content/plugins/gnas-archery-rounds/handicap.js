@@ -1,3 +1,60 @@
+/**
+ * Predict a score based on handicap and a description of the round being shot.
+ *
+ * See http://www.roystonarchery.org/new/wp-content/uploads/2013/09/Graduated-Handicap-Tables.pdf
+ *
+ * parameters:
+ *   H - integer handicap
+ *   fn - string function name, one of:
+ *      "ten zone"
+ *      "five zone"
+ *      "metric inner ten"
+ *      "vegas"
+ *      "vegas inner ten"
+ *      "worcester"
+ *      "fita six zone"
+ *   units - string name of the units being used, one of:
+ *      "metric"
+ *      "imperial"
+ *   distances - array of objects describing the distances. Each object contains:
+ *      N - integer Number of arrows shot at that distance.
+ *      D - integer Diameter of the target in cm.
+ *      R - integer Range (distance) to the target in the specified units (yards or meters)
+ *   radius - float arrow radius in cm
+ *
+ * Example, predict  the score for a handicap of 30 shooting a Fita Gents (3 doz at 90m, 122cm face;
+ * 3 doz at 70m, 122cm face; 3 doz at 50m, 80cm face; 3 doz at 30m, 80cm face) assuming the standard
+ * 0.357 cm radius of an 1864 arrow:
+ *
+ *   score = rhac_score(
+ *        30,
+ *        "ten-zone",
+ *        "metric",
+ *        [
+ *            {
+ *                N: 3 * 12,
+ *                D: 122,
+ *                R: 90
+ *            },
+ *            {
+ *                N: 3 * 12,
+ *                D: 122,
+ *                R: 70
+ *            },
+ *            {
+ *                N: 3 * 12,
+ *                D: 80,
+ *                R: 50
+ *            },
+ *            {
+ *                N: 3 * 12,
+ *                D: 80,
+ *                R: 30
+ *            },
+ *        ],
+ *        0.357
+ *   );
+ */
 function rhac_score(H, fn, units, distances, radius) {
 
     function square(x) {
@@ -32,8 +89,6 @@ function rhac_score(H, fn, units, distances, radius) {
     function sigma_r(R, H) {
         return 100 * R * sigma_theta(H) * F(R, H);
     }
-
-    var r = 0.357;
 
     function sigma_r_2(R, H) {
         return square(sigma_r(R, H));
