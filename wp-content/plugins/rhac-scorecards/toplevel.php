@@ -1213,7 +1213,7 @@ class RHAC_Scorecards {
         return $archer_map[$archer]['guest'];
     }
 
-    private function ageAt($archer, $date_string) {
+    private function ageAt_wrong($archer, $date_string) {
         $dob_string = $this->getDoB($archer);
         $dob = $this->unixdate($dob_string);
         $date = $this->unixdate($date_string);
@@ -1221,13 +1221,26 @@ class RHAC_Scorecards {
         return floor($diff / (60 * 60 * 24 * 365.242));
     }
 
+    private function ageAt($archer, $date_string) {
+        return $this->getAge($this->getDoB($archer), $date_string);
+    }
+
+    private function getAge($dob, $date) {
+        list($byear, $bmonth, $bday) = explode("/", $dob);
+        list($dyear, $dmonth, $dday) = explode("/", $date);
+
+        if ($dday - $bday < 0 || $dmonth - $bmonth < 0) {
+            return $dyear - $byear - 1;
+        } else {
+            return $dyear - $byear;
+        }
+    }
+
     private function unixdate($date_string) {
-        $y = substr($date_string, 0, 4) + 0;
+        list ($y, $m, $d) = explode('/', $date_string);
         if ($y < 1970) {
             $y = 1970;
         }
-        $m = substr($date_string, 5, 2) + 0;
-        $d = substr($date_string, 8, 2) + 0;
         return mktime(0, 0, 0, $m, $d, $y, 0);
     }
 
