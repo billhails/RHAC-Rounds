@@ -82,7 +82,7 @@ function rhac_dataset($atts) {
         $data = explode(",", $data);
         $numbers = array();
         foreach ($data as $datum) {
-            sscanf($datum, "%d", &$val);
+            sscanf($datum, "%d", $val);
             $numbers []= $val;
         }
 
