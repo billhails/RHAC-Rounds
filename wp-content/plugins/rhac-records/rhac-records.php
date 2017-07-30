@@ -33,18 +33,21 @@ function rhac_re_load_deps() {
     rhac_register_3p_scripts();
     rhac_register_3p_styles();
  
-    wp_enqueue_script('rhac_datatables');
-    wp_enqueue_script('rhac_datatables_jquery');
-    wp_enqueue_script('rhac_datatable_jquery_colvis');
-    wp_enqueue_script('rhac_datatables_jquery_colvis');
+    wp_enqueue_script('rhac_datatables_new');
+    // wp_enqueue_script('rhac_datatables');
+    // wp_enqueue_script('rhac_datatables_jquery');
+    // wp_enqueue_script('rhac_datatable_jquery_colvis');
+    // wp_enqueue_script('rhac_datatables_jquery_colvis');
 
-    wp_enqueue_style('rhac_datatables');
-    wp_enqueue_style('rhac_datatables_jquery');
+    wp_enqueue_style('rhac_datatables_new');
+    // wp_enqueue_style('rhac_datatables');
+    // wp_enqueue_style('rhac_datatables_jquery');
     wp_enqueue_style('rhac_records_view', plugins_url('rhac_records_view.css', __FILE__));
  
-    wp_enqueue_style('jquery-ui-rhac');
-    wp_enqueue_style('jquery-datatables-colvis');
-    wp_enqueue_style('jquery-datatables-colvis-ui');
+    wp_enqueue_style('jquery-ui-new-rhac');
+    // wp_enqueue_style('jquery-ui-rhac');
+    // wp_enqueue_style('jquery-datatables-colvis');
+    // wp_enqueue_style('jquery-datatables-colvis-ui');
     wp_enqueue_script('rhac_records_view',
                       plugins_url('rhac_records_view.js', __FILE__),
                       array('jquery-ui-button', 'jquery-ui-datepicker', 'jquery-ui-tooltip',

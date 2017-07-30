@@ -487,6 +487,7 @@ function rhacRecordsExplorer() {
                         }
                     }
                 );
+                /*
                 var colvis = new jQuery.fn.dataTable.ColVis( table );
                 jQuery('#rhac-re-results-table_length').css('width', 'auto');
                 jQuery('#rhac-re-results-table_filter').css('width', 'auto');
@@ -499,6 +500,7 @@ function rhacRecordsExplorer() {
                 }
 
                 colVisInitialized = true;
+                */
 
                 jQuery('#rhac-re-results-table tbody').on('click', 'td.rhac-re-score-with-ends', function () {
                     var jQthis = jQuery(this);

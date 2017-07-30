@@ -16,6 +16,7 @@ $rhac_3p_styles_loaded = false;
 function rhac_register_3p_scripts() {
     global $rhac_3p_scripts_loaded;
     if (!$rhac_3p_scripts_loaded) {
+        wp_register_script('rhac_datatables_new', RHAC_3P_PLUGIN_URL_ROOT . 'DataTables/datatables.min.js', array());
         wp_register_script('rhac_datatables', RHAC_3P_PLUGIN_URL_ROOT . 'jquery.dataTables.min.js', array('jquery-ui-core'));
         wp_register_script('rhac_datatables_jquery', RHAC_3P_PLUGIN_URL_ROOT . 'dataTables.jqueryui.js', array('rhac_datatables'));
         wp_register_script('rhac_datatable_jquery_colvis', RHAC_3P_PLUGIN_URL_ROOT . 'dataTable.colVis.js', array('rhac_datatables'));
@@ -31,6 +32,8 @@ function rhac_register_3p_scripts() {
 function rhac_register_3p_styles() {
     global $rhac_3p_styles_loaded;
     if (!$rhac_3p_styles_loaded) {
+        wp_register_style('rhac_datatables_new', RHAC_3P_PLUGIN_URL_ROOT . 'DataTables/datatables.min.css');
+        wp_register_style('jquery-ui-new-rhac', RHAC_3P_PLUGIN_URL_ROOT . 'jquery-ui-1.11.4.custom/jquery-ui.min.css');
         wp_register_style('rhac_datatables', RHAC_3P_PLUGIN_URL_ROOT . 'jquery.dataTables.min.css');
         wp_register_style('rhac_datatables_extra', RHAC_3P_PLUGIN_URL_ROOT . 'rhac-datatables.css');
         wp_register_style('rhac_datatables_jquery', RHAC_3P_PLUGIN_URL_ROOT . 'dataTables.jqueryui.css');
