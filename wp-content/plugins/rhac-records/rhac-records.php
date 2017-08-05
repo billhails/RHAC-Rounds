@@ -8,6 +8,15 @@ Author URI: http://www.billhails.net/
 License: GPL
 */
 
+/**
+ * The actual code is in the RHAC_RecordsViewer class in
+ * the same directory as this file.
+ *
+ * This file simply glues that RHAC_RecordsView code into WordPress and
+ * additionally provides shortcode access for all of the icons, (for
+ * use by the help page and anything else that needs them.)
+ */
+
 define('RHAC_RE_DIR', plugin_dir_path(__FILE__));
 
 define('RHAC_PLUGINS_ROOT',

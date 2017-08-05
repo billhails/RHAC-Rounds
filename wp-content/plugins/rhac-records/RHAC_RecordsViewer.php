@@ -1,24 +1,62 @@
 <?php
 include_once(RHAC_PLUGINS_ROOT . 'gnas-archery-rounds/rounds.php');
 
+/**
+ * This class does the querying and display of club records
+ *
+ * @see http://www.roystonarchery.org/new/members-only/club-records/
+ */
 class RHAC_RecordsViewer {
+
+    /** @var PDO */
     private $pdo;
+
+    /** @var array $gender_map maps gender id to name */
     private $gender_map = array("M" => "Gents", "F" => "Ladies");
-    private $venue_map;
+
+    /** @var array $venue_map maps venue id to name */
+    private $_venue_map
+
+    /* @var array $pb_map lookup for personal best badge */
     private $pb_map;
+
+    /** @var array $cr_map lookup for club record badges */
     private $cr_map;
+
+    /** @var array $tft_map lookup for 252 badges */
     private $tft_map;
+
+    /** @var array $medal_map lookup for medals (bronze, silver and gold) */
     private $medal_map;
+
+    /** @var array $classification_map lookup for classification markup */
     private $classification_map;
+
+    /** @var array $archer_map lookup archer details by name */
     private $archer_map;
+
+    /** @var bool $initialized tracks if the maps above have been populated */
     private $initialized = false;
+
+    /** @var array $icons maps badge names to image tags displaying the appropriate icon */
     private $icons;
+
+    /** @var array caches all the data from a call to GNAS_Page::familyData() */
     private $round_families;
+
+    /** @var array caches all the data from a call to GNAS_Page::roundData() */
     private $rounds;
+
+    /** caches the time the page was first loaded (avoids problems if the second changes while the code is executing) */
     private $time;
 
+    /** only allow a single instance of this class to be created (Singleton Pattern) */
     private static $instance;
 
+    /**
+     * private constructor can't be called outside of this class
+     * dies if it cannot get a database connection
+     */
     private function __construct() {
         try {
             $this->pdo = new PDO('sqlite:'
@@ -30,6 +68,9 @@ class RHAC_RecordsViewer {
         }
     }
 
+    /**
+     * initialise the icons map
+     */
     private function initIcons() {
         $this->icons = array();
         $titles = array(
@@ -79,6 +120,9 @@ class RHAC_RecordsViewer {
         }
     }
 
+    /**
+     * initialise the various maps above
+     */
     public function initDisplayMaps() {
         if ($this->initialized) {
             return;
@@ -144,222 +188,551 @@ class RHAC_RecordsViewer {
         $this->classification_map[''] = '';
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function personalBestIcon() {
         return $this->pb_map['Y'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function currentClubRecordIcon() {
         return $this->cr_map['current'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function oldClubRecordIcon() {
         return $this->cr_map['old'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function greenTwoFiveTwoIcon() {
         return $this->tft_map['green/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfGreenTwoFiveTwoIcon() {
         return $this->tft_map['green/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function whiteTwoFiveTwoIcon() {
         return $this->tft_map['white/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfWhiteTwoFiveTwoIcon() {
         return $this->tft_map['white/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function blackTwoFiveTwoIcon() {
         return $this->tft_map['black/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfBlackTwoFiveTwoIcon() {
         return $this->tft_map['black/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function blueTwoFiveTwoIcon() {
         return $this->tft_map['blue/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfBlueTwoFiveTwoIcon() {
         return $this->tft_map['blue/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function redTwoFiveTwoIcon() {
         return $this->tft_map['red/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfRedTwoFiveTwoIcon() {
         return $this->tft_map['red/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function bronzeTwoFiveTwoIcon() {
         return $this->tft_map['bronze/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfBronzeTwoFiveTwoIcon() {
         return $this->tft_map['bronze/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function silverTwoFiveTwoIcon() {
         return $this->tft_map['silver/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfSilverTwoFiveTwoIcon() {
         return $this->tft_map['silver/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function goldTwoFiveTwoIcon() {
         return $this->tft_map['gold/2'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function halfGoldTwoFiveTwoIcon() {
         return $this->tft_map['gold/1'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function bronzeMedalIcon() {
         return $this->medal_map['bronze'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function silverMedalIcon() {
         return $this->medal_map['silver'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function goldMedalIcon() {
         return $this->medal_map['gold'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function archerClassificationIcon() {
         return $this->classification_map['archer'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function unclassifiedClassificationIcon() {
         return $this->classification_map['unclassified'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function thirdClassificationIcon() {
         return $this->classification_map['third'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function secondClassificationIcon() {
         return $this->classification_map['second'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function firstClassificationIcon() {
         return $this->classification_map['first'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function bmClassificationIcon() {
         return $this->classification_map['bm'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function mbmClassificationIcon() {
         return $this->classification_map['mbm'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function gmbmClassificationIcon() {
         return $this->classification_map['gmbm'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function aClassificationIcon() {
         return $this->classification_map['A'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function bClassificationIcon() {
         return $this->classification_map['B'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function cClassificationIcon() {
         return $this->classification_map['C'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function dClassificationIcon() {
         return $this->classification_map['D'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function eClassificationIcon() {
         return $this->classification_map['E'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function fClassificationIcon() {
         return $this->classification_map['F'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function gClassificationIcon() {
         return $this->classification_map['G'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function hClassificationIcon() {
         return $this->classification_map['H'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedArcherClassificationIcon() {
         return $this->classification_map['(archer)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedUnclassifiedClassificationIcon() {
         return $this->classification_map['(unclassified)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedThirdClassificationIcon() {
         return $this->classification_map['(third)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedSecondClassificationIcon() {
         return $this->classification_map['(second)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedFirstClassificationIcon() {
         return $this->classification_map['(first)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedBmClassificationIcon() {
         return $this->classification_map['(bm)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedMbmClassificationIcon() {
         return $this->classification_map['(mbm)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedGmbmClassificationIcon() {
         return $this->classification_map['(gmbm)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedAclassificationIcon() {
         return $this->classification_map['(A)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedBclassificationIcon() {
         return $this->classification_map['(B)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedCclassificationIcon() {
         return $this->classification_map['(C)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedDclassificationIcon() {
         return $this->classification_map['(D)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedEclassificationIcon() {
         return $this->classification_map['(E)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedFclassificationIcon() {
         return $this->classification_map['(F)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedGclassificationIcon() {
         return $this->classification_map['(G)'];
     }
 
+    /**
+     * public access to icon markup
+     *
+     * allows us to write "shortcodes" that will
+     * embed the icon in any website text.
+     */
     public function confirmedHclassificationIcon() {
         return $this->classification_map['(H)'];
     }
 
+    /**
+     * Singleton Pattern
+     *
+     * call this to get the sole instance of this class
+     */
     public static function getInstance() {
         if (!isset(self::$instance)) {
             self::$instance = new self();
@@ -367,6 +740,9 @@ class RHAC_RecordsViewer {
         return self::$instance;
     }
 
+    /**
+     * runs a SELECT query on the scorecard database
+     */
     private function select($query, $params = array()) {
         $stmt = $this->pdo->prepare("SELECT " . $query);
         if (!$stmt) {
@@ -379,6 +755,11 @@ class RHAC_RecordsViewer {
         return $rows;
     }
 
+    /**
+     * returns the HTML for the scorecard report page query form
+     *
+     * @param string $help_page_id the id of the associated help page
+     */
     public function view($help_page_id) {
         $this->initDisplayMaps();
         $help_page_url = get_permalink($help_page_id);
@@ -586,6 +967,9 @@ $outdoor_seasons
 EOHTML;
     }
 
+    /**
+     * returns options markup for selecting an archer
+     */
     private function archerOptions($include_archived=false) {
         $text = array();
         $text []= "<option value=''>Any Archer</option>";
@@ -605,6 +989,9 @@ EOHTML;
         return implode($text);
     }
 
+    /**
+     * returns options markup for selecting an outdoor round
+     */
     private function outdoorRoundOptions() {
         $text = array();
         $text []= '<option value="">Any Outdoor Round</option>';
@@ -617,6 +1004,9 @@ EOHTML;
         return implode($text);
     }
 
+    /**
+     * returns options markup for selecting an indoor round
+     */
     private function indoorRoundOptions() {
         $text = array();
         $text []= '<option value="">Any Indoor Round</option>';
@@ -629,6 +1019,9 @@ EOHTML;
         return implode($text);
     }
 
+    /**
+     * returns options markup for selecting a round
+     */
     private function allRoundOptions() {
         $text = array();
         $text []= '<option value="">Any Round</option>';
@@ -639,6 +1032,9 @@ EOHTML;
         return implode($text);
     }
 
+    /**
+     * returns options markup for selecting an outdoor round family
+     */
     private function outdoorFamilyOptions() {
         $text = array();
         $text []= '<option value="">Any Outdoor Round Family</option>';
@@ -661,6 +1057,9 @@ EOHTML;
         return implode($text);
     }
 
+    /**
+     * returns options markup for selecting an indoor round family
+     */
     private function indoorFamilyOptions() {
         $text = array();
         $text []= '<option value="">Any Indoor Round Family</option>';
@@ -683,6 +1082,9 @@ EOHTML;
         return implode($text);
     }
 
+    /**
+     * returns options markup for selecting an indoor or outdoor round family
+     */
     private function allFamilyOptions() {
         $text = array();
         $text []= '<option value="">Any Round Family</option>';
@@ -703,6 +1105,9 @@ EOHTML;
         return implode($text);
     }
 
+    /**
+     * returns data about all round families
+     */
     private function getAllFamilies() {
         if (!isset($this->round_families)) {
             $this->round_families = GNAS_Page::familyData();
@@ -710,6 +1115,9 @@ EOHTML;
         return $this->round_families;
     }
 
+    /**
+     * returns data about all rounds
+     */
     private function getAllRounds() {
         if (!isset($this->rounds)) {
             $this->rounds = GNAS_Page::roundData();
@@ -717,6 +1125,9 @@ EOHTML;
         return $this->rounds;
     }
 
+    /**
+     * returns markup for selecting a (recent) season
+     */
     private function allSeasonOptions() {
         $time = $this->getTime();
         $year = date('Y', $time);
@@ -737,6 +1148,9 @@ EOHTML;
         return implode($seasons);
     }
 
+    /**
+     * returns markup for selecting a (recent) outdoor season
+     */
     private function outdoorSeasonOptions() {
         $time = $this->getTime();
         $year = date('Y', $time);
@@ -750,6 +1164,9 @@ EOHTML;
         return implode($seasons);
     }
 
+    /**
+     * returns markup for selecting a (recent) indoor season
+     */
     private function indoorSeasonOptions() {
         $time = $this->getTime();
         $year = date('Y', $time);
@@ -768,6 +1185,9 @@ EOHTML;
         return implode($seasons);
     }
 
+    /**
+     * returns the time the code was first invoked (won't change while the page is rendering)
+     */
     private function getTime() {
         if (!isset($this->time)) {
             $this->time = time();
@@ -776,6 +1196,9 @@ EOHTML;
     }
 
 
+    /**
+     * returns data about each archer
+     */
     private function getArcherMap() {
         if (!isset($this->archer_map)) {
             $this->archer_map = array();
@@ -787,6 +1210,9 @@ EOHTML;
         return $this->archer_map;
     }
 
+    /**
+     * returns the html markup for the query results
+     */
     public function display() {
         $params = array();
         $fields = array("1 = 1");
@@ -873,6 +1299,9 @@ EOHTML;
         return $this->debugQuery($query, $params) . $this->formatResults($rows);
     }
 
+    /**
+     * returns the age part of the category description
+     */
     private function categoryTitle($row) {
         if ($row['category'] == 'adult') {
             return '';
@@ -880,6 +1309,9 @@ EOHTML;
         return $row['category'] . ' ';
     }
 
+    /**
+     * Returns the "Match Report" markup used by the shortcode in the match report news/blog pages
+     */
     public function matchReport($date) {
         $query = "* FROM scorecards where date = ? and reassessment = ?";
         $params = array($date, 'N');
@@ -980,6 +1412,11 @@ EOHTML;
         return implode("\n", $text);
     }
 
+    /**
+     * maps classification id to display form
+     *
+     * i.e. 'A' => 'A', '(B)' => 'B (confirmed)'
+     */
     private function mungeClassification($classification) {
         $ext = '';
         $map = array(
@@ -1006,6 +1443,9 @@ EOHTML;
         return $map[$classification] . $ext;
     }
 
+    /**
+     * used for debugging
+     */
     private function debugQuery($query, $params) {
         return '';
         $text = "<pre>\n";
@@ -1015,6 +1455,9 @@ EOHTML;
         return $text;
     }
 
+    /**
+     * formats the actual rows of results for display() above
+     */
     private function formatResults($rows) {
         $this->initDisplayMaps();
         $classification_sort = array(
@@ -1101,6 +1544,9 @@ EOHTML;
         return implode($text);
     }
 
+    /*
+     * returns the category name for the normal report, i.e. "Gents U14 Recurve"
+     */
     private function category($row) {
         $text = array();
         $text []= $this->gender_map[$row['gender']];
