@@ -8,18 +8,22 @@ Author URI: http://www.billhails.net/
 License: Uncertain
 */
 
+// This script creates and registers the admin pages for editing GNAS round tables
+// within the WP admin dashboard.
+//
+// global functions we create are prefixed 'gnas_' as a namespace convention
+
 define('GNAS_ARCHERY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
 require GNAS_ARCHERY_PLUGIN_DIR . 'rounds.php';
 
-
 // Register style sheet.
-add_action( 'wp_enqueue_scripts', 'register_gnas_rounds_plugin_styles' );
+add_action( 'wp_enqueue_scripts', 'gnas_register_rounds_plugin_styles' );
 
 /**
  * Register style sheet.
  */
-function register_gnas_rounds_plugin_styles() {
+function gnas_register_rounds_plugin_styles() {
     wp_register_style('rhac_roundtables_style',  plugins_url('rounds.css',__FILE__));
     wp_enqueue_style( 'rhac_roundtables_style' );
     wp_enqueue_script('rhac_handicaps', plugins_url('handicap.js', __FILE__), array('jquery'));
@@ -41,9 +45,9 @@ function gnas_archery_table_display() {
 add_shortcode('rounds', 'gnas_archery_rounds_display');
 add_shortcode('requirements', 'gnas_archery_rounds_find');
 
-add_action( 'admin_menu', 'register_gnas_plugin_menu' );
+add_action( 'admin_menu', 'gnas_register_plugin_menu' );
 
-function register_gnas_plugin_menu() {
+function gnas_register_plugin_menu() {
     add_menu_page('Edit GNAS Tables',
                   'GNAS Tables',
                   'manage_options',

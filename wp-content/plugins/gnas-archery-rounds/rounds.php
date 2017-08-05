@@ -1,7 +1,19 @@
 <?php
 
-################
+/**
+ * Classes in this file wrap the data in the archery.db (rounds) database.
+ *
+ * Initially they were used to support the rounds and round families pages,
+ * but more recently they get use elsewhere too.
+ */
+
+/**
+ * Static class encapsulating access to the archery.db database
+ * (the one containing round information)
+ */
 class GNAS_PDO {
+
+    /** @var PDO $pdo the database handle */
     private static $pdo;
 
     /**
@@ -10,6 +22,11 @@ class GNAS_PDO {
     private function __construct() {
     }
 
+    /**
+     * Returns the single PDO (database handle) instance.
+     *
+     * @return PDO
+     */
     public static function get() {
         if (!isset(self::$pdo)) {
             $path = plugin_dir_path(__FILE__)
@@ -25,8 +42,15 @@ class GNAS_PDO {
         return self::$pdo;
     }
 
+    /**
+     * Performs a query and returns all of the rows as an array.
+     *
+     * @param string $query the SQL SELECT statement (without the SELECT keyword).
+     * @param array $params the parameters to the query, should match up with any '?' placeholders in the query
+     *
+     * @return array
+     */
     public static function SELECT($query, $params = array()) {
-        // is_array
         $stmt = self::get()->prepare('SELECT ' . $query);
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
@@ -35,16 +59,30 @@ class GNAS_PDO {
     }
 }
 
-####################
+/**
+ * Static class for creating urls for querying the current page
+ */
 class GNAS_PageURL {
+
+    /** @var string $pageURL the base url of the current page */
     private static $pageURL;
+
+    /** @var array $existingParams parameters already passed when the current page was requested */
     private static $existingParams;
+
     /**
      * disallow creation of instances.
      */
     private function __construct() {
     }
 
+    /**
+     * make a new url from the current page and any extra parameters passed
+     *
+     * @param array $params extra parameters
+     *
+     * @return string
+     */
     public static function make($params) {
         if (!isset(self::$pageURL)) {
             $pageURL = 'http';
@@ -82,7 +120,9 @@ class GNAS_PageURL {
 
 }
 
-######################
+/**
+ * class encapsulating the data from the age_groups table.
+ */
 class GNAS_AgeGroups {
     private static $age_groups;
 
@@ -92,6 +132,13 @@ class GNAS_AgeGroups {
     private function __construct() {
     }
 
+    /**
+     * returns the age groups as an array
+     *
+     * It will read in the age groups from the database if it has not already done so.
+     *
+     * @return array
+     */
     static function get() {
         if (!isset(self::$age_groups)) {
             $rows = GNAS_PDO::SELECT('age_group'
@@ -108,7 +155,9 @@ class GNAS_AgeGroups {
 }
 
 
-####################
+/**
+ * class encapsulating the data from the genders table.
+ */
 class GNAS_Genders {
     private static $genders;
 
@@ -118,6 +167,13 @@ class GNAS_Genders {
     private function __construct() {
     }
 
+    /**
+     * returns the genders as an array
+     *
+     * It will read in the genders from the database if it has not already done so.
+     *
+     * @return array
+     */
     static function get() {
         if (!isset(self::$genders)) {
             $rows = GNAS_PDO::SELECT('gender'
@@ -133,12 +189,25 @@ class GNAS_Genders {
     }
 }
 
-#############################
+/**
+ * Abstract class encapsulating the data from the measures table.
+ *
+ * It is inherited indirectly by the concrete measure classes GNAS_OutdoorImperialMeasure etc.
+ * and provides them with common behaviour.
+ */
 abstract class GNAS_Measure {
     abstract public function getUnits();
     abstract public function getAllDistances();
     abstract public function getName();
 
+    /**
+     * Returns the header for a rounds table
+     *
+     * Specifics of the header differ for different types of round so are provided
+     * by the concrete classes that inherit from this class.
+     *
+     * @return string
+     */
     public function getTableHeader() {
         return '<col class="round-first-col">'
             . '<thead><tr><th rowspan="3" style="vertical-align: bottom; width: 15%;">Round</th><th colspan="'
@@ -150,6 +219,11 @@ abstract class GNAS_Measure {
             . '</tr></thead>';
     }
 
+    /**
+     * Returns the footer for a rounds table
+     *
+     * @return string
+     */
     public function getTableFooter() {
         return '<tfoot>'
             . '<tr><td rowspan="2">Round</td>'
@@ -159,6 +233,14 @@ abstract class GNAS_Measure {
             . '</tfoot>';
     }
 
+    /**
+     * Returns an HTML string of table data for all the distances for a particular round.
+     * Table data slots will either contain a count of arrows or be empty.
+     *
+     * @param GNAS_Distances $distance distance data for the round
+     *
+     * @return string
+     */
     public function makeTableDistances(GNAS_Distances $distance) {
         $row = array();
         foreach ($this->getAllDistances() as $face => $allDistances) {
@@ -169,6 +251,12 @@ abstract class GNAS_Measure {
         return implode($row);
     }
 
+    /**
+     * Returns the total number of distances for this type of round
+     * i.e. all possible distances for rounds in this table
+     *
+     * @return int
+     */
     private function totalDistances() {
         $total = 0;
         foreach($this->getAllDistances() as $distances) {
@@ -177,6 +265,14 @@ abstract class GNAS_Measure {
         return $total;
     }
 
+    /**
+     * return a marked up string containing all of the faces used in this type of round,
+     * with colspans equal to the number of possible distances for that face
+     *
+     * @param string $type the markup tag, default 'th' but could be 'td'
+     *
+     * @return string
+     */
     private function getFaceHeaders($type='th') {
         $result = '';
         foreach($this->getAllDistances() as $face => $distances) {
@@ -189,6 +285,16 @@ abstract class GNAS_Measure {
         return $result;
     }
 
+    /**
+     * Return a marked up string containing all possible distances for this table
+     *
+     * If there are multiple faces for this table, distances will be returned for
+     * each face, in the correct order.
+     *
+     * @param string $type the markup tag, default 'th' but could be 'td'
+     *
+     * @return string
+     */
     private function getDistanceHeaders($type='th') {
         $units = $this->getUnits();
         $headers = array();
@@ -202,31 +308,58 @@ abstract class GNAS_Measure {
 
 }
 
-#########################################################
+/**
+ * abstract class specialising GNAS_Measure to imperial measures
+ *
+ * This class is still abstract, but provides common functionality for
+ * indoor and outdoor imperial measures
+ */
 abstract class GNAS_ImperialMeasure extends GNAS_Measure {
 
+    /**
+     * returns 'y' (i.e. yards) the distance units for imperial measures.
+     *
+     * @return string
+     */
     public function getUnits() {
         return 'y';
     }
 
+    /**
+     * returns 'imperial' the name of this type of measure
+     */
     public function getName() {
         return 'imperial';
     }
 
 }
 
-################################################################
+/**
+ * Class specializing GNAS_ImperialMeasure to concrete outdoor measures
+ */
 class GNAS_OutdoorImperialMeasure extends GNAS_ImperialMeasure {
 
+    /**
+     * returns all possible face sizes and distances for imperial outdoor rounds
+     *
+     * format is [face => [distance ...] ...]
+     */
     public function getAllDistances() {
         return array('122cm' => array(100, 80, 60, 50, 40, 30, 20, 10));
     }
 
 }
 
-###############################################################
+/**
+ * Class specializing GNAS_Imperial_Measure to concrete indoor measures
+ */
 class GNAS_IndoorImperialMeasure extends GNAS_ImperialMeasure {
 
+    /**
+     * returns all possible face sizes and distances for imperial indoor rounds
+     *
+     * format is [face => [distance ...] ...]
+     */
     public function getAllDistances() {
         return array('60cm' => array(25, 20),
                      '40cm' => array(20, 15),
@@ -235,22 +368,42 @@ class GNAS_IndoorImperialMeasure extends GNAS_ImperialMeasure {
 
 }
 
-########################################################
+/**
+ * abstract class specialising GNAS_Measure to metric measures
+ *
+ * This class is still abstract, but provides common functionality for
+ * indoor and outdoor metric measures
+ */
 abstract class GNAS_MetricMeasure extends GNAS_Measure {
 
+    /**
+     * returns 'm' (i.e. metres) the distance units for metric measures.
+     *
+     * @return string
+     */
     public function getUnits() {
         return 'm';
     }
 
+    /**
+     * returns 'metric' the name of this type of measure
+     */
     public function getName() {
         return 'metric';
     }
 
 }
 
-############################################################
+/**
+ * Class specializing GNAS_MetricMeasure to concrete outdoor measures
+ */
 class GNAS_OutdoorMetricMeasure extends GNAS_MetricMeasure {
 
+    /**
+     * returns all possible face sizes and distances for metric outdoor rounds
+     *
+     * format is [face => [distance ...] ...]
+     */
     public function getAllDistances() {
         return array('122cm' => array(90, 70, 60, 50, 40, 30, 20),
                      '80cm'  => array(50, 40, 30, 20, 15, 10));
@@ -258,9 +411,16 @@ class GNAS_OutdoorMetricMeasure extends GNAS_MetricMeasure {
 
 }
 
-###########################################################
+/**
+ * Class specializing GNAS_MetricMeasure to concrete outdoor measures
+ */
 class GNAS_IndoorMetricMeasure extends GNAS_MetricMeasure {
 
+    /**
+     * returns all possible face sizes and distances for metric indoor rounds
+     *
+     * format is [face => [distance ...] ...]
+     */
     public function getAllDistances() {
         return array('80cm' => array(30),
                      '60cm' => array(25),
@@ -269,89 +429,207 @@ class GNAS_IndoorMetricMeasure extends GNAS_MetricMeasure {
 
 }
 
-#############################
+/**
+ * abstract base class for various types of scoring (ten zone etc.)
+ */
 abstract class GNAS_Scoring {
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     abstract public function getName();
+
+
+    /**
+     * returns the multiplier (i.e. the maximum score for an arrow)
+     *
+     * TODO should rename this to maxScorePerArrow but it is used elsewhere so we have to be careful
+     *
+     * @return int
+     */
     abstract public function getMultiplier();
 
+    /**
+     * returns the maximum score for a particular count of arrows (number of arrows per distance)
+     *
+     * @param GNAS_ArrowCounts $arrowCounts data on number of arrows and distances
+     *
+     * @return int
+     */
     public function maxScore(GNAS_ArrowCounts $arrowCounts) {
         return $this->getMultiplier() * $arrowCounts->getTotalArrows();
     }
 
+    /**
+     * returns true if the round is to be scored
+     */
     public function isPresent() {
         return true;
     }
 
 }
 
-################################################
+/**
+ * concrete class specialising GNAS_Scoring to ten zone scoring
+ */
 class GNAS_TenZoneScoring extends GNAS_Scoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'ten zone'; }
+
+    /**
+     * returns the multiplier (i.e. the maximum score for an arrow)
+     *
+     * TODO should rename this to maxScorePerArrow but it is used elsewhere so we have to be careful
+     *
+     * @return int
+     */
     public function getMultiplier() { return 10; }
 }
 
-#################################################
+/**
+ * concrete class specialising GNAS_Scoring to five zone scoring
+ */
 class GNAS_FiveZoneScoring extends GNAS_Scoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'five zone'; }
+
+    /**
+     * returns the multiplier (i.e. the maximum score for an arrow)
+     *
+     * TODO should rename this to maxScorePerArrow but it is used elsewhere so we have to be careful
+     *
+     * @return int
+     */
     public function getMultiplier() { return 9; }
 }
 
-#######################################################
-class GNAS_MetricInnerTenScoring extends GNAS_Scoring {
+/**
+ * concrete class specialising GNAS_TenZoneScoring to metric inner ten zone scoring
+ */
+class GNAS_MetricInnerTenScoring extends GNAS_TenZoneScoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'metric inner ten'; }
-    public function getMultiplier() { return 10; }
+
 }
 
-#######################################################
-class GNAS_VegasScoring extends GNAS_Scoring {
+/**
+ * concrete class specialising GNAS_TenZoneScoring to vegas scoring
+ */
+class GNAS_VegasScoring extends GNAS_TenZoneScoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'vegas'; }
-    public function getMultiplier() { return 10; }
+
 }
 
-#######################################################
-class GNAS_VegasInnerTenScoring extends GNAS_Scoring {
+/**
+ * concrete class specialising GNAS_TenZoneScoring to vegas scoring
+ */
+class GNAS_VegasInnerTenScoring extends GNAS_TenZoneScoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'vegas inner ten'; }
-    public function getMultiplier() { return 10; }
+
 }
 
-################################################
+/**
+ * concrete class specialising GNAS_Scoring to worcester scoring
+ */
 class GNAS_WorcesterScoring extends GNAS_Scoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'worcester'; }
+
+    /**
+     * returns the multiplier (i.e. the maximum score for an arrow)
+     *
+     * TODO should rename this to maxScorePerArrow but it is used elsewhere so we have to be careful
+     *
+     * @return int
+     */
     public function getMultiplier() { return 5; }
 }
 
-################################################
-class GNAS_FITASixZoneScoring extends GNAS_Scoring {
+/**
+ * concrete class specialising GNAS_TenZoneScoring to metric inner ten zone scoring
+ */
+class GNAS_FITASixZoneScoring extends GNAS_TenZoneScoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'fita six zone'; }
-    public function getMultiplier() { return 10; }
 }
 
-################################################
+/**
+ * concrete 'null object' class specialising GNAS_Scoring to rounds that are not scored
+ */
 class GNAS_NoScoring extends GNAS_Scoring {
+
+    /**
+     * returns the name of the scoring
+     *
+     * @return string
+     */
     public function getName() { return 'none'; }
+
+    /**
+     * returns the multiplier (i.e. the maximum score for an arrow)
+     *
+     * TODO should rename this to maxScorePerArrow but it is used elsewhere so we have to be careful
+     *
+     * @return int
+     */
     public function getMultiplier() { return 0; }
+
+    /**
+     * returns true if the round is to be scored
+     */
     public function isPresent() { return false; }
 }
 
-#############################
+/**
+ * class representing the number of arrows at a particular distance and face.
+ */
 class GNAS_SingleArrowCount {
     private $numArrows;
     private $dozens;
     private $face;
     private $diameter;
 
-    public function getNumArrows() {
-        return $this->numArrows;
-    }
-
-    public function getDozens() {
-        return $this->dozens;
-    }
-
-    public function getFace() {
-        return $this->face;
-    }
-
+    /**
+     * @param array $row a row from the database
+     */
     public function __construct($row) {
         $this->numArrows = $row['num_arrows'];
         $this->dozens = self::doz($row['num_arrows']);
@@ -359,6 +637,40 @@ class GNAS_SingleArrowCount {
         $this->diameter = $row['diameter'];
     }
 
+    /**
+     * returns the number of individual arrows at this distance.
+     *
+     * @return int
+     */
+    public function getNumArrows() {
+        return $this->numArrows;
+    }
+
+    /**
+     * returns the number of dozens at this distance
+     * may contain html entities for fractions.
+     *
+     * @return string
+     */
+    public function getDozens() {
+        return $this->dozens;
+    }
+
+    /**
+     * returns the name of the face, i.e. '122cm'
+     *
+     * @return string
+     */
+    public function getFace() {
+        return $this->face;
+    }
+
+    /**
+     * returns a description of the count as an html list item
+     * i.e. "<li>6 doz, 122cm face</li>"
+     *
+     * @return string
+     */
     public function getDescriptionRow() {
         return '<li>'
                . $this->dozens
@@ -367,10 +679,20 @@ class GNAS_SingleArrowCount {
                . ' face</li>';
     }
 
+    /**
+     * returns the numeric diameter of the face
+     *
+     * @return int
+     */
     public function getDiameter() {
         return $this->diameter;
     }
 
+    /**
+     * formats the number of arrows as dozens
+     *
+     * @return string
+     */
     private static function doz($num) {
         $doz = floor($num / 12);
         $half = '';
@@ -381,19 +703,40 @@ class GNAS_SingleArrowCount {
     }
 }
 
-########################
+/**
+ * class containing a set of GNAS_SingleArrowCount for each distance
+ * and representing all the arrows for a particular round family
+ */
 class GNAS_ArrowCounts {
+    /** @var GNAS_SingleArrowCount[] */
     private $counts;
+
+    /** @var int */
     private $total;
 
+    /**
+     * can only be created by calling create() below.
+     *
+     * @param array|GNAS_SingleArrowCount[]
+     */
     private function __construct(array $counts) {
         $this->counts = $counts;
     }
 
+    /**
+     * return the array of counts
+     *
+     * @return array
+     */
     public function getCounts() {
         return $this->counts;
     }
 
+    /**
+     * adds up and returns the total number of arrows
+     *
+     * @return int
+     */
     public function getTotalArrows() {
         if (!isset($this->total)) {
             $this->total = 0;
@@ -404,6 +747,11 @@ class GNAS_ArrowCounts {
         return $this->total;
     }
 
+    /**
+     * returns an html marked up description of the round
+     *
+     * @return string
+     */
     public function getDescription(GNAS_Scoring $scoring) {
         $description = '<ul>';
         foreach ($this->counts as $count) {
@@ -416,14 +764,33 @@ class GNAS_ArrowCounts {
         return $description;
     }
 
+    /**
+     * returns the number of distances
+     *
+     * @return int
+     */
     public function getNumArrowCounts() {
         return count($this->counts);
     }
 
+    /**
+     * returns the single arrow count for distance number $i
+     *
+     * @param int $i the index of the arrow count
+     *
+     * @return RHAC_SingleArrowCount
+     */
     public function getSingleArrowCount($i) {
         return $this->counts[$i];
     }
 
+    /**
+     * create an instance for a particular round family
+     *
+     * @param string the name of the round family
+     *
+     * @return GNAS_ArrowCounts
+     */
     public static function create($familyName) {
         $rows = GNAS_PDO::SELECT('arrow_count.*, faces.diameter'
             . ' FROM arrow_count, faces'
@@ -439,12 +806,24 @@ class GNAS_ArrowCounts {
     }
 }
 
-###########################
+/**
+ * class representing a specific distance, face and number of arrows
+ */
 class GNAS_SingleDistance {
+    /** @var int */
     private $distance;
+
+    /** @var GNAS_SingleArrowCount */
     private $singleArrowCount;
+
+    /** @var GNAS_Measure */
     private $measure;
 
+    /**
+     * @param int $distance
+     * @param GNAS_SingleArrowCount $singleArrowCount
+     * @param GNAS_Measure $measure
+     */
     public function __construct($distance,
                                 GNAS_SingleArrowCount $singleArrowCount,
                                 GNAS_Measure $measure) {
@@ -453,30 +832,67 @@ class GNAS_SingleDistance {
         $this->measure = $measure;
     }
 
+    /**
+     * return the numeric distance
+     *
+     * @return int
+     */
     public function getDistance() {
         return $this->distance;
     }
 
+    /**
+     * returns the number of arrows at this distance
+     *
+     * @return int
+     */
     public function getNumArrows() {
         return $this->singleArrowCount->getNumArrows();
     }
 
+    /**
+     * returns the number of dozens arrows at this distance
+     * as an html string (may include markup)
+     *
+     * @return string
+     */
     public function getDozens() {
         return $this->singleArrowCount->getDozens();
     }
 
+    /**
+     * return the name of the face, i.e. '122cm'
+     *
+     * @return string
+     */
     public function getFace() {
         return $this->singleArrowCount->getFace();
     }
 
+    /**
+     * returns the diameter of the face, i.e. 122
+     *
+     * @return int
+     */
     public function getDiameter() {
         return $this->singleArrowCount->getDiameter();
     }
 
+    /**
+     * returns the units of the distance, e.g. 'y' or 'm'
+     *
+     * @return string
+     */
     public function getUnits() {
         return $this->measure->getUnits();
     }
 
+    /**
+     * Returns a marked up string describing this distance, face and number of arrows, i.e.
+     * '<li>3 doz at 40y, 80cm face</li>'
+     *
+     * @return string
+     */
     public function getDescription() {
         return '<li>'
             . $this->getDozens()
@@ -489,6 +905,12 @@ class GNAS_SingleDistance {
 
     }
 
+    /**
+     * returns the significant data in a machine-readable array of the form:
+     * [ 'N' => <num-arrows>, 'D' => <diameter>, 'R' => <distance>]
+     *
+     * @return array
+     */
     public function asArray() {
         return array(
             "N" =>  $this->getNumArrows(),
@@ -497,23 +919,41 @@ class GNAS_SingleDistance {
         );
     }
 
+    /**
+     * returns the significant data in a machine-readable JSON object of the form:
+     * { "N": <num-arrows>, "D": <diameter>, "R": <distance> }
+     *
+     * @return string
+     */
     public function getJSON() {
-        return '{'
-             . '"N": ' . $this->getNumArrows()
-             . ', "D": ' . $this->getDiameter()
-             . ', "R": ' . $this->getDistance()
-             . '}';
+        return json_encode($this->asArray());
     }
 
 }
 
-######################
+/**
+ * class representing all of the distances for a particular round as a collection of
+ * GNAS_SingleDistance
+ */
 class GNAS_Distances {
+    /** @var string */
     private $roundName;
+
+    /** @var array */
     private $distances;
+
+    /** @var GNAS_ArrowCounts */
     private $arrowCounts;
+
+    /** @var array|GNAS_SingleDistance[] */
     private $rawDistances;
     
+    /**
+     * returns a string marked up as a single td entity, which may be empty (&nbsp;)
+     *
+     * @param string $face
+     * @param string $distance
+     */
     public function tableData($face, $distance) {
         $content = '&nbsp;';
         $classdecl = '';
@@ -525,6 +965,13 @@ class GNAS_Distances {
         return "<td$classdecl>$content</td>";
     }
 
+    /**
+     * can only be constructed by calling create() below
+     *
+     * @param string $roundName
+     * @param array|GNAS_SingleDistance[] $distances,
+     * @param GNAS_ArrowCounts $arrowCounts
+     */
     private function __construct($roundName,
                                  array $distances,
                                  GNAS_ArrowCounts $arrowCounts) {
@@ -541,10 +988,20 @@ class GNAS_Distances {
         }
     }
 
+    /**
+     * return the raw distances
+     *
+     * @return array|GNAS_SingleDistance[]
+     */
     public function rawData() {
         return $this->rawDistances;
     }
 
+    /**
+     * Return a machine-readable array representation of the data
+     *
+     * @return array
+     */
     public function asArray() {
         $distances = array();
         foreach ($this->distances as $face => $faceDistances) {
@@ -555,6 +1012,11 @@ class GNAS_Distances {
         return $distances;
     }
 
+    /**
+     * Return a machine-readable JSON representation of the data
+     *
+     * @return string
+     */
     public function getJSON() {
         $distances_js = array();
         foreach ($this->distances as $face => $faceDistances) {
@@ -565,6 +1027,14 @@ class GNAS_Distances {
         return '[' .implode(', ', $distances_js) . ']';
     }
 
+    /**
+     * return an html description of the data
+     *
+     * @param GNAS_Scoring $scoring
+     * @param GNAS_Measure $measure
+     *
+     * @return string
+     */
     public function getDescription(GNAS_Scoring $scoring,
                                    GNAS_Measure $measure) {
         $description = '';
@@ -586,6 +1056,15 @@ class GNAS_Distances {
         return $description;
     }
 
+    /**
+     * create an instance
+     *
+     * @param string $roundName
+     * @param GNAS_ArrowCounts $arrowCounts
+     * @param GNAS_Measure $measure
+     *
+     * @return GNAS_Distances
+     */
     public static function create($roundName,
                                   GNAS_ArrowCounts $arrowCounts,
                                   GNAS_Measure $measure) {
@@ -605,6 +1084,15 @@ class GNAS_Distances {
                         $arrowCounts);
     }
 
+    /**
+     * collate the distances into an array of GNAS_SingleDistance
+     *
+     * @param int[] $distances
+     * @param GNAS_ArrowCounts $arrowCounts
+     * @param GNAS_Measure $measure
+     *
+     * @return GNAS_SingleDistance[]
+     */
     private static function collateArrows(array $distances,
                                           GNAS_ArrowCounts $arrowCounts,
                                           GNAS_Measure $measure) {
@@ -622,10 +1110,17 @@ class GNAS_Distances {
 
 }
 
-##################################
+/**
+ * abstract class representing an unrecognised round or round family
+ */
 abstract class GNAS_Unrecognised {
     private $name;
 
+    /**
+     * return a text description explaining the problem
+     *
+     * @return string
+     */
     public function asText() {
         return '<h1>Unrecognised '
                . $this->getTypeName()
@@ -638,55 +1133,135 @@ abstract class GNAS_Unrecognised {
                . ' directly, then better luck next time.</p>';
     }
 
+    /**
+     * return an empty html table body
+     *
+     * @return string
+     */
     public function getTableBody() {
         return '<tbody></tbody>';
     }
 
+    /**
+     * Construct an instance. The name is escaped for security purposes
+     *
+     * @param string $name
+     */
     public function __construct($name) {
         $this->name = htmlentities($name); // security
     }
 
+    /**
+     * return the type of entity, i.e. 'round' or 'round family'
+     *
+     * @return string
+     */
     abstract public function getTypeName();
 }
 
 
-################################
+/**
+ * interface declaring behaviour of a round family
+ */
 interface GNAS_FamilyInterface {
+
+    /**
+     * return an html description of the family, with a table of all distances
+     *
+     * @return string
+     */
     public function asText();
+
+    /**
+     * return an html table body for the distances
+     *
+     * @return string
+     */
     public function getTableBody();
 }
 
-##################################
+/**
+ * class specialising GNAS_Unrecognised for an unrecognised round family
+ */
 class GNAS_UnrecognisedRoundFamily
     extends GNAS_Unrecognised
     implements GNAS_FamilyInterface {
 
+    /**
+     * returns 'round family'
+     *
+     * @return string
+     */
     public function getTypeName() {
         return 'round family';
     }
 
 }
 
-########################################################
+/**
+ * class representing a specific round family
+ */
 class GNAS_RoundFamily implements GNAS_FamilyInterface {
+    
+    /** @var string $name the family name */
     private $name;
+
+    /** @var GNAS_Scoring */
     private $scoring;
+
+    /** @var GNAS_Scoring */
     private $compound_scoring;
+
+    /** @var string */
     private $venue;
+
+    /** @var GNAS_Measure */
     private $measure;
+
+    /**
+     * populated on demand
+     *
+     * @var array|GNAS_Round[]
+     */
     private $rounds = null;
+
+    /**
+     * populated on demand
+     *
+     * @var GNAS_ArrowCounts
+     */
     private $arrowCounts;
 
+    /**
+     * avoid having multiple copies of the same round family
+     *
+     * @var GNAS_RoundFamily
+     */
     private static $instances = array();
 
+    /**
+     * an array of all the round family names, populated on demand
+     *
+     * @var string[]
+     */
     private static $names;
 
+    /**
+     * return a full html description of the family, with a table of distances and arrows shot
+     *
+     * @return string
+     */
     public function asText() {
         return $this->getTitle()
              . $this->getDescription()
              . $this->getTable();
     }
 
+    /**
+     * return an array of rounds
+     *
+     * @return array
+     */
     public function asMenu() {
         $this->populate();
         if (count($this->rounds) == 1) {
@@ -701,14 +1276,29 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         }
     }
 
+    /**
+     * return the name of the round family
+     *
+     * @return string
+     */
     public function getName() {
         return $this->name;
     }
 
+    /**
+     * return the family name wrapped in an h1 tag
+     *
+     * @return string
+     */
     private function getTitle() {
         return '<h1>' . $this->name . '</h1>';
     }
 
+    /**
+     * return an html string describing the round family (without a table)
+     *
+     * @return string
+     */
     private function getDescription() {
         return '<p>'
                . ucfirst($this->measure->getName())
@@ -718,6 +1308,11 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
               . $this->getArrowCounts()->getDescription($this->scoring);
     }
 
+    /**
+     * return a complete html table describing the rounds in this family
+     *
+     * @return string
+     */
     private function getTable() {
         return '<table class="display rounds" width="100%">'
                . $this->getTableHeader()
@@ -726,21 +1321,20 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
                . '</table>';
     }
 
+    /**
+     * return an html string of the table header from the measure
+     *
+     * @return string
+     */
     public function getTableHeader() {
         return $this->measure->getTableHeader();
     }
 
-    public function getTableFooter() {
-        return $this->measure->getTableFooter();
-    }
-
-    public function getArrowCounts() {
-        if (!isset($this->arrowCounts)) {
-            $this->arrowCounts = GNAS_ArrowCounts::create($this->name);
-        }
-        return $this->arrowCounts;
-    }
-
+    /**
+     * return an html string of the table body describing this family of rounds
+     *
+     * @return string
+     */
     public function getTableBody() {
         $this->populate();
         $rows = array();
@@ -752,30 +1346,89 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         return implode($rows);
     }
 
+    /**
+     * return an html string of the table footer from the measure
+     *
+     * @return string
+     */
+    public function getTableFooter() {
+        return $this->measure->getTableFooter();
+    }
+
+    /**
+     * return the arrow counts for this family
+     *
+     * @return GNAS_ArrowCounts
+     */
+    public function getArrowCounts() {
+        if (!isset($this->arrowCounts)) {
+            $this->arrowCounts = GNAS_ArrowCounts::create($this->name);
+        }
+        return $this->arrowCounts;
+    }
+
+    /**
+     * return the measure
+     *
+     * @return GNAS_Measure
+     */
     public function getMeasure() {
         return $this->measure;
     }
 
+    /**
+     * returns the venue: 'indoor', 'outdoor' etc.
+     *
+     * @return string
+     */
     public function getVenue() {
         return $this->venue;
     }
 
+    /**
+     * true if the venue is 'outdoor'
+     *
+     * @return bool
+     */
     public function isOutdoor() {
         return $this->venue == 'outdoor';
     }
 
+    /**
+     * true if the venue is not 'outdoor'
+     * FIXME this needs to be extended for 'clout' etc.
+     *
+     * @return bool
+     */
     public function isIndoor() {
         return !$this->isOutdoor();
     }
 
+    /**
+     * returns the normal (recurve etc.) scoring
+     *
+     * @return GNAS_Scoring
+     */
     public function getScoring() {
         return $this->scoring;
     }
 
+    /**
+     * returns the compound scoring
+     *
+     * @return GNAS_Scoring
+     */
     public function getCompoundScoring() {
         return $this->compound_scoring;
     }
 
+    /**
+     * returns the appropriate scoring for the argument bow
+     *
+     * @param string $bow 'recurve', 'compound' etc.
+     *
+     * @return GNAS_Scoring
+     */
     public function getScoringByBow($bow) {
         if ($bow == 'compound') {
             return $this->getCompoundScoring();
@@ -784,11 +1437,19 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         }
     }
 
+    /**
+     * returns the rounds in this family
+     *
+     * @return array|GNAS_Round[]
+     */
     public function getRounds() {
         $this->populate();
         return $this->rounds;
     }
 
+    /**
+     * fetches the rounds for this family from the database and populates the private rounds array
+     */
     private function populate() {
         if (isset($this->rounds)) return;
         $this->rounds = array();
@@ -803,6 +1464,15 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         }
     }
 
+    /**
+     * Only instantiable by calling getInstance() below
+     *
+     * @param string $name the family name
+     * @param string $venue 'indoor' etc.
+     * @param string $measure 'imperial' etc.
+     * @param string $scoring 'ten zone' etc.
+     * @param string $compound_scoring 'ten zone' etc.
+     */
     private function __construct($name, $venue, $measure, $scoring, $compound_scoring) {
         $this->name = $name;
         $this->scoring = self::calcScoring($scoring);
@@ -817,6 +1487,13 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
                                    : new GNAS_IndoorMetricMeasure());
     }
 
+    /**
+     * returns the appropriate scoring for the scoring name
+     *
+     * @param string $scoring 'ten zone' etc
+     *
+     * @return GNAS_Scoring
+     */
     private static function calcScoring($scoring) {
         switch ($scoring) {
             case 'ten zone':
@@ -838,6 +1515,13 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         }
     }
 
+    /**
+     * return an instance of the round family
+     *
+     * @param string $name the family name
+     *
+     * @return GNAS_RoundFamily
+     */
     public static function getInstance($name) {
         if (!array_key_exists($name, self::$instances)) {
             $family = array();
@@ -859,6 +1543,11 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
         return self::$instances[$name];
     }
 
+    /**
+     * creates an instance of each round family from the database and returns all of them
+     *
+     * @return array|GNAS_RoundFamily[]
+     */
     public static function getAllInstances() {
         if (!isset(self::$names)) {
             self::$names = array();
@@ -875,40 +1564,95 @@ class GNAS_RoundFamily implements GNAS_FamilyInterface {
 
 }
 
-###############################
+/**
+ * interface declaring functionality for rounds
+ */
 interface GNAS_RoundInterface {
+    /**
+     * return an html string representing a row of the family table for this round
+     *
+     * @return string
+     */
     public function getTableRow();
+
+    /**
+     * return a string of html text describing the round
+     *
+     * @return string
+     */
     public function asText();
 }
 
-############################
+/**
+ * class specialising GNAS_Unrecognised for unrecognised rounds
+ */
 class GNAS_UnrecognisedRound
     extends GNAS_Unrecognised
     implements GNAS_RoundInterface {
 
+    /**
+     * returns 'round'
+     *
+     * @return string
+     */
     public function getTypeName() {
         return 'round';
     }
 
+    /**
+     * returns the empty string
+     *
+     * @return string
+     */
     public function getTableRow() {
         return '';
     }
 
 }
 
-#################################################
+/**
+ * class representing an individual round
+ */
 class GNAS_Round implements GNAS_RoundInterface {
 
+    /** @var string */
     private $name;
-    private $printName;
+
+    /** @var string */
     private $familyName;
+
+    /** @var int */
     private $display_order;
+
+    /** @var GNAS_Distances */
     private $distances;
+
+    /** @var GNAS_Classifications */
     private $classifications;
+
+    /**
+     * the round name, with spaces replaced by '+' for use in query parameters
+     *
+     * @var string
+     */
     private $searchTerm;
 
+    /**
+     * avoid multiple copies of the same round
+     *
+     * @var array|GNAS_Round[]
+     */
     private static $instances = array();
 
+
+    /**
+     * return a textual representation of the round, with a table of
+     * classifications and javascript to identify the round to js on the page
+     * for the client side handicap calculation where you enter your handicap
+     * and it predicts a score
+     *
+     * @return string
+     */
     public function asText() {
         return $this->getTitle()
              . $this->getDescription()
@@ -917,20 +1661,40 @@ class GNAS_Round implements GNAS_RoundInterface {
              . $this->getClassifications()->getTable();
     }
 
+    /**
+     * return the round name wrapped in an h1 tag
+     *
+     * @return string
+     */
     public function getTitle() {
-        return '<h1>' . $this->printName . '</h1>';
+        return '<h1>' . $this->name . '</h1>';
     }
 
+    /**
+     * return the round name
+     *
+     * @return string
+     */
     public function getName() {
-        return $this->printName;
+        return $this->name;
     }
 
+    /**
+     * return a description of the round
+     *
+     * @return string
+     */
     private function getDescription() {
         return $this->getDistances()
                     ->getDescription($this->getFamily()->getScoring(),
                                      $this->getMeasure());
     }
 
+    /**
+     * returns a short piece of JavaScript supplying details about the round scoring
+     *
+     * @return string
+     */
     private function getJavaScript() {
         $javascript = '<script>';
         $javascript .= 'rhac_scoring="' . $this->getScoringNameByBow('recurve') . '";';
@@ -941,38 +1705,87 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $javascript;
     }
 
+    /**
+     * return the JSON from the RHAC_Distances
+     *
+     * @return string
+     */
     public function getJSON() {
         return $this->getDistances()->getJSON();
     }
 
+    /**
+     * return the name of the measure ('imperial' or 'metric')
+     *
+     * @return string
+     */
     public function getMeasureName() {
         return $this->getFamily()->getMeasure()->getName();
     }
 
+    /**
+     * return the name of the scoring for this round ('ten zone' etc.)
+     *
+     * @return string
+     */
     public function getScoringName() {
         return $this->getFamily()->getScoring()->getName();
     }
 
+    /**
+     * return the scoring name for this round and the given bow type
+     *
+     * @param string $bow 'recurve' etc.
+     *
+     * @return string
+     */
     public function getScoringNameByBow($bow) {
         return $this->getFamily()->getScoringByBow($bow)->getName();
     }
 
+    /**
+     * return the venue for this round ('outdoor' etc.)
+     *
+     * @return string
+     */
     public function getVenue() {
         return $this->getFamily()->getVenue();
     }
 
+    /**
+     * return the maximum possible score for this round
+     *
+     * @return int
+     */
     public function getMaxScore() {
         return $this->getScoring()->maxScore($this->getFamily()->getArrowCounts());
     }
 
+    /**
+     * return true if the venue is not 'outdoor'
+     *
+     * FIXME extend for clout etc.
+     *
+     * @return bool
+     */
     public function isIndoor() {
         return !$this->isOutdoor();
     }
 
+    /**
+     * reurn true if the venue is 'outdoor'
+     *
+     * @return bool
+     */
     public function isOutdoor() {
         return $this->getVenue() == "outdoor";
     }
 
+    /**
+     * return the "Beat Your Handicap" text and form elements
+     *
+     * @return string
+     */
     private function getHandicapText() {
         $name = $this->getName();
         $compound = '';
@@ -988,6 +1801,11 @@ class GNAS_Round implements GNAS_RoundInterface {
 EOJS;
     }
 
+    /**
+     * return the classifications for this round
+     *
+     * @return GNAS_Classifications
+     */
     private function getClassifications() {
         if (!isset($this->classifications)) {
             if ($this->getVenue() == 'outdoor') {
@@ -999,22 +1817,47 @@ EOJS;
         return $this->classifications;
     }
 
+    /**
+     * return the classification for a particular gender, age, bow and score, for this round
+     *
+     * @return string
+     */
     public function getClassification($gender, $age_group, $bow, $score) {
         return $this->getClassifications()->getClassification($gender, $age_group, $bow, $score);
     }
 
+    /**
+     * return the html table header for this round
+     *
+     * @return string
+     */
     public function getTableHeader() {
         return $this->getFamily()->getTableHeader();
     }
 
+    /**
+     * return the html table footer for this round
+     *
+     * @return string
+     */
     public function getTableFooter() {
         return $this->getFamily()->getTableFooter();
     }
 
+    /**
+     * return a key that can be used to sort this round with all others in the correct display order
+     *
+     * @return string
+     */
     private function getOrder() {
         return $this->getFamily()->getName() . '.' . $this->display_order;
     }
 
+    /**
+     * return an html table row for this round to use in the round family table
+     *
+     * @return string
+     */
     public function getTableRow() {
         return '<tr><td data-order="' . $this->getOrder() . '">'
              . $this->getLink()
@@ -1026,6 +1869,11 @@ EOJS;
              . "\n";
     }
 
+    /**
+     * return an anchor that will link to the page for this round
+     *
+     * @return string
+     */
     private function getLink() {
         return '<a href="'
              . GNAS_PageURL::make(array('round' => $this->searchTerm))
@@ -1034,6 +1882,11 @@ EOJS;
              . '</a>';
     }
 
+    /**
+     * return the distances for this round
+     *
+     * @return GNAS_Distances
+     */
     public function getDistances() {
         if (!isset($this->distances)) {
             $this->distances =
@@ -1044,30 +1897,63 @@ EOJS;
         return $this->distances;
     }
 
+    /**
+     * return this round's family
+     *
+     * @return GNAS_RoundFamily
+     */
     private function getFamily() {
         return GNAS_RoundFamily::getInstance($this->familyName);
     }
 
+    /**
+     * return the measure for this round
+     *
+     * @return GNAS_Measure
+     */
     public function getMeasure() {
         return $this->getFamily()->getMeasure();
     }
 
+    /**
+     * return the default scoring for this round
+     *
+     * @return GNAS_Scoring
+     */
     public function getScoring() {
         return $this->getFamily()->getScoring();
     }
 
+    /**
+     * return the compound scoring for this round
+     *
+     * @return GNAS_Scoring
+     */
     public function getCompoundScoring() {
         return $this->getFamily()->getCompoundScoring();
     }
 
+    /**
+     * only instantiable by calling getInstanceByName() or getInstanceFromRow() below
+     *
+     * @param string $name
+     * @param string $familyName
+     * @param int $displayOrder the order that the round is displayed
+     */
     private function __construct($name, $familyName, $display_order) {
         $this->name = $name;
-        $this->printName = $name;
         $this->familyName = $familyName;
         $this->display_order = $display_order;
         $this->searchTerm = implode('+', explode(' ', $name));
     }
 
+    /**
+     * return an instance from the given database row
+     *
+     * @param array $row
+     *
+     * @return GNAS_Round
+     */
     public static function getInstanceFromRow(array $row) {
         if (!array_key_exists($row['name'], self::$instances)) {
             self::$instances[$row['name']] = new self($row['name'],
@@ -1077,6 +1963,13 @@ EOJS;
         return self::$instances[$row['name']];
     }
 
+    /**
+     * return an instance given its name.
+     *
+     * @param string $name
+     *
+     * @return GNAS_Round
+     */
     public static function getInstanceByName($name) {
         if (!array_key_exists($name, self::$instances)) {
             $family = array();
@@ -1095,12 +1988,18 @@ EOJS;
 
 }
 
-#########################
+/**
+ * class supporting the "Classification Requirements" page
+ *
+ * @see http://www.roystonarchery.org/new/members-only/requirements
+ */
 class GNAS_Requirements {
 
-    public function __construct() {
-    }
-
+    /**
+     * returns the entire page, basically
+     *
+     * @return string
+     */
     public function finder() {
         $ret = $this->form();
         if (   $_GET['outdoor_classification']
@@ -1115,6 +2014,11 @@ class GNAS_Requirements {
         return $ret;
     }
 
+    /**
+     * returns the input form for the page
+     * 
+     * @return string
+     */
     private function form() {
         $result = "<form method='get' action=''>\n";
         if ($_GET['page_id']) {
@@ -1195,6 +2099,15 @@ class GNAS_Requirements {
     return $result;
     }
 
+    /**
+     * format a single option input field
+     *
+     * @param string $title
+     * @param string $id
+     * @param array $options
+     *
+     * @return string
+     */
     private function option($title, $id, $options) {
         $result = "<tr><th>$title</th><td><select name='$id' id='$id'>\n";
         foreach ($options as $value => $label) {
@@ -1208,6 +2121,14 @@ class GNAS_Requirements {
         return $result;
     }
 
+    /**
+     * format a multi-option input field
+     *
+     * @param string $title
+     * @param array $components
+     *
+     * @return string
+     */
     private function multiOption($title, $components) {
         $first = true;
         $result = "<tr><th>$title</th><td><table>";
@@ -1240,6 +2161,16 @@ class GNAS_Requirements {
         return $result;
     }
 
+    /**
+     * format a number input field
+     *
+     * @param string $title
+     * @param string $id
+     * @param int $min
+     * @param int $max
+     *
+     * @return string
+     */
     private function number($title, $id, $min, $max) {
         if (isset($_GET[$id])) {
             $value = $_GET[$id];
@@ -1253,6 +2184,11 @@ class GNAS_Requirements {
         return $result;
     }
 
+    /**
+     * return the tabulated results of a search
+     *
+     * @return string
+     */
     private function results() {
         $result = '';
         if ($_GET['venue'] == 'outdoor') {
@@ -1262,6 +2198,11 @@ class GNAS_Requirements {
         }
     }
 
+    /**
+     * return the tabulated results of a search of outdoor rounds
+     *
+     * @return string
+     */
     private function outdoorResults() {
         $class = $_GET['outdoor_classification'];
         if (   $class != 'third'
@@ -1285,6 +2226,11 @@ class GNAS_Requirements {
         return $this->formatResults($rows);
     }
 
+    /**
+     * return the tabulated results of a search of indoor rounds
+     *
+     * @return string
+     */
     private function indoorResults() {
         $class = $_GET['indoor_classification'];
         if (   $class != 'A'
@@ -1309,6 +2255,12 @@ class GNAS_Requirements {
         return $this->formatResults($rows);
     }
 
+    /**
+     * returns formatted results for either indoor or outdoor search
+     *
+     * @param array $rows
+     * @return string
+     */
     private function formatResults($rows) {
         $result = "<table id='predictions'><thead><tr>"
                     . "<th>Round</th>"
@@ -1339,7 +2291,9 @@ class GNAS_Requirements {
 
 }
 
-############################
+/**
+ * class supporting the apparently now defunct rounds page
+ */
 class GNAS_Classifications {
 
     protected $roundName;
@@ -1725,7 +2679,6 @@ class GNAS_IndoorImperialRounds extends GNAS_AllRounds {
 
 }
 
-#########################
 /**
  * Renders the admin menus.
  * Reproduces as closely as possible a representation of the given GNAS table.

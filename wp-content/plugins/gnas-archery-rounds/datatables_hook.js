@@ -1,16 +1,13 @@
+// set up datatables behaviour for the rounds table
+//
+// the anonymous function is executed when the web page is
+// "ready" (i.e. fully loaded into the browser)
+
 jQuery(document).ready( function () {
     var oTable = jQuery('table.rounds').dataTable(
         {
-            // "iDisplayLength": 5,
-            // "aLengthMenu": [[1, 5, 10, 25, -1], [1, 5, 10, 25, "All"]],
-            // "sScrollX": "100%",
-            // "sScrollY": "200px",
-            // "bScrollCollapse": true,
-            // "sDom": 'lfrtp',
             "bPaginate": true,
-            // "bSort": false,
             "bJQueryUI": true
         }
     );
-    // new FixedColumns(oTable);
 } );
