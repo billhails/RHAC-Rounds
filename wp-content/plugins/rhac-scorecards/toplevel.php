@@ -1,9 +1,19 @@
 <?php
 
+/**
+ * this file contains classes supporting the rhac-scorecards plugin for
+ * editing and viewing scorecards
+ */
+
 include_once plugin_dir_path(__FILE__) . '../gnas-archery-rounds/rounds.php';
 include_once plugin_dir_path(__FILE__) . 'RHAC_ScorecardAccumulator.php';
 include_once plugin_dir_path(__FILE__) . 'RHAC_ReassesmentInserter.php';
 
+/**
+ * class to accumulate and display all qualifying 252 results on the admin page
+ *
+ * currently unused, and possibly innaccurate
+ */
 class RHAC_Archer252 {
     private static $instances;
     private static $scores;
@@ -75,7 +85,7 @@ class RHAC_Archer252 {
     }
 
     private static function below_required_score($bow, $round, $score) {
-        return self::$requirements[$round][$bow] > $score;
+        return $score < self::$requirements[$round][$bow];
     }
 
     public static function getResultsHTML() {
@@ -110,18 +120,41 @@ class RHAC_Archer252 {
     }
 }
 
+/**
+ * this class contains the code fore the scorecards admin area
+ */
 class RHAC_Scorecards {
 
+    /** @var PDO $pdo the database handle for the scorecards database */
     private $pdo;
+
+    /** @var array $scorecard_data data for the current scorecard */
     private $scorecard_data;
+
+    /** @var int $scorecard_id (unused?) */
     private $scorecard_id;
+
+    /** @var array $sorecard_end_data data for the ends of the current scorecard */
     private $scorecard_end_data;
+
+    /** @var string $homepath the path to this plugin directory */
     private $homepath;
+
+    /** @var string $homeurl the url of this plugin directory */
     private $homeurl;
+
+    /** @var array $archer_map maps name to other data */
     private $archer_map;
+
+    /** @var array $rounds (unused?) */
     private $rounds;
+
+    /** @var RHAC_Scorecards $instance Singleton Pattern */
     private static $instance;
 
+    /**
+     * private constructor (Singleton Pattern)
+     */
     private function __construct() {
         $this->homepath = plugin_dir_path(__FILE__);
         $this->homeurl = plugin_dir_url(__FILE__);
@@ -139,6 +172,11 @@ class RHAC_Scorecards {
         // echo '<p>construct successful</p>';
     }
 
+    /**
+     * Singleton pattern
+     *
+     * @return RHAC_Scorecards
+     */
     public static function getInstance() {
         if (!isset(self::$instance)) {
             self::$instance = new self();
@@ -146,6 +184,12 @@ class RHAC_Scorecards {
         return self::$instance;
     }
 
+    /**
+     * interface to GNAS_Round::getInstanceByName($round_name)
+     *
+     * @param string $round_name
+     * @return GNAS_Round
+     */
     public function getRound($round_name) {
         $round = GNAS_Round::getInstanceByName($round_name);
         if ($round instanceof GNAS_UnrecognisedRound) {
@@ -154,6 +198,13 @@ class RHAC_Scorecards {
         return $round;
     }
 
+    /**
+     * executes an sql request and returns the result
+     *
+     * @param string $query
+     * @param array $parameters
+     * @return array
+     */
     public function fetch($query, $params = array()) {
         $stmt = $this->pdo->prepare($query);
         if (!$stmt) {
@@ -166,6 +217,13 @@ class RHAC_Scorecards {
         return $rows;
     }
 
+    /**
+     * executes an sql statement and returns the status
+     *
+     * @param string $query
+     * @param array $params
+     * @return int
+     */
     public function exec($query, $params = array()) {
         $stmt = $this->pdo->prepare($query);
         if (!$stmt) {
@@ -177,6 +235,10 @@ class RHAC_Scorecards {
         return $status;
     }
 
+    /**
+     * top-level entry point looks for GET and POST parameters
+     * and behaves accordingly, rendering the appropriate page view.
+     */
     public function topLevel() {
 
         // echo '<p>topLevel() entered</p>';
@@ -230,7 +292,6 @@ class RHAC_Scorecards {
                 $this->insert();
             }
             $this->homePage();
-
         } elseif (isset($_POST['delete-scorecard'])) { // delete requested
             // echo '<p>topLevel() delete req</p>';
             $this->deleteScorecard($_POST['scorecard-id']);
@@ -298,6 +359,13 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * Updates all scorecards referencing archer $from to reference archer $to
+     * then deletes archer $from from the archer table
+     *
+     * @param string $from archer name
+     * @param string $to archer name
+     */
     private function mergeArchers($from, $to) {
         if ($from && $to && $from != $to) {
             $this->pdo->beginTransaction();
@@ -308,6 +376,15 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * adds an archer to the archer table
+     *
+     * @param string $archer archer name
+     * @param string $dob date of birth
+     * @param string $gender M/F
+     * @param string $guest Y/N
+     * @param string $archived Y/N
+     */
     private function addArcher($archer, $dob, $gender, $guest, $archived) {
         if ($archer && preg_match('#^\d\d\d\d/\d\d/\d\d$#', $dob) && $gender && $guest && $archived) {
             $this->exec("INSERT INTO archer(name, date_of_birth, gender, guest, archived) VALUES(?, ?, ?, ?, ?)",
@@ -319,6 +396,11 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * adds a venue to the venue table
+     *
+     * @param string $venue
+     */
     private function addVenue($venue) {
         if ($venue) {
             $this->exec("INSERT INTO venue(name) VALUES(?)", array($venue));
@@ -329,6 +411,11 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * deletes a scorecard by id
+     *
+     * @param int $id
+     */
     private function deleteScorecard($id) {
         if ($id) {
             $status1 = $this->exec("DELETE FROM scorecard_end WHERE scorecard_id = ?", array($id));
@@ -337,6 +424,11 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * deletes an archer from the archer table, but only if they have no scorecards
+     *
+     * @param string $archer the archer name
+     */
     private function deleteArcher($archer) {
         if ($this->noScorecards($archer)) {
             $this->exec("DELETE FROM archer where name = ?", array($archer));
@@ -346,6 +438,12 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * returns true if the archer has no scorecards
+     *
+     * @param string $archer the archer's name
+     * @return bool
+     */
     private function noScorecards($archer) {
         $rows = $this->fetch("SELECT COUNT(*) AS num FROM scorecards WHERE archer = ?", array($archer));
         $count = $rows[0]['num'];
@@ -357,6 +455,12 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * convert a date to the format suitable for storing in the db (Y/m/d)
+     *
+     * @param string $date in any recognised format
+     * @return string
+     */
     private function dateToStoredFormat($date) {
         $obj = date_create($date);
         if ($obj) {
@@ -368,6 +472,12 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * convert a date to the format suitable for display (D, j M Y)
+     *
+     * @param string $date in any recognised format
+     * @return string
+     */
     private function dateToDisplayedFormat($date) {
         $obj = date_create($date);
         if ($obj) {
@@ -379,11 +489,10 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * update a scorecard from data in the POST request
+     */
     private function update() {
-        # print "<pre>\n";
-        # print_r($_POST);
-        # print "</pre>\n";
-
         $id = $_POST['scorecard-id'];
         $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
         $gender = $this->getGender($_POST['archer']);
@@ -424,7 +533,6 @@ class RHAC_Scorecards {
             $tens,
             $id
         );
-        // echo '<p>update() ' . print_r($params, true) . '</p>';
         $this->pdo->beginTransaction();
         $this->exec("UPDATE scorecards"
                  . " SET archer = ?,"
@@ -456,6 +564,9 @@ class RHAC_Scorecards {
         $this->pdo->commit();
     }
 
+    /**
+     * enter a new scorecard from data in the POST request
+     */
     private function insert() {
         $handicap_ranking = $this->getHandicapForScore($_POST['bow'], $_POST['round'], $_POST['total-total']);
         $gender = $this->getGender($_POST['archer']);
@@ -511,6 +622,11 @@ class RHAC_Scorecards {
         return $id;
     }
 
+    /**
+     * Return the total number of tens in the POST data
+     *
+     * @return int
+     */
     private function countTens() {
         if (isset($_POST['total-tens'])) {
             return $_POST['total-tens'];
@@ -533,6 +649,9 @@ class RHAC_Scorecards {
         return $total;
     }
 
+    /**
+     * insert all end data from the POST request into the scorecard_end table
+     */
     private function insertEnds($id) {
         for ($end = 1; $end < 25; ++$end) {
             if ($_POST["arrow-$end-1"] == "") break;
@@ -557,6 +676,12 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * read a scorecard and its ends from the database and return a JSON representation
+     *
+     * @param int $id
+     * @return string
+     */
     public function scorecardJSON($id) {
         $this->populateScorecardData($id);
         $data = array();
@@ -569,6 +694,11 @@ class RHAC_Scorecards {
         return json_encode($data);
     }
 
+    /**
+     * read a scorecard from the database and populate the scorecard_data field
+     *
+     * @param int $id
+     */
     private function populateScorecardData($id) {
         $rows = $this->fetch("SELECT * FROM scorecards WHERE scorecard_id = ?",
                              array($id));
@@ -579,6 +709,12 @@ class RHAC_Scorecards {
         $this->scorecard_end_data = $rows;
     }
 
+    /**
+     * read and return scorecard ends from the database
+     *
+     * @param int $id the scorecard id
+     * @return array
+     */
     private function fetchScorecardEnds($id) {
         return $this->fetch("SELECT *"
                       . " FROM scorecard_end"
@@ -587,6 +723,13 @@ class RHAC_Scorecards {
                       array($id));
     }
 
+    /**
+     * populate the scorecard and scorecard_ends fields
+     * then draw the edit scorecard page
+     *
+     * @param int $id the scorecard id
+     * @param bool $has_ends does the scorecard have associated scorecard_end entries
+     */
     private function edit($id, $has_ends = true) {
         // echo "<p>edit($id)</p>";
         $this->scorecard_id = $id;
@@ -613,6 +756,10 @@ class RHAC_Scorecards {
         print $this->editScorecardPage($has_ends);
     }
 
+    /**
+     * search for scorecards based on constraints in the GET data
+     * then print the search results page.
+     */
     private function find() {
         $criteria = array("1 = 1");
         $params = array();
@@ -670,6 +817,12 @@ class RHAC_Scorecards {
         print $this->searchResultsPage($search_results);
     }
 
+    /**
+     * produce a search results page html from the argument search results
+     *
+     * @param array $search_results
+     * @return string
+     */
     private function searchResultsPage($search_results) {
         $text = array();
         $text []= '<table>';
@@ -776,6 +929,8 @@ class RHAC_Scorecards {
     /**
      * Generate round data to html that javascript can inspect.
      * TODO replace with wp_localize_script()
+     *
+     * @return string
      */
     private function roundData() {
         $text = '<span id="round-data">';
@@ -804,6 +959,8 @@ class RHAC_Scorecards {
 
     /**
      * Generate round data to JSON directly.
+     *
+     * @return string
      */
     private function roundDataAsJSON() {
         $rounds = array();
@@ -821,6 +978,12 @@ class RHAC_Scorecards {
         return json_encode($rounds);
     }
 
+    /**
+     * return all of the scorecards from the database
+     *
+     * @param bool $with_ends_only limit to scorecards with associated scorecard_ends
+     * @return array
+     */
     private function getAllScoreCards($with_ends_only = false) {
         $query = "SELECT * FROM scorecards";
         if ($with_ends_only) {
@@ -830,46 +993,103 @@ class RHAC_Scorecards {
         return $this->fetch($query);
     }
 
+    /**
+     * update the handicap ranking for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param int $handicap_ranking
+     */
     private function updateHandicapRanking($scorecard_id, $handicap_ranking) {
         $this->exec("UPDATE scorecards SET handicap_ranking = ? WHERE scorecard_id = ?",
                     array($handicap_ranking, $scorecard_id));
     }
 
+    /**
+     * update the age group for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param string $category the age group
+     */
     private function updateAgeGroup($scorecard_id, $category) {
         $this->exec("UPDATE scorecards SET category = ? WHERE scorecard_id = ?",
                     array($category, $scorecard_id));
     }
 
+    /**
+     * update the gender for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param string $gender M/F
+     */
     private function updateGender($scorecard_id, $gender) {
         $this->exec("UPDATE scorecards SET gender = ? WHERE scorecard_id = ?",
                     array($gender, $scorecard_id));
     }
 
+    /**
+     * update the guest status for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param string $guest Y/N
+     */
     private function updateGuestStatus($scorecard_id, $guest) {
         $this->exec("UPDATE scorecards SET guest = ? WHERE scorecard_id = ?",
                     array($guest, $scorecard_id));
     }
 
+    /**
+     * update the classification for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param string $classification
+     */
     private function updateClassification($scorecard_id, $classification) {
         $this->exec("UPDATE scorecards SET classification = ? WHERE scorecard_id = ?",
                     array($classification, $scorecard_id));
     }
 
+    /**
+     * update the next age group classification for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param string $classification
+     */
     private function updateNextAgeGroupClassification($scorecard_id, $classification) {
         $this->exec("UPDATE scorecards SET next_age_group_classification = ? WHERE scorecard_id = ?",
                     array($classification, $scorecard_id));
     }
 
+    /**
+     * update the outdoor flag for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param string $outdoor Y/N
+     */
     private function updateOutdoor($scorecard_id, $outdoor) {
         $this->exec("UPDATE scorecards SET outdoor = ? WHERE scorecard_id = ?",
                     array($outdoor, $scorecard_id));
     }
 
+    /**
+     * update the total tens for a scorecard in the database
+     *
+     * @param int $scorecard_id
+     * @param int $tens
+     */
     private function updateTens($scorecard_id, $tens) {
         $this->exec("UPDATE scorecards SET tens = ? WHERE scorecard_id = ?",
                     array($tens, $scorecard_id));
     }
 
+    /**
+     * fetch the handicap for a score in a particular round
+     *
+     * @param string $bow the bow type
+     * @param string $round the name of the round
+     * @param int score the core
+     *
+     * @return int
+     */
     private function getHandicapForScore($bow, $round, $score) {
         $compound = $bow == "compound" ? "Y" : "N";
         $rows = $this->fetch("SELECT min(handicap) as result"
@@ -879,6 +1099,9 @@ class RHAC_Scorecards {
         return $rows[0]["result"];
     }
 
+    /**
+     * recalculate and update the handicap ranking for all scorecards in the database.
+     */
     private function reCalculateHandicapsForScores() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
@@ -888,6 +1111,9 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * recaclculate and update the age group for each scorecard in the database.
+     */
     private function reCalculateAgeGroups() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
@@ -896,6 +1122,9 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * recaclculate and update the gender for each scorecard in the database.
+     */
     private function reCalculateGenders() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
@@ -904,6 +1133,9 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * recaclculate and update the guest status for each scorecard in the database.
+     */
     private function reCalculateGuestStatus() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
@@ -912,10 +1144,24 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * get the classification for a particular score
+     *
+     * @param string $round
+     * @param string $gender
+     * @param string $category
+     * @param string $bow
+     * @param int $score
+     *
+     * @return string
+     */
     private function getClassification($round, $gender, $category, $bow, $score) {
-        return  $this->getRound($round)->getClassification($gender, $category, $bow, $score);
+        return $this->getRound($round)->getClassification($gender, $category, $bow, $score);
     }
 
+    /**
+     * recaclculate and update the classification for each scorecard in the database.
+     */
     private function reCalculateClassifications() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
@@ -940,6 +1186,12 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * return the next age group after the current one
+     *
+     * @param string $category the current age group
+     * @return string
+     */
     private function getNextAgeGroup($category) {
         switch ($category) {
             case 'U12': return 'U14';
@@ -953,11 +1205,20 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * "Y" if the round is outdoor, "N" otherwise
+     *
+     * @param string $round
+     * @return string
+     */
     private function getIsOutdoor($round) {
         $isOutdoor = $this->getRound($round)->isOutdoor();
         return $isOutdoor ? "Y" : "N";
     }
 
+    /**
+     * recaclculate and update the outdoor flag for each scorecard in the database.
+     */
     private function reCalculateOutdoor() {
         $scorecards = $this->getAllScoreCards();
         foreach ($scorecards as $scorecard) {
@@ -966,6 +1227,9 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * recaclculate and update the number of tens for each scorecard in the database.
+     */
     private function reCalculateTens() {
         $scorecards = $this->getAllScoreCards(true);
         foreach ($scorecards as $scorecard) {
@@ -974,6 +1238,11 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * recalculate and update the club records for each scorecard in the database
+     *
+     * This is the method that invokes the accumulators to do their work
+     */
     private function reCalculateRecords() {
         $this->insertReasessments();
         $scorecards = $this->getAllScoreCards();
@@ -987,6 +1256,13 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * update a scorecard according to the reccomendations 
+     * produced by the accumulators
+     *
+     * @param int $scorecard_id
+     * @param array $changes the accumulator recommendations
+     */
     private function updateRecords($scorecard_id, $changes) {
         $params = array();
         $arguments = array();
@@ -1001,6 +1277,10 @@ class RHAC_Scorecards {
         $this->exec($update_statement, $params);
     }
 
+    /**
+     * insert and delete reasessments according to
+     * recommendations from RHAC_ReassesmentInserter
+     */
     private function insertReasessments() {
         $scorecards = $this->getAllScoreCards();
         $inserter = new RHAC_ReassesmentInserter($this->getArcherMap());
@@ -1017,6 +1297,11 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * insert a specific reassesment with data from RHAC_ReassesmentInserter
+     *
+     * @param array $change
+     */
     private function insertReasessment($change) {
         $venue = $change['outdoor'] == 'Y' ? 'Outdoor' : 'Indoor';
         $round = $change['reassessment'] == 'end_of_season'
@@ -1061,11 +1346,21 @@ class RHAC_Scorecards {
 
     }
 
+    /**
+     * delete a specific reassesment with data (scorecard id) from RHAC_ReassesmentInserter
+     *
+     * @param array $change
+     */
     private function deleteReasessment($change) {
         $this->exec("DELETE FROM scorecards WHERE scorecard_id = ?",
                     array($change['scorecard_id']));
     }
 
+    /**
+     * Fetch all ends for a given scorecard and count the number of tens
+     *
+     * @param int $id the scorecard id
+     */
     private function countTensFromTable($id) {
         $ends = $this->fetchScorecardEnds($id);
         $total = 0;
@@ -1080,6 +1375,10 @@ class RHAC_Scorecards {
         return $total;
     }
 
+    /**
+     * Deletes and recreates all handicap data by re-calculating it, per round, per score.
+     * This is a pretty expensive operation.
+     */
     private function rebuildRoundHandicaps() {
         $this->pdo->beginTransaction();
         $this->deleteAllRoundHandicaps();
@@ -1090,10 +1389,20 @@ class RHAC_Scorecards {
         $this->pdo->commit();
     }
 
+    /**
+     * delete all handicap information from the round_handicaps table, as a precursor to re-building it
+     */
     private function deleteAllRoundHandicaps() {
         $this->exec("DELETE FROM round_handicaps");
     }
 
+    /**
+     * Partially re-populate the round_handicaps table.
+     *
+     * @param string $compoundYN
+     * @param GNAS_Scoring $scoring
+     * @param GNAS_Round $round
+     */
     private function populateSingleRoundHandicaps($compoundYN, $scoring, $round) {
         $scoring_name = $scoring->getName();
         $measure = $round->getMeasure()->getName();
@@ -1110,18 +1419,29 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * insert a single row into the round_handicaps table
+     *
+     * @param string $round_name
+     * @param string $compoundYN
+     * @param int $score
+     * @param int $handicap
+     */
     private function insertOneRoundHandicap($round_name, $compoundYN, $score, $handicap) {
         $this->exec("INSERT INTO round_handicaps(round, compound, score, handicap) values(?,?,?,?)",
             array($round_name, $compoundYN, $score, $handicap)
         );
     }
 
+    /**
+     * returns a html select form attribute for all of the rounds
+     *
+     * @return string
+     */
     public function roundDataAsSelect() {
-        // echo '<p>in roundDataAsSelect()</p>';
         $text = array('<select name="round" id="round">');
         $text []= "<option value=''>- - -</option>\n";
         foreach (GNAS_Page::roundData() as $round) {
-            // echo '<p>roundDataAsSelect() got round</p>';
             $text []= "<option value='" . $round->getName() . "'";
             if ($round->getName() == $this->scorecard_data['round']) {
                 $text []= " selected='1'";
@@ -1129,10 +1449,14 @@ class RHAC_Scorecards {
             $text []= ">" . $round->getName() . "</option>\n";
         }
         $text []= '<select>';
-        // echo '<p>roundDataAsSelect() returning</p>';
         return implode($text);
     }
 
+    /**
+     * returns a html select form attribute for all of the bow types
+     *
+     * @return string
+     */
     public function bowDataAsSelect() {
         $bows = array('recurve', 'compound', 'longbow', 'barebow');
         $text = array('<select name="bow" id="bow">');
@@ -1144,6 +1468,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns a html select form attribute for all of the age groups
+     *
+     * @return string
+     */
     public function categoryAsSelect() {
         $categories = array('adult', 'U18', 'U16', 'U14', 'U12');
         $text = array('<select name="category" id="category">');
@@ -1155,6 +1484,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns a html select form attribute for the genders
+     *
+     * @return string
+     */
     public function genderAsSelect() {
         $genders = array('M', 'F');
         $text = array('<select name="gender" id="gender">');
@@ -1166,6 +1500,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns a html radio button attribute for limiting a search to club records
+     *
+     * @return string
+     */
     private function clubRecordAsRadio() {
         $text = array();
         $text []= '<input type="radio" name="club-record" checked="1" value="">&nbsp;don\'t care&nbsp;</input>&nbsp;';
@@ -1173,6 +1512,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns a html radio button attribute for limiting a search to indoor or outdoor
+     *
+     * @return string
+     */
     private function venueAsRadio() {
         $text = array();
         $text []= '<input type="radio" name="outdoor" checked="1" value="Y">&nbsp;Outdoor&nbsp;</input>&nbsp;';
@@ -1181,12 +1525,20 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * prints the entire home page html
+     */
     private function homePage() {
         // echo '<p>in homePage()</p>';
         print $this->homePageHTML();
         // echo '<p>finished homePage()</p>';
     }
 
+    /**
+     * returns a map of archers names to their data
+     *
+     * @return array
+     */
     private function getArcherMap() {
         if (!isset($this->archer_map)) {
             $this->archer_map = array();
@@ -1198,33 +1550,62 @@ class RHAC_Scorecards {
         return $this->archer_map;
     }
 
+    /**
+     * returns the date of birth of an archer
+     *
+     * @param string $archer the archer name
+     * 
+     * @return string
+     */
     private function getDoB($archer) {
         $archer_map = $this->getArcherMap();
         return $archer_map[$archer]['date_of_birth'];
     }
 
+    /**
+     * returns the gender of an archer
+     *
+     * @param string $archer the archer name
+     * 
+     * @return string
+     */
     private function getGender($archer) {
         $archer_map = $this->getArcherMap();
         return $archer_map[$archer]['gender'];
     }
 
+    /**
+     * returns the guest status of an archer
+     *
+     * @param string $archer the archer name
+     * 
+     * @return string
+     */
     private function getGuest($archer) {
         $archer_map = $this->getArcherMap();
         return $archer_map[$archer]['guest'];
     }
 
-    private function ageAt_wrong($archer, $date_string) {
-        $dob_string = $this->getDoB($archer);
-        $dob = $this->unixdate($dob_string);
-        $date = $this->unixdate($date_string);
-        $diff = $date - $dob;
-        return floor($diff / (60 * 60 * 24 * 365.242));
-    }
-
+    /**
+     * returns an archers age at a given date
+     *
+     * @param string $archer
+     * @param string $date_string
+     *
+     * @return int
+     */
     private function ageAt($archer, $date_string) {
         return $this->getAge($this->getDoB($archer), $date_string);
     }
 
+    /**
+     * return a persons age given their date of birth and the current date
+     *
+     * @param string $dob
+     * @param string $date
+     *
+     * @return int
+     */
     private function getAge($dob, $date) {
         list($byear, $bmonth, $bday) = explode("/", $dob);
         list($dyear, $dmonth, $dday) = explode("/", $date);
@@ -1236,6 +1617,12 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * return the unixtime at midnight on a given date
+     *
+     * @param string $date_string
+     * @return int
+     */
     private function unixdate($date_string) {
         list ($y, $m, $d) = explode('/', $date_string);
         if ($y < 1970) {
@@ -1244,6 +1631,11 @@ class RHAC_Scorecards {
         return mktime(0, 0, 0, $m, $d, $y, 0);
     }
 
+    /**
+     * return an array mapping venue id to venue name
+     *
+     * @return array
+     */
     private function getVenueMap() {
         $rows = $this->fetch("select * from venue");
         $map = array();
@@ -1253,6 +1645,14 @@ class RHAC_Scorecards {
         return $map;
     }
 
+    /**
+     * return an archers age group on a given date
+     *
+     * @param string $archer the archers name
+     * @param string $date_string
+     *
+     * @return string
+     */
     private function categoryAt($archer, $date_string) {
         $age = $this->ageAt($archer, $date_string);
         if ($age < 12) {
@@ -1272,6 +1672,11 @@ class RHAC_Scorecards {
         }
     }
 
+    /**
+     * returns the html for the admin page scorecard search form
+     *
+     * @return string
+     */
     private function searchForm() {
         $text = array();
         $text []= '<form method="get" action="">';
@@ -1316,6 +1721,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns the html for the admin "new scorecard" form
+     *
+     * @return string
+     */
     private function newScorecardForm() {
         $text = array();
         $text []= '<form method="get" action="">';
@@ -1331,6 +1741,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns the html for the admin "add archer" form
+     *
+     * @return string
+     */
     private function newArcherForm() {
         $text = array();
         $text []= '<form method="post" action="">';
@@ -1360,6 +1775,11 @@ class RHAC_Scorecards {
     }
 
 
+    /**
+     * returns the html for the admin "add venue" form
+     *
+     * @return string
+     */
     private function newVenueForm() {
         $text = array();
         $text []= '<form method="post" action="">';
@@ -1373,6 +1793,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns the html for the admin "delete archer" form
+     *
+     * @return string
+     */
     private function deleteArcherForm() {
         $text = array();
         $text []= '<form method="post" action="">';
@@ -1382,6 +1807,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns the html for the admin "merge archers" form
+     *
+     * @return string
+     */
     private function mergeArcherForm() {
         $text = array();
         $text []= '<form method="post" id="merge-archers" action="">';
@@ -1394,6 +1824,11 @@ class RHAC_Scorecards {
         return implode($text);
     }
 
+    /**
+     * returns the html for the admin "rebuild all handicap tables" form
+     *
+     * @return string
+     */
     private function rebuildRoundHandicapsForm() {
         return <<<EOFORM
 <p>
@@ -1405,6 +1840,11 @@ title="You only need do this if a new round has been added or a round definition
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "recalculate all score handicaps" form
+     *
+     * @return string
+     */
     private function reCalculateHandicapsForScoresForm() {
         return <<<EOFORM
 <p>
@@ -1416,6 +1856,11 @@ title="only necessary if a round had the wrong handicaps and has been fixed"/>
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "recalculate all age groups" form
+     *
+     * @return string
+     */
     private function reCalculateAgeGroupsForm() {
         return <<<EOFORM
 <p>
@@ -1427,6 +1872,11 @@ title="only needed if you have corrected the age of an archer"/>
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "recalculate all genders" form
+     *
+     * @return string
+     */
     private function reCalculateGendersForm() {
         return <<<EOFORM
 <p>
@@ -1438,6 +1888,11 @@ title="you only need to do this if you've corrected the gender of an archer with
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "recalculate all guest statuses" form
+     *
+     * @return string
+     */
     private function reCalculateGuestStatusForm() {
         return <<<EOFORM
 <p>
@@ -1449,6 +1904,11 @@ title="you only need to do this if you've changed the guest status of an archer 
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "recalculate all classifications" form
+     *
+     * @return string
+     */
     private function reCalculateClassificationsForm() {
         return <<<EOFORM
 <p>
@@ -1460,6 +1920,11 @@ title="only needed if a score had the wrong classification in the GNAS tables an
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "Reassign Outdoor and Indoor Rounds" form
+     *
+     * @return string
+     */
     private function reCalculateOutdoorForm() {
         return <<<EOFORM
 <p>
@@ -1471,6 +1936,11 @@ title="this would only be necessary if a round was wrongly designated indoor/out
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "Recount all Tens" form (unused)
+     *
+     * @return string
+     */
     private function reCalculateTensForm() {
         return <<<EOFORM
 <p>
@@ -1482,6 +1952,11 @@ title="probably useless now"/>
 EOFORM;
     }
 
+    /**
+     * returns the html for the admin "Recalculate Club Records" form (unused)
+     *
+     * @return string
+     */
     private function reCalculateRecordsForm() {
         return <<<EOFORM
 <p>
@@ -1493,6 +1968,11 @@ title="run this after entering a batch of scorecards"/>
 EOFORM;
     }
 
+    /**
+     * returns the html for the entire admin scorecards home page
+     *
+     * @return string
+     */
     public function homePageHTML() {
         $text = array();
         $text []= '<h1>Score Cards</h1>';
@@ -1540,6 +2020,11 @@ EODESC;
         return implode($text);
     }
 
+    /**
+     * return the url for the current page
+     *
+     * @return string
+     */
     private function curPageURL() {
         $pageURL = 'http';
         if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
@@ -1552,6 +2037,9 @@ EODESC;
         return $pageURL;
     }
 
+    /**
+     * print a page of all qualifying 252 results (unused)
+     */
     private function two_five_two() {
         RHAC_Archer252::init();
         $rows = $this->fetch(<<<EOT
@@ -1567,6 +2055,11 @@ EOT
         print RHAC_Archer252::getResultsHTML();
     }
 
+    /**
+     * return an html form input for the date, defaulting to the date of the current scorecard
+     *
+     * @return string
+     */
     private function dateAsInput() {
         $text = array();
         $text []= '<input type="text" name="date" size="16" ';
@@ -1577,6 +2070,11 @@ EOT
         return implode($text);
     }
 
+    /**
+     * return all archer names
+     *
+     * @return array
+     */
     private function archers() {
         $archer_map = $this->getArcherMap();
         return array_keys($archer_map);
@@ -2067,6 +2565,3 @@ EOT
     }
 
 }
-
-
-

@@ -1,9 +1,18 @@
 # RHAC Scorecards
 
-This plugin is concerned with maintaining the scorecards table,
-specifically calculating the badges attached to individual scorecards.
+This plugin is concerned with maintaining the scorecards table.
+It also holds the code for the scorecards page in the admin area.
+
+A point worth noting is that reasessments are also stored as a
+scorecard (with no ends) and inserted per archer at significant
+dates, namely end of season and transition to new age group. This
+arrangement helps greatly with some of the accumulators below, which
+need to keep track of current classifications.
 
 # How Accumulators Work
+
+Accumulators are where the badges (252 awards, new classifications
+etc.) are calculated and attached to scorecards.
 
 We start by creating an instance of `RHAC_ScorecardAccumulator`.
 This in turn creates child accumulators for each type of accumulator
@@ -133,13 +142,14 @@ in this code, so each accumulator leaf looks at the current value
 of the relevant badge on the scorecard and updates it if it calculates
 that it is wrong.
 
-For efficiency's sake the acceumulator leaves do not directly update
+For efficiency's sake the accumulator leaves do not directly update
 rows in the database. Rather they collect "recommendations" for
 changes to scorecards, and they are allowed to change their minds
 (a current club record becoming an old club record is an obvious
 case). When all of the scorecards are processed, the recommendations
 are collected into a set of updates keyed on scorecard id, and those
-updates are run afterwards.
+updates are run afterwards.  Only the scorecards that must change
+are updated, and any one scorecard is updated at most once.
 
 For example one such update might be
 
