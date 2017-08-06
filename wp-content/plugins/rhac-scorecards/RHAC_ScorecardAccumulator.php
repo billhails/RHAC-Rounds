@@ -2,6 +2,8 @@
 
 /**
  * This is the top-level accumulator
+ *
+ * @see README.md in this directory for an overview of how this all works
  */
 $rhac_scorecard_accumulator_manifest = array(
     'RHAC_ClubRecordAccumulator',
@@ -15,6 +17,10 @@ foreach ($rhac_scorecard_accumulator_manifest as $accumulator) {
     include_once plugin_dir_path(__FILE__) . $accumulator . '.php';
 }
 
+/**
+ * the top-level accumulator class
+ *
+ */
 class RHAC_ScorecardAccumulator {
 
     private $children = array();
@@ -26,6 +32,11 @@ class RHAC_ScorecardAccumulator {
         }
     }
 
+    /**
+     * create a key from a database row and an array of significant fields
+     *
+     * The key is used to store a specific accumulator instance
+     */
     protected function makeKey($row, $fields) {
         $key = array();
         foreach ($fields as $field) {
