@@ -3,7 +3,7 @@
 This plugin is concerned with maintaining the scorecards table,
 specifically calculating the badges attached to individual scorecards.
 
-# How it works
+# How Accumulators Work
 
 We start by creating an instance of `RHAC_ScorecardAccumulator`.
 This in turn creates child accumulators for each type of accumulator
@@ -33,7 +33,7 @@ RHAC_ScorecardAccumulator
 Then code in `RHAC_Scorecards` from `toplevel.php` performs a select
 on the entire scorecards table, in a very specific order, first
 date, then handicap for the score, then the score itself. For each
-row in the result of that select, it calls accept($row) on the
+row in the result of that select, it calls `accept($row)` on the
 `RHAC_ScorecardAccumulator`.
 
 The `RHAC_ScorecardAccumulator::accept()` method merely passes the
@@ -68,7 +68,15 @@ scorecards for that archer and bow, while a
 age, gender and round and only recieves scorecards for that
 combination.
 
-So after a few scorecards have been fed in, our tree might look like this:
+Assume the following three scorecards have been processed:
+
+Archer | Age | Gender | Bow | Round | ...
+====== | === | ====== | === | ===== | ===
+john doe | adult | m | longbow | white 252 | ...
+jane doe | adult | f | compound | portsmouth | ...
+fred doe | u14 | m | recurve | short metric | ...
+
+Then we would have a tree like the following:
 ```
 RHAC_ScorecardAccumulator
     |
@@ -120,17 +128,18 @@ replace them with the new record holder.
 
 Other accumulator leaves have similarily simple tasks to perform.
 However there is one slight complication in that existing club
-records could be upset by new data, or even a bug in this code, so
-each accumulator leaf looks at the current value of the relevant
-badge on the scorecard and updates it if it calculates that it is
-wrong.
+records could be upset by a scorecard coming in late, or even a bug
+in this code, so each accumulator leaf looks at the current value
+of the relevant badge on the scorecard and updates it if it calculates
+that it is wrong.
 
 For efficiency's sake the acceumulator leaves do not directly update
-rows in the database. Rather they collect "recommendations" for changes
-to scorecards, and they are allowed to change their minds (a current club record
-becoming an old club record is an obvious case). When all of the scorecards are
-processed, the recommendations are collected into a set of updates keyed
-on scorecard id, and those updates are run afterwards.
+rows in the database. Rather they collect "recommendations" for
+changes to scorecards, and they are allowed to change their minds
+(a current club record becoming an old club record is an obvious
+case). When all of the scorecards are processed, the recommendations
+are collected into a set of updates keyed on scorecard id, and those
+updates are run afterwards.
 
 For example one such update might be
 
