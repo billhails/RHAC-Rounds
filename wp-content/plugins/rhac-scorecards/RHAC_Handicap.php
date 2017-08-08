@@ -1,5 +1,7 @@
 <?php
-/* classes to calculate handicaps */
+/*
+ * classes to calculate handicaps
+ */
 
 class RHAC_HC_Zone {
     private $diameter;
@@ -16,7 +18,6 @@ class RHAC_HC_Zone {
         $sum = 0.0;
         while ($lower <= $upper) {
             $sum += $this->calc($lower, $div);
-            // print "sum = $sum\n";
             ++$lower;
         }
         return $sum;
@@ -31,9 +32,10 @@ class RHAC_HC_Zone {
         $sigma_r_squared = $this->sigma_r_squared;
         $arrow_radius = $this->arrow_radius;
 
-        $result = exp(- $this->square($band * $diameter / $div + $arrow_radius) / $sigma_r_squared);
-
-        // print "exp(-square($band * $diameter / $div + $arrow_radius) / $sigma_r_squared) = $result\n";
+        $result = exp(
+            - $this->square($band * $diameter / $div + $arrow_radius)
+            / $sigma_r_squared
+        );
 
         return $result;
     }
@@ -84,16 +86,23 @@ abstract class RHAC_Handicap {
 
     public function predict() {
         $total = 0.0;
-        // print_r($this->distances);
         foreach ($this->distances as $distance) {
             $total += $distance["N"]
-                    * $this->calc($distance["D"], $distance["R"] * $this->conversion);
+                    * $this->calc(
+                        $distance["D"],
+                        $distance["R"] * $this->conversion
+                    );
         }
-        // print "total = $total\n";
         return round($total);
     }
 
-    public static function getCalculator($scoring, $handicap, $units, $distances, $arrow_radius) {
+    public static function getCalculator(
+        $scoring,
+        $handicap,
+        $units,
+        $distances,
+        $arrow_radius
+    ) {
         $class = self::$converters[$scoring];
         if ($class) {
             return new $class($handicap, $units, $distances, $arrow_radius);
@@ -107,7 +116,8 @@ abstract class RHAC_Handicap {
 class RHAC_Handicap_Imperial extends RHAC_Handicap { # tested
     protected function calc($diameter, $range) {
         $sigma_r_squared = $this->sigma_r_squared($range);
-        $zone = new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
+        $zone =
+            new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
         return 9 - 2 * $zone->sum(1, 4, 10) - $zone->calc(1, 2);
     }
 }
@@ -115,7 +125,8 @@ class RHAC_Handicap_Imperial extends RHAC_Handicap { # tested
 class RHAC_Handicap_Metric extends RHAC_Handicap { # tested
     protected function calc($diameter, $range) {
         $sigma_r_squared = $this->sigma_r_squared($range);
-        $zone = new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
+        $zone =
+            new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
         return 10 - $zone->sum(1, 10, 20);
     }
 }
@@ -123,7 +134,8 @@ class RHAC_Handicap_Metric extends RHAC_Handicap { # tested
 class RHAC_Handicap_MetricInnerTen extends RHAC_Handicap { # tested
     protected function calc($diameter, $range) {
         $sigma_r_squared = $this->sigma_r_squared($range);
-        $zone = new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
+        $zone =
+            new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
         return 10 - $zone->calc(1, 40) - $zone->sum(2, 10, 20);
     }
 }
@@ -131,7 +143,8 @@ class RHAC_Handicap_MetricInnerTen extends RHAC_Handicap { # tested
 class RHAC_Handicap_Vegas extends RHAC_Handicap { # tested
     protected function calc($diameter, $range) {
         $sigma_r_squared = $this->sigma_r_squared($range);
-        $zone = new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
+        $zone =
+            new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
         return 10 - $zone->sum(1, 4, 20) - 6 * $zone->calc(5, 20);
     }
 }
@@ -139,15 +152,19 @@ class RHAC_Handicap_Vegas extends RHAC_Handicap { # tested
 class RHAC_Handicap_VegasInnerTen extends RHAC_Handicap { # tested
     protected function calc($diameter, $range) {
         $sigma_r_squared = $this->sigma_r_squared($range);
-        $zone = new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
-        return 10 - $zone->calc(1, 40) - $zone->sum(2, 4, 20) - 6 * $zone->calc(5, 20);
+        $zone =
+            new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
+        return 10 - $zone->calc(1, 40)
+            - $zone->sum(2, 4, 20)
+            - 6 * $zone->calc(5, 20);
     }
 }
 
 class RHAC_Handicap_Worcester extends RHAC_Handicap { # tested
     protected function calc($diameter, $range) {
         $sigma_r_squared = $this->sigma_r_squared($range);
-        $zone = new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
+        $zone =
+            new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
         return 5 - $zone->sum(1, 5, 10);
     }
 }
@@ -155,7 +172,8 @@ class RHAC_Handicap_Worcester extends RHAC_Handicap { # tested
 class RHAC_Handicap_FitaSixZone  extends RHAC_Handicap {
     protected function calc ($diameter, $range) {
         $sigma_r_squared = $this->sigma_r_squared($range);
-        $zone = new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
+        $zone =
+            new RHAC_HC_Zone($diameter, $this->arrow_radius, $sigma_r_squared);
         return 10 - $zone->sum(1, 5, 20) - 5 * $zone->calc(6, 20);
     }
 }

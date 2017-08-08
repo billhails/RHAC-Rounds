@@ -159,10 +159,11 @@ abstract class RHAC_AccumulatorLeaf {
     }
 
     /**
-     * returns the recommendations from this accumulator leaf, keyed on scorecard id
+     * returns the recommendations from this accumulator leaf,
+     * keyed on scorecard id
      *
-     * note that it compares the recommended value with the current value and discards
-     * the recommendation if it is already the same.
+     * note that it compares the recommended value with the current
+     * value and discards the recommendation if it is already the same.
      *
      * @return array
      */
@@ -177,7 +178,8 @@ abstract class RHAC_AccumulatorLeaf {
     }
 
     /**
-     * each accumulator leaf can only change one field, this returns the name of the field
+     * each accumulator leaf can only change one field,
+     * this returns the name of the field
      *
      * @return string
      */
