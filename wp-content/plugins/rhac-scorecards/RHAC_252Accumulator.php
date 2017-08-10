@@ -285,6 +285,7 @@ class RHAC_252AccumulatorLeaf extends RHAC_AccumulatorLeaf {
      *
      * @param string $round
      * @param int $needed how many quatifying scores are needed (1 or 2)
+     * @return bool
      */
     private function gotPrevious($round, $needed = 2) {
         $previous = self::$previous[$round];

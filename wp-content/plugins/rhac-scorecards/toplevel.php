@@ -15,9 +15,21 @@ include_once plugin_dir_path(__FILE__) . 'RHAC_ReassesmentInserter.php';
  * currently unused, and possibly innaccurate
  */
 class RHAC_Archer252 {
+    /**
+     * @var
+     */
     private static $instances;
+    /**
+     * @var
+     */
     private static $scores;
+    /**
+     * @var
+     */
     private static $counts;
+    /**
+     * @var array
+     */
     private static $requirements = array(
         'Green 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 164, 'barebow' => 189),
         'White 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 164, 'barebow' => 189),
@@ -29,13 +41,20 @@ class RHAC_Archer252 {
         'Gold 252' => array( 'recurve' => 252, 'compound' => 280, 'longbow' => 101, 'barebow' => 139)
     );
 
+    /**
+     *
+     */
     public static function init() {
         self::$instances = array();
         self::$scores = array();
         self::$counts = array();
     }
 
-    // assumes the data is sorted by date, archer, round, bow
+    /**
+     * assumes the data is sorted by date, archer, round, bow
+     *
+     * @param $row
+     */
     public static function addRow($row) {
         $archer = $row['archer'];
         $bow = $row['bow'];
@@ -52,6 +71,11 @@ class RHAC_Archer252 {
         self::$instances []= $row;
     }
 
+    /**
+     * @param $archer
+     * @param $bow
+     * @param $round
+     */
     private static function count($archer, $bow, $round) {
         if (!isset(self::$counts[$archer])) {
             self::$counts[$archer] = array();
@@ -65,10 +89,23 @@ class RHAC_Archer252 {
         self::$counts[$archer][$bow][$round]++;
     }
 
+    /**
+     * @param $archer
+     * @param $bow
+     * @param $round
+     * @return bool
+     */
     private static function already_seen_two($archer, $bow, $round) {
         return self::$counts[$archer][$bow][$round] >= 2;
     }
 
+    /**
+     * @param $archer
+     * @param $bow
+     * @param $round
+     * @param $score
+     * @return string
+     */
     private static function previous($archer, $bow, $round, $score) {
         if (!isset(self::$scores[$archer])) {
             self::$scores[$archer] = array();
@@ -84,10 +121,19 @@ class RHAC_Archer252 {
         return $previous;
     }
 
+    /**
+     * @param $bow
+     * @param $round
+     * @param $score
+     * @return bool
+     */
     private static function below_required_score($bow, $round, $score) {
         return $score < self::$requirements[$round][$bow];
     }
 
+    /**
+     * @return string
+     */
     public static function getResultsHTML() {
         $result = '<h1>252 Results So Far</h1>';
         $result .= '<table>';
@@ -202,8 +248,9 @@ class RHAC_Scorecards {
      * executes an sql request and returns the result
      *
      * @param string $query
-     * @param array $parameters
+     * @param array $params
      * @return array
+     * @internal param array $parameters
      */
     public function fetch($query, $params = array()) {
         $stmt = $this->pdo->prepare($query);
@@ -1412,6 +1459,7 @@ class RHAC_Scorecards {
      * Fetch all ends for a given scorecard and count the number of tens
      *
      * @param int $id the scorecard id
+     * @return int
      */
     private function countTensFromTable($id) {
         $ends = $this->fetchScorecardEnds($id);

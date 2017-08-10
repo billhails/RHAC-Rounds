@@ -250,6 +250,9 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         }
     }
 
+    /**
+     * @param $start_of_last_season
+     */
     private function rewriteClassificationsThisSeason($start_of_last_season) {
         $this->debug(
             "rewriting this season's classifications to be the new age group"
@@ -261,20 +264,34 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
             $this->classifications_this_season->bestClassification();
     }
 
+    /**
+     * @param $classification
+     */
     private function setClassificationThisSeason($classification) {
         $this->debug("setting classification this season to $classification");
         $this->classification_this_season = $classification;
     }
 
+    /**
+     * @param $classification
+     */
     private function setCurrentClassification($classification) {
         $this->debug("setting current classification to $classification");
         $this->current_classification = $classification;
     }
 
+    /**
+     * @param $row
+     * @return RHAC_NewClassificationAccumulator_Row
+     */
     private function wrap($row) {
         return new RHAC_NewClassificationAccumulator_Row($row);
     }
 
+    /**
+     * @param $classification
+     * @param $date
+     */
     private function rememberForAgeChange($classification, $date) {
         $this->debug("remembering ($classification, $date) for age change");
         $this->classifications_last_twelve_months[$date] = $classification;
@@ -290,6 +307,10 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         }
     }
 
+    /**
+     * @param $date
+     * @return string
+     */
     private function subtractOneYear($date) {
         $year = substr($date, 0, 4);
         $rest = substr($date, 4);
@@ -297,6 +318,9 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         return $year . $rest;
     }
 
+    /**
+     * @return mixed|string
+     */
     private function bestLastYear() {
         $result = 'unclassified';
         foreach ($this->classifications_last_twelve_months
@@ -310,12 +334,22 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         return $result;
     }
 
+    /**
+     * @param $classification
+     * @param $date
+     * @return string
+     */
     private function addAndReport($classification, $date) {
         return $this->classifications_this_season->addAndReport(
             $classification, $date
         );
     }
 
+    /**
+     * @param $classification
+     * @param $date
+     * @return string
+     */
     private function addAndReportNextAgeGroup($classification, $date) {
         return $this->next_age_group_classifications_this_year->addAndReport(
             $classification,
@@ -323,6 +357,11 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         );
     }
 
+    /**
+     * @param $classification_a
+     * @param $classification_b
+     * @return bool
+     */
     private function better($classification_a, $classification_b) {
         $better = self::$classification_order[$classification_a]
                 > self::$classification_order[$classification_b];
@@ -334,6 +373,11 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         return $better;
     }
 
+    /**
+     * @param $classification_a
+     * @param $classification_b
+     * @return bool
+     */
     private function equal($classification_a, $classification_b) {
         $equal = self::$classification_order[$classification_a]
                == self::$classification_order[$classification_b];
@@ -345,16 +389,25 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         return $equal;
     }
 
+    /**
+     * @return string
+     */
     protected function keyToChange() {
         return 'new_classification';
     }
 
+    /**
+     * @param $row
+     */
     private function noteClassificationWrong($row) {
         $this->debug("noting classification wrong");
         $this->proposed_changes[$row->id()] = null;
         $this->current_db_values[$row->id()] = $row->newClassification();
     }
 
+    /**
+     * @param $row
+     */
     private function noteClassificationChange($row) {
         $this->debug(
             "noting classification change " . $this->current_classification
@@ -363,6 +416,9 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
         $this->current_db_values[$row->id()] = $row->newClassification();
     }
 
+    /**
+     * @param $row
+     */
     private function noteClassificationConfirmed($row) {
         $this->debug(
             "noting classification confirmed "
@@ -375,46 +431,80 @@ class RHAC_NewClassificationAccumulatorLeaf extends RHAC_AccumulatorLeaf {
 
 }
 
+/**
+ * Class RHAC_NewClassificationAccumulator_Row
+ */
 class RHAC_NewClassificationAccumulator_Row {
     private $row;
 
+    /**
+     * RHAC_NewClassificationAccumulator_Row constructor.
+     * @param $row
+     */
     public function __construct($row) {
         $this->row = $row;
     }
 
+    /**
+     * @return bool
+     */
     public function isAgeGroupReassessment() {
         return ($this->row['reassessment'] == "age_group");
     }
 
+    /**
+     * @return bool
+     */
     public function isEndOfSeasonReassessment() {
         return ($this->row['reassessment'] == "end_of_season");
     }
 
+    /**
+     * @return bool
+     */
     public function isGuest() {
         return ($this->row['guest'] == "Y");
     }
 
+    /**
+     * @return string
+     */
     public function date() {
         return $this->row['date'];
     }
 
+    /**
+     * @return mixed
+     */
     public function classification() {
         return $this->row['classification'];
     }
 
+    /**
+     * @return mixed
+     */
     public function nextAgeGroupClassification() {
         return $this->row['next_age_group_classification'];
     }
 
+    /**
+     * @return mixed
+     */
     public function newClassification() {
         return $this->row['new_classification'];
     }
 
+    /**
+     * @return mixed
+     */
     public function id() {
         return $this->row['scorecard_id'];
     }
 }
 
+/**
+ * Class RHAC_NewClassificationAccumulator_Counter
+ */
 class RHAC_NewClassificationAccumulator_Counter {
     private $debug;
     private $counters;
@@ -458,6 +548,10 @@ class RHAC_NewClassificationAccumulator_Counter {
         'archer' => array('archer'),
     );
 
+    /**
+     * RHAC_NewClassificationAccumulator_Counter constructor.
+     * @param bool $debug
+     */
     public function __construct($debug) {
         $this->counters = array();
         $this->debug = $debug;
@@ -465,6 +559,10 @@ class RHAC_NewClassificationAccumulator_Counter {
         $this->debug("created counters");
     }
 
+    /**
+     * @param string $date
+     * @param null $counter
+     */
     protected function addCounter($date, $counter=null) {
         $this->debug("addCounter($date, ...)");
         if (!$this->earliest_date) {
@@ -496,6 +594,9 @@ class RHAC_NewClassificationAccumulator_Counter {
         $this->deleteBefore($date);
     }
 
+    /**
+     * @param string $date
+     */
     private function deleteBefore($date) {
         $year_ago = $this->subtractOneYear($date);
         $this->earliest_date = '';
@@ -509,6 +610,10 @@ class RHAC_NewClassificationAccumulator_Counter {
         }
     }
 
+    /**
+     * @param string $date
+     * @return string
+     */
     private function subtractOneYear($date) {
         $year = substr($date, 0, 4);
         $rest = substr($date, 4);
@@ -516,6 +621,10 @@ class RHAC_NewClassificationAccumulator_Counter {
         return $year . $rest;
     }
 
+    /**
+     * @param string $classification
+     * @return string
+     */
     private function incrementAllCountersAndReturnBest($classification) {
         $first = true;
         $best = '';
@@ -531,6 +640,11 @@ class RHAC_NewClassificationAccumulator_Counter {
         return $best;
     }
 
+    /**
+     * @param $classification
+     * @param $date
+     * @return string
+     */
     public function addAndReport($classification, $date) {
         $this->debug("addAndReport($classification, $date)");
 
@@ -552,10 +666,17 @@ class RHAC_NewClassificationAccumulator_Counter {
         }
     }
 
+    /**
+     * @param $classification
+     * @return mixed
+     */
     private function best($classification) {
         return $this->counters[$this->earliest_date][$classification];
     }
 
+    /**
+     * @return string
+     */
     public function bestClassification() {
         foreach (array_keys(self::$recognised_classifications)
                  as $classification
@@ -568,6 +689,10 @@ class RHAC_NewClassificationAccumulator_Counter {
         return 'unclassified';
     }
 
+    /**
+     * @param $after_date
+     * @return $this|RHAC_NewClassificationAccumulator_Counter
+     */
     public function copyBackTo($after_date) {
         $this->debug("copy back to '$after_date'");
         if (!isset($after_date)) {
@@ -582,6 +707,9 @@ class RHAC_NewClassificationAccumulator_Counter {
         return $copy;
     }
 
+    /**
+     * @param $msg
+     */
     private function debug($msg) {
         if ($this->debug) {
             error_log("* (" . $this->id . ") $msg");

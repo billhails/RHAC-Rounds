@@ -1,14 +1,24 @@
 <?php
 
+/**
+ * Class RHAC_ReassesmentInserter
+ */
 class RHAC_ReassesmentInserter {
 
     private static $children = array();
     private $age_helper;
 
+    /**
+     * RHAC_ReassesmentInserter constructor.
+     * @param $archer_map
+     */
     public function __construct($archer_map) {
         $this->age_helper = new RHAC_AgeHelper($archer_map);
     }
 
+    /**
+     * @param $row
+     */
     public function accept($row) {
         $key = implode("\e", array($row['bow'], $row['archer'], $row['outdoor']));
         if (!isset($this->children[$key])) {
@@ -17,6 +27,9 @@ class RHAC_ReassesmentInserter {
         $this->children[$key]->accept($row);
     }
 
+    /**
+     * @return array
+     */
     public function results() {
         $results = array();
         foreach ($this->children as $child) {
@@ -27,6 +40,9 @@ class RHAC_ReassesmentInserter {
 
 }
 
+/**
+ * Class RHAC_ReassesmentInserterLeaf
+ */
 class RHAC_ReassesmentInserterLeaf {
 
     private $age_change_suggestions = array();
@@ -40,6 +56,11 @@ class RHAC_ReassesmentInserterLeaf {
     private $season_calculator;
     private $age_helper;
 
+    /**
+     * RHAC_ReassesmentInserterLeaf constructor.
+     * @param $row
+     * @param $age_helper
+     */
     public function __construct($row, $age_helper) {
         $this->bow = $row['bow'];
         $this->archer = $row['archer'];
@@ -69,6 +90,9 @@ class RHAC_ReassesmentInserterLeaf {
         }
     }
 
+    /**
+     * @param $row
+     */
     private function suggestReasessments($row) {
         if ($row['guest'] == 'Y') {
             return;
@@ -79,31 +103,56 @@ class RHAC_ReassesmentInserterLeaf {
         }
     }
 
+    /**
+     * @param $date
+     * @return mixed
+     */
     private function nextAgeChange($date) {
         return $this->age_helper->dateOfNextAgeGroupChange($this->archer, $date);
     }
 
+    /**
+     * @param $row
+     */
     private function noteSeenEndOfSeason($row) {
         $this->end_of_season_seen[$row['date']] = $row['scorecard_id'];
     }
 
+    /**
+     * @param $row
+     */
     private function noteSeenAgeChange($row) {
         $this->age_change_seen[$row['date']] = $row['scorecard_id'];
     }
 
+    /**
+     * @return array
+     */
     public function results() {
         return array_merge($this->ageChangeResults(), $this->endOfSeasonResults());
     }
 
+    /**
+     * @return array
+     */
     private function ageChangeResults() {
         return $this->changeResults($this->age_change_suggestions, $this->age_change_seen, 'age_group');
     }
 
+    /**
+     * @return array
+     */
     private function endOfSeasonResults() {
         return $this->changeResults($this->end_of_season_suggestions, $this->end_of_season_seen,
                                                                                 'end_of_season');
     }
 
+    /**
+     * @param $suggestions
+     * @param $seen
+     * @param $reassessment
+     * @return array
+     */
     private function changeResults($suggestions, $seen, $reassessment) {
         $results = array();
         $now = date('Y/m/d');
@@ -125,6 +174,11 @@ class RHAC_ReassesmentInserterLeaf {
         return $results;
     }
 
+    /**
+     * @param $date
+     * @param $reassessment
+     * @return array
+     */
     private function makeInsert($date, $reassessment) {
         return array('action' => 'insert',
                      'date' => $date,
@@ -136,24 +190,45 @@ class RHAC_ReassesmentInserterLeaf {
                      'reassessment' => $reassessment);
     }
 
+    /**
+     * @param $scorecard_id
+     * @return array
+     */
     private function makeDelete($scorecard_id) {
         return array('action' => 'delete', 'scorecard_id' => $scorecard_id);
     }
 
+    /**
+     * @param $date
+     * @return mixed
+     */
     private function categoryAt($date) {
         return $this->age_helper->categoryAt($this->archer, $date);
     }
 
+    /**
+     * @param $date
+     * @return string
+     */
     protected function nextSeason($date) {
         return $this->season_calculator->nextSeason($date);
     }
 }
 
+/**
+ * Class RHAC_NextOutdoorSeasonCalculator
+ */
 class RHAC_NextOutdoorSeasonCalculator {
     private static $instance;
 
+    /**
+     * RHAC_NextOutdoorSeasonCalculator constructor.
+     */
     private function __construct() {}
 
+    /**
+     * @return RHAC_NextOutdoorSeasonCalculator
+     */
     public static function getInstance() {
         if (!isset(self::$instance)) {
             self::$instance = new self();
@@ -161,17 +236,30 @@ class RHAC_NextOutdoorSeasonCalculator {
         return self::$instance;
     }
 
+    /**
+     * @param $date
+     * @return string
+     */
     public function nextSeason($date) {
         $year = substr($date, 0, 4);
         return sprintf('%04d/01/01', $year + 1);
     }
 }
 
+/**
+ * Class RHAC_NextIndoorSeasonCalculator
+ */
 class RHAC_NextIndoorSeasonCalculator {
     private static $instance;
 
+    /**
+     * RHAC_NextIndoorSeasonCalculator constructor.
+     */
     private function __construct() {}
 
+    /**
+     * @return RHAC_NextIndoorSeasonCalculator
+     */
     public static function getInstance() {
         if (!isset(self::$instance)) {
             self::$instance = new self();
@@ -179,6 +267,10 @@ class RHAC_NextIndoorSeasonCalculator {
         return self::$instance;
     }
 
+    /**
+     * @param $date
+     * @return string
+     */
     public function nextSeason($date) {
         $year = substr($date, 0, 4);
         $month = substr($date, 5, 2);
@@ -190,14 +282,29 @@ class RHAC_NextIndoorSeasonCalculator {
     }
 }
 
+/**
+ * Class RHAC_AgeHelper
+ */
 class RHAC_AgeHelper {
 
+    /**
+     * @var
+     */
     private $archer_map;
 
+    /**
+     * RHAC_AgeHelper constructor.
+     * @param $archer_map
+     */
     public function __construct($archer_map) {
         $this->archer_map = $archer_map;
     }
 
+    /**
+     * @param $archer
+     * @param $date
+     * @return string
+     */
     public function dateOfNextAgeGroupChange($archer, $date) {
         $category = $this->categoryAt($archer, $date);
         if ($category != 'adult') {
@@ -212,6 +319,11 @@ class RHAC_AgeHelper {
         }
     }
 
+    /**
+     * @param $date
+     * @param $years
+     * @return string
+     */
     private function addYears($date, $years) {
         $year = substr($date, 0, 4);
         $month = substr($date, 5, 2);
@@ -219,11 +331,20 @@ class RHAC_AgeHelper {
         return sprintf('%04d/%02d/%02d', $year + $years, $month, $day);
     }
 
+    /**
+     * @param $archer
+     * @param $date_string
+     * @return string
+     */
     public function categoryAt($archer, $date_string) {
         $age = $this->ageAt($archer, $date_string);
         return $this->categoryAtAge($age);
     }
 
+    /**
+     * @param $age
+     * @return string
+     */
     private function categoryAtAge($age) {
         if ($age < 12) {
             return 'U12';
@@ -242,6 +363,11 @@ class RHAC_AgeHelper {
         }
     }
 
+    /**
+     * @param $archer
+     * @param $date_string
+     * @return float
+     */
     private function ageAt($archer, $date_string) {
         $dob_string = $this->getDoB($archer);
         $dob = $this->unixdate($dob_string);
@@ -250,6 +376,10 @@ class RHAC_AgeHelper {
         return floor($diff / (60 * 60 * 24 * 365.242));
     }
 
+    /**
+     * @param $date_string
+     * @return false|int
+     */
     private function unixdate($date_string) {
         $y = substr($date_string, 0, 4) + 0;
         if ($y < 1970) {
@@ -260,6 +390,10 @@ class RHAC_AgeHelper {
         return mktime(0, 0, 0, $m, $d, $y, 0);
     }
 
+    /**
+     * @param $archer
+     * @return mixed
+     */
     private function getDoB($archer) {
         return $this->archer_map[$archer]['date_of_birth'];
     }

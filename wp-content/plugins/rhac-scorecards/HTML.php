@@ -4,6 +4,9 @@ class Wrapper
 {
     protected $body;
 
+    /**
+     * @return string
+     */
     protected function formatBody()
     {
         return implode(
@@ -17,6 +20,9 @@ class Wrapper
         );
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return $this->formatBody();
@@ -28,6 +34,11 @@ class HTML extends Wrapper
     private $tag;
     private $attrs;
 
+    /**
+     * HTML constructor.
+     * @param $tag
+     * @param $args
+     */
     public function __construct($tag, $args)
     {
         $this->tag = $tag;
@@ -44,6 +55,9 @@ class HTML extends Wrapper
         }
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return $this->openTag()
@@ -53,11 +67,17 @@ class HTML extends Wrapper
             . $this->closeTag();
     }
 
+    /**
+     * @return string
+     */
     private function openTag()
     {
         return '<' . $this->tag;
     }
 
+    /**
+     * @return string
+     */
     private function formatAttrs()
     {
         return implode(
@@ -72,6 +92,9 @@ class HTML extends Wrapper
         );
     }
 
+    /**
+     * @return string
+     */
     private function closeOpeningTag()
     {
         if (count($this->body)) {
@@ -81,6 +104,9 @@ class HTML extends Wrapper
         }
     }
 
+    /**
+     * @return string
+     */
     private function closeTag()
     {
         if (count($this->body)) {
@@ -91,12 +117,47 @@ class HTML extends Wrapper
     }
 }
 
-function _w() { return new Wrapper(func_get_args()); }
+/**
+ * @return Wrapper
+ */
+function _html() { return new Wrapper(func_get_args()); }
+
+/**
+ * @return string
+ */
 function _nbsp() { return '&nbsp;'; }
+
+/**
+ * @return HTML
+ */
 function _table() { return new HTML('table', func_get_args()); }
+
+/**
+ * @return HTML
+ */
 function _thead() { return new HTML('thead', func_get_args()); }
+
+/**
+ * @return HTML
+ */
 function _tfooter() { return new HTML('tfooter', func_get_args()); }
+
+/**
+ * @return HTML
+ */
 function _tr() { return new HTML('tr', func_get_args()); }
+
+/**
+ * @return HTML
+ */
 function _th() { return new HTML('th', func_get_args()); }
+
+/**
+ * @return HTML
+ */
 function _td() { return new HTML('td', func_get_args()); }
+
+/**
+ * @return HTML
+ */
 function _p() { return new HTML('p', func_get_args()); }
