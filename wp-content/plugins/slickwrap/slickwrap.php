@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Slick Wrap
-Description: Wrap text arouns a circular or oval image
+Description: Wrap text around a circular or oval image
 Version: 0.1
 Author: Bill Hails
 Author URI: http://www.billhails.net/
