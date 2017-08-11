@@ -15,6 +15,7 @@ define('RHAC_PLUGINS_ROOT_DIR',
 include_once RHAC_PLUGIN_DIR . 'RHAC_Handicap.php';
 include_once RHAC_PLUGIN_DIR . 'toplevel.php';
 include_once RHAC_PLUGINS_ROOT_DIR . 'rhac-3p-deps/rhac-3p-deps.php';
+include_once RHAC_PLUGINS_ROOT_DIR . 'gnas-archery-rounds/rounds.php';
 
 add_action('admin_menu', 'rhac_scorecards_hook');
 

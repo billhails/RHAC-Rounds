@@ -1630,6 +1630,9 @@ class GNAS_Round implements GNAS_RoundInterface {
     /** @var GNAS_Classifications */
     private $classifications;
 
+    /** @var bool */
+    private $isOfficial;
+
     /**
      * the round name, with spaces replaced by '+' for use in query parameters
      *
@@ -1688,6 +1691,16 @@ class GNAS_Round implements GNAS_RoundInterface {
         return $this->getDistances()
                     ->getDescription($this->getFamily()->getScoring(),
                                      $this->getMeasure());
+    }
+
+    /**
+     * true if the round is an official round
+     *
+     * @return bool
+     */
+    public function isOfficial()
+    {
+        return $this->isOfficial;
     }
 
     /**
@@ -1940,10 +1953,16 @@ EOJS;
      * @param string $familyName
      * @param int $displayOrder the order that the round is displayed
      */
-    private function __construct($name, $familyName, $display_order) {
+    private function __construct(
+        $name,
+        $familyName,
+        $display_order,
+        $isOfficial
+    ) {
         $this->name = $name;
         $this->familyName = $familyName;
         $this->display_order = $display_order;
+        $this->isOfficial = strtolower($isOfficial) === 'y';
         $this->searchTerm = implode('+', explode(' ', $name));
     }
 
@@ -1956,9 +1975,13 @@ EOJS;
      */
     public static function getInstanceFromRow(array $row) {
         if (!array_key_exists($row['name'], self::$instances)) {
-            self::$instances[$row['name']] = new self($row['name'],
-                                                      $row['family_name'],
-                                                      $row['display_order']);
+            self::$instances[$row['name']] =
+                new self(
+                    $row['name'],
+                    $row['family_name'],
+                    $row['display_order'],
+                    $row['official']
+                );
         }
         return self::$instances[$row['name']];
     }

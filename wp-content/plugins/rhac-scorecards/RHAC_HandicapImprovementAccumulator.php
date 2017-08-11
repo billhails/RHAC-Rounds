@@ -105,7 +105,13 @@ class RHAC_HandicapImprovementAccumulatorLeaf extends RHAC_AccumulatorLeaf {
             }
             return;
         }
-        // FIXME here we should check if the round is official
+        $round = GNAS_Round::getInstanceByName($row['round']);
+        if (!$round->isOfficial()) {
+            if (isset($row['handicap_improvement'])) {
+                $this->noteInaccurateHandicap($row);
+            }
+            return;
+        }
         $this->handicaps_this_season []= $row['handicap_ranking'];
         if (isset($this->current_handicap)) {
             $average = $this->averageWithCurrentHandicap($row);
